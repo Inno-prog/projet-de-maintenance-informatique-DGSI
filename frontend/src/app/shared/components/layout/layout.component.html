@@ -1,0 +1,128 @@
+<div class="app-layout">
+  <!-- Sidebar -->
+  <app-sidebar #sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="nav-brand">
+          <button class="sidebar-toggle" (click)="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1>Gestion Maintenance</h1>
+        </div>
+
+        <!-- User Profile -->
+        <div class="nav-user" *ngIf="currentUser">
+          <div class="profile-section" (click)="toggleProfileMenu()">
+            <button class="profile-item">
+              <div class="user-avatar">{{ getUserInitials() }}</div>
+              <div class="user-info">
+                <span class="user-name">{{ currentUser.nom }}</span>
+                <span class="user-role">{{ getRoleLabel(currentUser.role) }}</span>
+              </div>
+              <i class="fas fa-chevron-down dropdown-icon" [class.rotated]="profileMenuOpen"></i>
+            </button>
+
+            <!-- Profile Dropdown -->
+            <div class="profile-dropdown" *ngIf="profileMenuOpen" (clickOutside)="closeProfileMenu()">
+              <div class="profile-header">
+                <div class="user-avatar-large">{{ getUserInitials() }}</div>
+                <div class="user-details">
+                  <h4>{{ currentUser.nom }}</h4>
+                  <p>{{ currentUser.email }}</p>
+                  <span class="role-badge" [ngClass]="getRoleClass()">
+                    {{ getRoleLabel(currentUser.role) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="profile-menu">
+                <button class="menu-item" (click)="openProfileModal()">
+                  <i class="fas fa-user menu-icon"></i>
+                  Mon Profil
+                </button>
+                <button class="menu-item" (click)="openSettingsModal()">
+                  <i class="fas fa-cog menu-icon"></i>
+                  Paramètres
+                </button>
+                <hr class="menu-divider">
+                <button class="menu-item logout" (click)="logout()">
+                  <i class="fas fa-sign-out-alt menu-icon"></i>
+                  Déconnexion
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
+    <div class="modal profile-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Mon Profil</h2>
+        <button class="close-btn" (click)="closeProfileModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+        <div class="modal-body">
+          <div class="profile-avatar-section">
+            <div class="profile-avatar-large">{{ getUserInitials() }}</div>
+            <div class="avatar-info">
+              <h3>{{ currentUser?.nom }}</h3>
+              <p>{{ getRoleLabel(currentUser?.role || '') }}</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Nom complet</label>
+            <input type="text" class="form-control" formControlName="nom" required>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" class="form-control" formControlName="email" required>
+          </div>
+
+          <div class="form-group">
+            <label>Contact</label>
+            <input type="text" class="form-control" formControlName="contact">
+          </div>
+
+          <div class="form-group">
+            <label>Adresse</label>
+            <textarea class="form-control" formControlName="adresse" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeProfileModal()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || profileLoading">
+            <i class="fas fa-spinner fa-spin" *ngIf="profileLoading"></i>
+            {{ profileLoading ? 'Sauvegarde...' : 'Sauvegarder' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Component -->
+  <app-toast #toast></app-toast>
+
+  <!-- Confirmation Component -->
+  <app-confirmation #confirmation></app-confirmation>
+</div>

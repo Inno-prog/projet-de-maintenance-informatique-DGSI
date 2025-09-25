@@ -1,0 +1,246 @@
+<app-layout>
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1>Évaluations Trimestrielles</h1>
+        <p>Gérez les évaluations des prestataires</p>
+      </div>
+    </div>
+
+    <!-- Create Evaluation Form Modal -->
+    <div class="modal-overlay" *ngIf="showCreateForm && (authService.isAdmin() || authService.isCorrespondantInformatique())" (click)="cancelEdit()">
+      <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+        <div class="card">
+          <div class="card-header">
+            <h2>{{ isEditing ? 'Modifier' : 'Créer' }} une Évaluation</h2>
+          </div>
+      
+      <form [formGroup]="evaluationForm" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="lot">Lot</label>
+            <input type="text" id="lot" formControlName="lot">
+          </div>
+
+          <div class="form-group">
+            <label for="trimestre">Trimestre</label>
+            <select id="trimestre" formControlName="trimestre">
+              <option value="">Sélectionnez un trimestre</option>
+              <option value="T1">T1</option>
+              <option value="T2">T2</option>
+              <option value="T3">T3</option>
+              <option value="T4">T4</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="dateEvaluation">Date d'Évaluation</label>
+            <input type="date" id="dateEvaluation" formControlName="dateEvaluation">
+          </div>
+
+          <div class="form-group">
+            <label for="prestataireNom">Nom du Prestataire</label>
+            <input type="text" id="prestataireNom" formControlName="prestataireNom">
+          </div>
+
+          <div class="form-group">
+            <label for="evaluateurNom">Nom de l'Évaluateur</label>
+            <input type="text" id="evaluateurNom" formControlName="evaluateurNom">
+          </div>
+
+          <div class="form-group">
+            <label for="correspondantId">Correspondant ID</label>
+            <input type="number" id="correspondantId" formControlName="correspondantId">
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="techniciensListe">Liste des Techniciens (JSON)</label>
+            <textarea id="techniciensListe" formControlName="techniciensListe" rows="3" placeholder='[{"nom": "Technicien", "certificat": "Niveau 1"}]'></textarea>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="rapportInterventionTransmis" formControlName="rapportInterventionTransmis">
+              <label for="rapportInterventionTransmis">Rapport d'intervention transmis</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="registreRempli" formControlName="registreRempli">
+              <label for="registreRempli">Registre rempli</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="horairesRespectes" formControlName="horairesRespectes">
+              <label for="horairesRespectes">Horaires respectés</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="delaiReactionRespecte" formControlName="delaiReactionRespecte">
+              <label for="delaiReactionRespecte">Délai de réaction respecté</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="delaiInterventionRespecte" formControlName="delaiInterventionRespecte">
+              <label for="delaiInterventionRespecte">Délai d'intervention respecté</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="vehiculeDisponible" formControlName="vehiculeDisponible">
+              <label for="vehiculeDisponible">Véhicule disponible</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="tenueDisponible" formControlName="tenueDisponible">
+              <label for="tenueDisponible">Tenue disponible</label>
+            </div>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="prestationsVerifiees">Prestations Vérifiées (JSON)</label>
+            <textarea id="prestationsVerifiees" formControlName="prestationsVerifiees" rows="3" placeholder='[{"type": "préventive", "date": "2024-01-15"}]'></textarea>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="instancesNonResolues">Instances Non Résolues (JSON)</label>
+            <textarea id="instancesNonResolues" formControlName="instancesNonResolues" rows="3" placeholder='[{"description": "Incident", "date_debut": "2024-01-01", "nombre_jours": 5}]'></textarea>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="observationsGenerales">Observations générales</label>
+            <textarea id="observationsGenerales" formControlName="observationsGenerales" rows="4"></textarea>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="appreciationRepresentant">Appréciation du Représentant</label>
+            <textarea id="appreciationRepresentant" formControlName="appreciationRepresentant" rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="signatureRepresentant">Signature du Représentant</label>
+            <input type="text" id="signatureRepresentant" formControlName="signatureRepresentant" placeholder="Chemin/token de signature">
+          </div>
+
+          <div class="form-group">
+            <label for="signatureEvaluateur">Signature de l'Évaluateur</label>
+            <input type="text" id="signatureEvaluateur" formControlName="signatureEvaluateur" placeholder="Chemin/token de signature">
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="preuves">Preuves (JSON)</label>
+            <textarea id="preuves" formControlName="preuves" rows="2" placeholder='[{"nom_fichier": "photo1.jpg", "type": "photo"}]'></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="statut">Statut</label>
+            <select id="statut" formControlName="statut">
+              <option value="Brouillon">Brouillon</option>
+              <option value="Validé">Validé</option>
+              <option value="Transmis">Transmis</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="penalitesCalcul">Pénalités Calculées (FCFA)</label>
+            <input type="number" id="penalitesCalcul" formControlName="penalitesCalcul" step="1" readonly>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="fichierPdf">Fichier PDF</label>
+            <input type="file" id="fichierPdf" accept=".pdf" (change)="onFileSelected($event)">
+            <small *ngIf="selectedFileName">Fichier sélectionné: {{ selectedFileName }}</small>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" (click)="cancelEdit()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="evaluationForm.invalid || loading">
+            {{ loading ? 'Enregistrement...' : (isEditing ? 'Modifier' : 'Créer') }}
+          </button>
+        </div>
+      </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Evaluations Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Liste des Évaluations</h2>
+        <div class="header-actions">
+          <div class="search-bar">
+            <input type="text" placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="filterEvaluations()" class="search-input">
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn btn-primary" *ngIf="authService.isAdmin() || authService.isCorrespondantInformatique()" (click)="showCreateForm = !showCreateForm">
+            {{ showCreateForm ? 'Annuler' : 'Nouvelle Évaluation' }}
+          </button>
+        </div>
+      </div>
+      
+      <div class="table-wrapper">
+        <table *ngIf="filteredEvaluations.length > 0; else noData">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Lot</th>
+              <th>Prestataire</th>
+              <th>Date</th>
+              <th>Évaluateur</th>
+              <th>Note</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let evaluation of filteredEvaluations" [class.declasse]="evaluation.prestataireDeclasse">
+              <td>{{ evaluation.id }}</td>
+              <td>{{ evaluation.lot }}</td>
+              <td>{{ evaluation.prestataireNom }}</td>
+              <td>{{ formatDate(evaluation.dateEvaluation) }}</td>
+              <td>{{ evaluation.evaluateurNom }}</td>
+              <td>
+                <span [ngClass]="getScoreClass(evaluation.noteFinale)">{{ (evaluation.noteFinale || 0) }}%</span>
+                <span *ngIf="evaluation.prestataireDeclasse" class="badge badge-danger">Déclassé</span>
+              </td>
+              <td>
+                <span class="badge badge-info">{{ evaluation.statut }}</span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-secondary btn-sm" (click)="editEvaluation(evaluation)" *ngIf="authService.isAdmin()">
+                    Modifier
+                  </button>
+                  <button class="btn btn-danger btn-sm" (click)="deleteEvaluation(evaluation)" *ngIf="authService.isAdmin()">
+                    Supprimer
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ng-template #noData>
+          <div class="no-data">
+            <p>Aucune évaluation trouvée</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="loading" *ngIf="loadingList">
+      Chargement des évaluations...
+    </div>
+  </div>
+</app-layout>
