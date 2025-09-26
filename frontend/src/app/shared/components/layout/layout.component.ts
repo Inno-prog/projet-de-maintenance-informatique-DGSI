@@ -873,7 +873,7 @@ export class LayoutComponent implements AfterViewInit, OnDestroy {
     switch (this.currentUser.role) {
       case 'ADMINISTRATEUR': return 'role-admin';
       case 'PRESTATAIRE': return 'role-prestataire';
-      case 'CORRESPONDANT_INFORMATIQUE': return 'role-ci';
+      case 'AGENT_DGSI': return 'role-ci';
       default: return '';
     }
   }

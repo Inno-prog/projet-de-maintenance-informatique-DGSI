@@ -79,7 +79,7 @@ import { AuthService } from '../../../../core/services/auth.service';
               <option value="">Sélectionnez un rôle</option>
               <option value="ADMINISTRATEUR">Administrateur</option>
               <option value="PRESTATAIRE">Prestataire</option>
-              <option value="CORRESPONDANT_INFORMATIQUE">Correspondant Informatique</option>
+              <option value="AGENT_DGSI">Agent DGSI</option>
             </select>
             <div class="error-message" *ngIf="registerForm.get('role')?.invalid && registerForm.get('role')?.touched">
               <span *ngIf="registerForm.get('role')?.errors?.['required']">Le rôle est requis</span>
@@ -96,7 +96,7 @@ import { AuthService } from '../../../../core/services/auth.service';
             />
           </div>
 
-          <div class="form-group" *ngIf="registerForm.get('role')?.value === 'CORRESPONDANT_INFORMATIQUE'">
+          <div class="form-group" *ngIf="registerForm.get('role')?.value === 'AGENT_DGSI'">
             <label for="structure">Structure</label>
             <input
               type="text"

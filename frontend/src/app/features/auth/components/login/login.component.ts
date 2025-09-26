@@ -331,7 +331,7 @@ export class LoginComponent implements OnInit {
           console.log('Redirecting to prestataire dashboard');
           this.router.navigate(['/dashboard/prestataire']);
           break;
-        case 'CORRESPONDANT_INFORMATIQUE':
+        case 'AGENT_DGSI':
           console.log('Redirecting to CI dashboard');
           this.router.navigate(['/dashboard/ci']);
           break;
@@ -349,11 +349,19 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(): void {
-    // The form is not used for credentials anymore, but we can keep the button
-    // to initiate the login flow.
-    this.loading = true;
-    this.errorMessage = '';
-    console.log('Initiating OAuth login flow');
-    this.authService.login();
+    if (this.loginForm.valid) {
+      this.loading = true;
+      this.errorMessage = '';
+      console.log('Initiating OAuth login flow');
+      // For now, still use OAuth, but form data is available if needed
+      const credentials = {
+        email: this.loginForm.value.email,
+        password: this.loginForm.value.password
+      };
+      console.log('Form credentials:', credentials);
+      this.authService.login(credentials);
+    } else {
+      this.errorMessage = 'Veuillez remplir tous les champs correctement';
+    }
   }
 }

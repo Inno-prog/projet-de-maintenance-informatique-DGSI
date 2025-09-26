@@ -148,7 +148,7 @@ import { EvaluationTrimestrielle } from '../../core/models/business.models';
 
           <div class="signatures">
             <div><strong>DGSI :</strong> {{ evaluation.evaluateurNom || 'Non spécifié' }}</div>
-            <div><strong>Correspondant Informatique :</strong> {{ evaluation.correspondantId ? 'Correspondant ' + evaluation.correspondantId : 'Non spécifié' }}</div>
+            <div><strong>Agent DGSI :</strong> {{ evaluation.correspondantId ? 'Agent ' + evaluation.correspondantId : 'Non spécifié' }}</div>
             <div><strong>Prestataire :</strong> {{ evaluation.prestataireNom }}</div>
           </div>
         </div>

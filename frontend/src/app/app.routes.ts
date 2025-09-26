@@ -33,7 +33,7 @@ export const routes: Routes = [
     path: 'dashboard/ci',
     loadComponent: () => import('./features/dashboard/components/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [AuthGuard],
-    data: { role: 'CORRESPONDANT_INFORMATIQUE' }
+    data: { role: 'AGENT_DGSI' }
   },
 
   // Protected routes with role-based access
@@ -70,13 +70,23 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'demandes-intervention',
-    loadComponent: () => import('./features/demandes-intervention/components/demande-list/demande-list.component').then(m => m.DemandeListComponent),
+    path: 'fiches-prestation',
+    loadComponent: () => import('./features/fiches-prestation/components/fiche-list/fiche-list.component').then(m => m.FicheListComponent),
     canActivate: [AuthGuard]
   },
   {
-    path: 'fiches-prestation',
-    loadComponent: () => import('./features/fiches-prestation/components/fiche-list/fiche-list.component').then(m => m.FicheListComponent),
+    path: 'items',
+    loadComponent: () => import('./features/items/components/item-list/item-list.component').then(m => m.ItemListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'lots',
+    loadComponent: () => import('./features/lots/components/lot-list/lot-list.component').then(m => m.LotListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'statistiques',
+    loadComponent: () => import('./features/statistiques/components/statistiques-dashboard/statistiques-dashboard.component').then(m => m.StatistiquesDashboardComponent),
     canActivate: [AuthGuard]
   },
 

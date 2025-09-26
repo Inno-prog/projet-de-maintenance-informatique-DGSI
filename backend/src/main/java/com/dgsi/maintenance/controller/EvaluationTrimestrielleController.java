@@ -30,7 +30,7 @@ public class EvaluationTrimestrielleController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('CORRESPONDANT_INFORMATIQUE')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
     public EvaluationTrimestrielle createEvaluation(@RequestBody EvaluationTrimestrielle evaluation) {
         System.out.println("Creating evaluation: " + evaluation.getLot() + ", " + evaluation.getPrestataireNom());
         return evaluationService.saveEvaluation(evaluation);

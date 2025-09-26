@@ -20,13 +20,13 @@ public class FichePrestationController {
     private FichePrestationRepository ficheRepository;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('CORRESPONDANT_INFORMATIQUE')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('AGENT_DGSI')")
     public List<FichePrestation> getAllFiches() {
         return ficheRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('CORRESPONDANT_INFORMATIQUE')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('AGENT_DGSI')")
     public ResponseEntity<FichePrestation> getFicheById(@PathVariable Long id) {
         return ficheRepository.findById(id)
             .map(fiche -> ResponseEntity.ok().body(fiche))
@@ -45,7 +45,7 @@ public class FichePrestationController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('CORRESPONDANT_INFORMATIQUE')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('AGENT_DGSI')")
     public ResponseEntity<FichePrestation> updateFiche(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         System.out.println("Mise à jour fiche ID: " + id);
         System.out.println("Données reçues: " + updates);
@@ -84,7 +84,7 @@ public class FichePrestationController {
     }
 
     @PutMapping("/{id}/valider")
-    @PreAuthorize("hasRole('CORRESPONDANT_INFORMATIQUE')")
+    @PreAuthorize("hasRole('AGENT_DGSI')")
     public ResponseEntity<FichePrestation> validerFiche(@PathVariable Long id, @RequestParam(required = false) String commentaires) {
         return ficheRepository.findById(id)
             .map(fiche -> {
@@ -98,7 +98,7 @@ public class FichePrestationController {
     }
 
     @PutMapping("/{id}/rejeter")
-    @PreAuthorize("hasRole('CORRESPONDANT_INFORMATIQUE')")
+    @PreAuthorize("hasRole('AGENT_DGSI')")
     public ResponseEntity<FichePrestation> rejeterFiche(@PathVariable Long id, @RequestParam(required = false) String commentaires) {
         return ficheRepository.findById(id)
             .map(fiche -> {

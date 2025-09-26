@@ -23,6 +23,18 @@ export class PdfService {
     });
   }
 
+  genererRapportTrimestriel(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/rapport-trimestriel`, {
+      responseType: 'blob'
+    });
+  }
+
+  genererRapportAnnuel(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/rapport-annuel`, {
+      responseType: 'blob'
+    });
+  }
+
   downloadFile(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');

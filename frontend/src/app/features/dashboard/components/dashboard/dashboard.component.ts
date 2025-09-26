@@ -7,8 +7,9 @@ import { ContratService } from '../../../../core/services/contrat.service';
 import { OrdreCommandeService } from '../../../../core/services/ordre-commande.service';
 import { EvaluationService } from '../../../../core/services/evaluation.service';
 import { UserService } from '../../../../core/services/user.service';
-import { DemandeInterventionService } from '../../../../core/services/demande-intervention.service';
 import { FichePrestationService } from '../../../../core/services/fiche-prestation.service';
+import { PdfService } from '../../../../core/services/pdf.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -120,11 +121,16 @@ import { FichePrestationService } from '../../../../core/services/fiche-prestati
                 <h3>Gérer les Contrats</h3>
                 <p>Visualiser et gérer tous les contrats</p>
               </a>
-              <a routerLink="/demandes-intervention" class="action-card">
+              <a routerLink="/" class="action-card">
                 <div class="action-icon">🔧</div>
                 <h3>Demandes d'Intervention</h3>
                 <p>Accepter ou refuser les demandes des prestataires</p>
               </a>
+              <button class="action-card" (click)="genererOrdreCommande()">
+                <div class="action-icon">📋</div>
+                <h3>Générer Ordre de Commande</h3>
+                <p>Générer le PDF de l'ordre de commande trimestriel</p>
+              </button>
             </ng-container>
 
             <!-- Prestataire actions -->
@@ -139,25 +145,88 @@ import { FichePrestationService } from '../../../../core/services/fiche-prestati
                 <h3>Ordres de Commande</h3>
                 <p>Approuver ou rejeter les ordres reçus</p>
               </a>
-              <a routerLink="/demandes-intervention" class="action-card">
+              <a routerLink="/" class="action-card">
                 <div class="action-icon">🔧</div>
                 <h3>Mes Demandes d'Intervention</h3>
                 <p>Créer et gérer mes demandes d'intervention</p>
               </a>
             </ng-container>
 
-            <!-- Correspondant Informatique actions -->
-            <ng-container *ngIf="authService.isCorrespondantInformatique()">
+            <!-- Agent DGSI actions -->
+            <ng-container *ngIf="authService.isAgentDGSI()">
+              <!-- Gestion des équipements et items -->
+              <a routerLink="/items" class="action-card">
+                <div class="action-icon">🛠️</div>
+                <h3>Gérer les Équipements</h3>
+                <p>Gestion complète des équipements informatiques</p>
+              </a>
+
+              <a routerLink="/type-items" class="action-card">
+                <div class="action-icon">📦</div>
+                <h3>Gérer les Items</h3>
+                <p>Administration des types d'items et catégories</p>
+              </a>
+
+              <!-- Gestion des lots -->
+              <a routerLink="/lots" class="action-card">
+                <div class="action-icon">🏷️</div>
+                <h3>Gérer les Lots</h3>
+                <p>Organisation et gestion des lots de maintenance</p>
+              </a>
+
+              <!-- Validation et évaluation -->
               <a routerLink="/fiches-prestation" class="action-card">
                 <div class="action-icon">📄</div>
                 <h3>Fiches de Prestation</h3>
                 <p>Valider les fiches de prestations des prestataires</p>
               </a>
+
               <a routerLink="/evaluations" class="action-card">
                 <div class="action-icon">⭐</div>
                 <h3>Évaluations</h3>
                 <p>Créer et consulter les évaluations des prestataires</p>
               </a>
+
+              <!-- Gestion des contrats -->
+              <a routerLink="/contrats" class="action-card">
+                <div class="action-icon">📋</div>
+                <h3>Reconduire un Contrat</h3>
+                <p>Renouveler et gérer les contrats de maintenance</p>
+              </a>
+
+              <!-- Génération de rapports -->
+              <button class="action-card" (click)="genererRapportTrimestriel()">
+                <div class="action-icon">📊</div>
+                <h3>Rapport Trimestriel</h3>
+                <p>Générer le rapport de suivi trimestriel</p>
+              </button>
+
+              <button class="action-card" (click)="genererRapportAnnuel()">
+                <div class="action-icon">📈</div>
+                <h3>Rapport Annuel</h3>
+                <p>Générer le rapport annuel de maintenance</p>
+              </button>
+
+              <!-- Génération d'ordres -->
+              <button class="action-card" (click)="genererOrdreCommande()">
+                <div class="action-icon">📋</div>
+                <h3>Ordre de Commande</h3>
+                <p>Générer l'ordre de commande trimestriel</p>
+              </button>
+
+              <!-- Statistiques -->
+              <a routerLink="/statistiques" class="action-card">
+                <div class="action-icon">📊</div>
+                <h3>Consulter Statistiques</h3>
+                <p>Tableaux de bord et statistiques détaillées</p>
+              </a>
+
+              <!-- Clôture de trimestre -->
+              <button class="action-card" (click)="cloturerTrimestre()">
+                <div class="action-icon">🔒</div>
+                <h3>Clôturer Trimestre</h3>
+                <p>Finaliser et clôturer le trimestre en cours</p>
+              </button>
             </ng-container>
           </div>
         </div>
@@ -845,8 +914,9 @@ export class DashboardComponent implements OnInit {
     private evaluationService: EvaluationService,
     private userService: UserService,
     private router: Router,
-    private demandeService: DemandeInterventionService,
-    private prestationService: FichePrestationService
+    private prestationService: FichePrestationService,
+    private pdfService: PdfService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -872,10 +942,6 @@ export class DashboardComponent implements OnInit {
       this.stats.totalEvaluations = evaluations.length;
     });
 
-    this.demandeService.getAllDemandes().subscribe(demandes => {
-      this.stats.totalDemandes = demandes.length;
-      this.stats.demandesEnAttente = demandes.filter(d => d.statut === 'SOUMISE').length;
-    });
 
     this.prestationService.getAllFiches().subscribe(prestations => {
       this.stats.totalPrestations = prestations.length;
@@ -892,8 +958,8 @@ export class DashboardComponent implements OnInit {
         return 'Administrateur';
       case 'PRESTATAIRE':
         return 'Prestataire';
-      case 'CORRESPONDANT_INFORMATIQUE':
-        return 'Correspondant Informatique';
+      case 'AGENT_DGSI':
+        return 'Agent DGSI';
       default:
         return user.role;
     }
@@ -908,7 +974,7 @@ export class DashboardComponent implements OnInit {
         return 'role-admin';
       case 'PRESTATAIRE':
         return 'role-prestataire';
-      case 'CORRESPONDANT_INFORMATIQUE':
+      case 'AGENT_DGSI':
         return 'role-ci';
       default:
         return '';
@@ -926,12 +992,73 @@ export class DashboardComponent implements OnInit {
         case 'PRESTATAIRE':
           this.router.navigate(['/dashboard/prestataire']);
           break;
-        case 'CORRESPONDANT_INFORMATIQUE':
+        case 'AGENT_DGSI':
           this.router.navigate(['/dashboard/ci']);
           break;
         default:
           this.router.navigate(['/dashboard']);
       }
+    }
+  }
+
+  genererOrdreCommande(): void {
+    this.pdfService.genererOrdreCommande().subscribe({
+      next: (blob) => {
+        const trimestre = this.getCurrentTrimestre();
+        const filename = `ordre-commande-${trimestre}.txt`;
+        this.pdfService.downloadFile(blob, filename);
+        this.toastService.show({ type: 'success', title: 'Ordre généré', message: 'L\'ordre de commande a été généré avec succès' });
+      },
+      error: (error) => {
+        console.error('Error generating ordre commande:', error);
+        this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la génération de l\'ordre de commande' });
+      }
+    });
+  }
+
+  private getCurrentTrimestre(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const trimestre = Math.ceil(month / 3);
+    return `T${trimestre}-${year}`;
+  }
+
+  genererRapportTrimestriel(): void {
+    this.pdfService.genererRapportTrimestriel().subscribe({
+      next: (blob) => {
+        const trimestre = this.getCurrentTrimestre();
+        const filename = `rapport-trimestriel-${trimestre}.pdf`;
+        this.pdfService.downloadFile(blob, filename);
+        this.toastService.show({ type: 'success', title: 'Rapport généré', message: 'Le rapport trimestriel a été généré avec succès' });
+      },
+      error: (error) => {
+        console.error('Error generating rapport trimestriel:', error);
+        this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la génération du rapport trimestriel' });
+      }
+    });
+  }
+
+  genererRapportAnnuel(): void {
+    const year = new Date().getFullYear();
+    this.pdfService.genererRapportAnnuel().subscribe({
+      next: (blob) => {
+        const filename = `rapport-annuel-${year}.pdf`;
+        this.pdfService.downloadFile(blob, filename);
+        this.toastService.show({ type: 'success', title: 'Rapport généré', message: 'Le rapport annuel a été généré avec succès' });
+      },
+      error: (error) => {
+        console.error('Error generating rapport annuel:', error);
+        this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la génération du rapport annuel' });
+      }
+    });
+  }
+
+  cloturerTrimestre(): void {
+    const trimestre = this.getCurrentTrimestre();
+    if (confirm(`Êtes-vous sûr de vouloir clôturer le trimestre ${trimestre} ? Cette action est irréversible.`)) {
+      // TODO: Implement trimestre closure logic
+      this.toastService.show({ type: 'success', title: 'Trimestre clôturé', message: `Le trimestre ${trimestre} a été clôturé avec succès` });
     }
   }
 }

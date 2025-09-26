@@ -8,7 +8,7 @@
     </div>
 
     <!-- Create Evaluation Form Modal -->
-    <div class="modal-overlay" *ngIf="showCreateForm && (authService.isAdmin() || authService.isCorrespondantInformatique())" (click)="cancelEdit()">
+    <div class="modal-overlay" *ngIf="showCreateForm && (authService.isAdmin() || authService.isAgentDGSI())" (click)="cancelEdit()">
       <div class="modal-content form-modal" (click)="$event.stopPropagation()">
         <div class="card">
           <div class="card-header">
@@ -183,7 +183,7 @@
             <input type="text" placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="filterEvaluations()" class="search-input">
             <span class="search-icon">🔍</span>
           </div>
-          <button class="btn btn-primary" *ngIf="authService.isAdmin() || authService.isCorrespondantInformatique()" (click)="showCreateForm = !showCreateForm">
+          <button class="btn btn-primary" *ngIf="authService.isAdmin() || authService.isAgentDGSI()" (click)="showCreateForm = !showCreateForm">
             {{ showCreateForm ? 'Annuler' : 'Nouvelle Évaluation' }}
           </button>
         </div>

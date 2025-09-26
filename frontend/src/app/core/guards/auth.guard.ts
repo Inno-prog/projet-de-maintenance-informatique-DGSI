@@ -38,7 +38,7 @@ export class AuthGuard implements CanActivate {
       case 'PRESTATAIRE':
         this.router.navigate(['/dashboard/prestataire']);
         break;
-      case 'CORRESPONDANT_INFORMATIQUE':
+      case 'AGENT_DGSI':
         this.router.navigate(['/dashboard/ci']);
         break;
       default:

@@ -151,13 +151,13 @@ import { ToastService } from '../../../../core/services/toast.service';
                   </td>
                   <td>
                     <div class="action-buttons">
-                      <button class="btn btn-success btn-sm" 
-                              *ngIf="ordre.statut === 'EN_ATTENTE'" 
+                      <button class="btn btn-success btn-sm"
+                              *ngIf="ordre.statut === 'EN_ATTENTE' && (authService.isAdmin() || authService.isPrestataire())"
                               (click)="approuverOrdre(ordre)">
                         Approuver
                       </button>
-                      <button class="btn btn-danger btn-sm" 
-                              *ngIf="ordre.statut === 'EN_ATTENTE'" 
+                      <button class="btn btn-danger btn-sm"
+                              *ngIf="ordre.statut === 'EN_ATTENTE' && (authService.isAdmin() || authService.isPrestataire())"
                               (click)="rejeterOrdre(ordre)">
                         Rejeter
                       </button>
@@ -348,7 +348,18 @@ export class OrdreCommandeListComponent implements OnInit {
     this.loadingList = true;
     this.ordreCommandeService.getAllOrdresCommande().subscribe({
       next: (ordres) => {
-        this.ordres = ordres;
+        // Filter orders based on user role
+        if (this.authService.isPrestataire()) {
+          // Prestataires only see orders where they are the prestataire
+          const currentUser = this.authService.getCurrentUser();
+          this.ordres = ordres.filter(ordre =>
+            ordre.prestataireItem && currentUser &&
+            ordre.prestataireItem.toLowerCase().includes(currentUser.nom.toLowerCase())
+          );
+        } else {
+          // Admins see all orders
+          this.ordres = ordres;
+        }
         this.loadingList = false;
       },
       error: (error) => {

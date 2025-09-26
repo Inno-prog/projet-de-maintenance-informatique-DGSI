@@ -1,13 +1,13 @@
 package com.dgsi.maintenance.service;
 
 import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
-import com.dgsi.maintenance.entity.FichePrestation;
+import com.dgsi.maintenance.entity.OrdreCommande;
+import com.dgsi.maintenance.entity.TypeItem;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,48 +15,162 @@ import java.util.List;
 @Service
 public class PDFGenerationService {
 
-    public byte[] genererOrdreCommande(List<FichePrestation> prestations, String trimestre) {
-        StringBuilder content = new StringBuilder();
-        
-        // En-tête
-        content.append("ORDRE DE COMMANDE TRIMESTRIEL\n");
-        content.append("=".repeat(50)).append("\n\n");
-        
-        // Informations générales
-        content.append("Trimestre: ").append(trimestre).append("\n");
-        content.append("Date de génération: ").append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n");
-        content.append("Nombre de prestations: ").append(prestations.size()).append("\n\n");
-        
-        // Tableau des prestations
-        content.append("DÉTAIL DES PRESTATIONS\n");
-        content.append("-".repeat(80)).append("\n");
-        content.append(String.format("%-15s %-20s %-20s %-10s %-15s\n", 
-            "ID", "Prestataire", "Item", "Quantité", "Date"));
-        content.append("-".repeat(80)).append("\n");
-        
-        for (FichePrestation prestation : prestations) {
-            content.append(String.format("%-15s %-20s %-20s %-10d %-15s\n",
-                prestation.getIdPrestation(),
-                prestation.getNomPrestataire().length() > 20 ? 
-                    prestation.getNomPrestataire().substring(0, 17) + "..." : prestation.getNomPrestataire(),
-                prestation.getNomItem().length() > 20 ? 
-                    prestation.getNomItem().substring(0, 17) + "..." : prestation.getNomItem(),
-                prestation.getQuantite(),
-                prestation.getDateRealisation()
-            ));
+    public byte[] genererOrdreCommande(List<OrdreCommande> ordres, String trimestre) throws DocumentException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4.rotate(), 50, 50, 50, 50); // Landscape for table
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        // Fonts
+        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
+        Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLACK);
+        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
+
+        // Title
+        Paragraph title = new Paragraph("ORDRE DE COMMANDE TRIMESTRIEL", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(20);
+        document.add(title);
+
+        // Header information
+        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        headerInfo.setSpacingAfter(20);
+        document.add(headerInfo);
+
+        // Create order table
+        PdfPTable orderTable = new PdfPTable(8);
+        orderTable.setWidthPercentage(100);
+        orderTable.setWidths(new float[]{0.5f, 3f, 1f, 1f, 1f, 1f, 1.5f, 1f});
+
+        // Table headers
+        addCellToTable(orderTable, "N°", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Prestations", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Min", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Max", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "PU", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "OC1", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Montant OC1", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Ecart", tableHeaderFont, BaseColor.BLUE);
+
+        // Add order rows
+        int rowNum = 1;
+        double totalMontant = 0;
+        for (OrdreCommande ordre : ordres) {
+            BaseColor rowColor = rowNum % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
+            addCellToTable(orderTable, ordre.getNumeroCommande(), normalFont, rowColor);
+            addCellToTable(orderTable, ordre.getNomItem(), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(ordre.getMinArticles()), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(ordre.getMaxArticles()), normalFont, rowColor);
+            addCellToTable(orderTable, "-", normalFont, rowColor); // PU not available
+            addCellToTable(orderTable, String.valueOf(ordre.getNombreArticlesUtilise()), normalFont, rowColor);
+            addCellToTable(orderTable, String.format("%.2f", ordre.getMontant()), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(ordre.getEcartArticles()), normalFont, rowColor);
+            totalMontant += ordre.getMontant();
+            rowNum++;
         }
-        
-        // Résumé
-        content.append("\n").append("=".repeat(50)).append("\n");
-        content.append("RÉSUMÉ\n");
-        content.append("Total prestations terminées: ").append(prestations.size()).append("\n");
-        
-        long totalQuantite = prestations.stream().mapToLong(FichePrestation::getQuantite).sum();
-        content.append("Quantité totale: ").append(totalQuantite).append("\n");
-        
-        content.append("\nDocument généré le ").append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n");
-        
-        return content.toString().getBytes(StandardCharsets.UTF_8);
+
+        // Summary row
+        addCellToTable(orderTable, "TOTAL GENERAL", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, String.format("%.2f", totalMontant), headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+
+        orderTable.setSpacingAfter(20);
+        document.add(orderTable);
+
+        // Footer
+        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        footer.setAlignment(Element.ALIGN_CENTER);
+        document.add(footer);
+
+        document.close();
+        return outputStream.toByteArray();
+    }
+
+    public byte[] genererOrdreCommandeFromItems(List<TypeItem> items, String trimestre) throws DocumentException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4.rotate(), 50, 50, 50, 50); // Landscape for table
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        // Fonts
+        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
+        Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLACK);
+        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
+
+        // Title
+        Paragraph title = new Paragraph("ORDRE DE COMMANDE TRIMESTRIEL", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(20);
+        document.add(title);
+
+        // Header information
+        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        headerInfo.setSpacingAfter(20);
+        document.add(headerInfo);
+
+        // Create order table
+        PdfPTable orderTable = new PdfPTable(8);
+        orderTable.setWidthPercentage(100);
+        orderTable.setWidths(new float[]{0.5f, 3f, 1f, 1f, 1f, 1f, 1.5f, 1f});
+
+        // Table headers
+        addCellToTable(orderTable, "N°", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Prestations", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Min", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Max", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "PU", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "OC1", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Montant OC1", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(orderTable, "Ecart", tableHeaderFont, BaseColor.BLUE);
+
+        // Add order rows
+        int rowNum = 1;
+        double totalMontant = 0;
+        for (TypeItem item : items) {
+            BaseColor rowColor = rowNum % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
+            addCellToTable(orderTable, item.getNumero(), normalFont, rowColor);
+            addCellToTable(orderTable, item.getPrestation(), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(item.getMinArticles()), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(item.getMaxArticles()), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(item.getPrixUnitaire()), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(item.getOc1Quantity()), normalFont, rowColor);
+            double montant = item.getPrixUnitaire() * item.getOc1Quantity();
+            addCellToTable(orderTable, String.format("%.2f", montant), normalFont, rowColor);
+            int ecart = item.getOc1Quantity() - item.getMaxArticles();
+            addCellToTable(orderTable, String.valueOf(ecart), normalFont, rowColor);
+            totalMontant += montant;
+            rowNum++;
+        }
+
+        // Summary row
+        addCellToTable(orderTable, "TOTAL GENERAL", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, String.format("%.2f", totalMontant), headerFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(orderTable, "", headerFont, BaseColor.LIGHT_GRAY);
+
+        orderTable.setSpacingAfter(20);
+        document.add(orderTable);
+
+        // Footer
+        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        footer.setAlignment(Element.ALIGN_CENTER);
+        document.add(footer);
+
+        document.close();
+        return outputStream.toByteArray();
     }
 
     public byte[] genererEvaluationTrimestrielle(EvaluationTrimestrielle evaluation) throws DocumentException {
@@ -335,5 +449,207 @@ public class PDFGenerationService {
         if (score >= 7) return "MAINTENIR LE PRESTATAIRE";
         if (score >= 5) return "FORMATION REQUISE";
         return "DÉCLASSER LE PRESTATAIRE";
+    }
+
+    public byte[] genererRapportTrimestriel(List<EvaluationTrimestrielle> evaluations, String trimestre) throws DocumentException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        // Fonts
+        Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
+        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLUE);
+        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
+
+        // Title
+        Paragraph title = new Paragraph("RAPPORT TRIMESTRIEL DE SUIVI DE MAINTENANCE", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(20);
+        document.add(title);
+
+        // Header information
+        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        headerInfo.setSpacingAfter(20);
+        document.add(headerInfo);
+
+        // Summary statistics
+        Paragraph summaryTitle = new Paragraph("RÉSUMÉ STATISTIQUE", sectionFont);
+        summaryTitle.setSpacingAfter(10);
+        document.add(summaryTitle);
+
+        PdfPTable summaryTable = new PdfPTable(3);
+        summaryTable.setWidthPercentage(100);
+        summaryTable.setWidths(new float[]{2f, 1f, 1f});
+
+        addCellToTable(summaryTable, "Indicateur", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(summaryTable, "Nombre", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(summaryTable, "Pourcentage", tableHeaderFont, BaseColor.BLUE);
+
+        int totalEvaluations = evaluations.size();
+        long evaluationsCompletes = evaluations.stream().filter(e -> e.getNoteFinale() != null).count();
+        long bonnesEvaluations = evaluations.stream().filter(e -> e.getNoteFinale() != null && e.getNoteFinale().doubleValue() >= 6.0).count();
+
+        addCellToTable(summaryTable, "Évaluations réalisées", normalFont, BaseColor.WHITE);
+        addCellToTable(summaryTable, String.valueOf(evaluationsCompletes), normalFont, BaseColor.WHITE);
+        addCellToTable(summaryTable, String.format("%.1f%%", (double) evaluationsCompletes / totalEvaluations * 100), normalFont, BaseColor.WHITE);
+
+        addCellToTable(summaryTable, "Évaluations satisfaisantes (≥6/8)", normalFont, BaseColor.WHITE);
+        addCellToTable(summaryTable, String.valueOf(bonnesEvaluations), normalFont, BaseColor.WHITE);
+        addCellToTable(summaryTable, String.format("%.1f%%", (double) bonnesEvaluations / totalEvaluations * 100), normalFont, BaseColor.WHITE);
+
+        summaryTable.setSpacingAfter(20);
+        document.add(summaryTable);
+
+        // Detailed evaluations table
+        Paragraph detailsTitle = new Paragraph("DÉTAIL DES ÉVALUATIONS", sectionFont);
+        detailsTitle.setSpacingAfter(10);
+        document.add(detailsTitle);
+
+        PdfPTable detailsTable = new PdfPTable(5);
+        detailsTable.setWidthPercentage(100);
+        detailsTable.setWidths(new float[]{1f, 2f, 1f, 1f, 2f});
+
+        addCellToTable(detailsTable, "Lot", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(detailsTable, "Prestataire", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(detailsTable, "Note", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(detailsTable, "Recommandation", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(detailsTable, "Observations", tableHeaderFont, BaseColor.BLUE);
+
+        for (EvaluationTrimestrielle evaluation : evaluations) {
+            BaseColor rowColor = evaluations.indexOf(evaluation) % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
+            addCellToTable(detailsTable, evaluation.getLot(), normalFont, rowColor);
+            addCellToTable(detailsTable, evaluation.getPrestataireNom(), normalFont, rowColor);
+            addCellToTable(detailsTable, evaluation.getNoteFinale() != null ? String.format("%.1f/8", evaluation.getNoteFinale()) : "N/A", normalFont, rowColor);
+            addCellToTable(detailsTable, evaluation.getNoteFinale() != null ? getRecommandationText(Math.round(evaluation.getNoteFinale().floatValue())) : "N/A", normalFont, rowColor);
+            String obs = evaluation.getObservationsGenerales();
+            if (obs != null && obs.length() > 50) {
+                obs = obs.substring(0, 47) + "...";
+            }
+            addCellToTable(detailsTable, obs != null ? obs : "Aucune", normalFont, rowColor);
+        }
+
+        detailsTable.setSpacingAfter(20);
+        document.add(detailsTable);
+
+        // Footer
+        Paragraph footer = new Paragraph("Rapport généré par le système DGSI Maintenance - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        footer.setAlignment(Element.ALIGN_CENTER);
+        document.add(footer);
+
+        document.close();
+        return outputStream.toByteArray();
+    }
+
+    public byte[] genererRapportAnnuel(List<EvaluationTrimestrielle> evaluations, int annee) throws DocumentException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        // Fonts
+        Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
+        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLUE);
+        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
+
+        // Title
+        Paragraph title = new Paragraph("RAPPORT ANNUEL DE MAINTENANCE INFORMATIQUE " + annee, titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(20);
+        document.add(title);
+
+        // Header information
+        Paragraph headerInfo = new Paragraph("Année: " + annee + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        headerInfo.setSpacingAfter(20);
+        document.add(headerInfo);
+
+        // Annual statistics by trimestre
+        Paragraph statsTitle = new Paragraph("STATISTIQUES ANNUELLES PAR TRIMESTRE", sectionFont);
+        statsTitle.setSpacingAfter(10);
+        document.add(statsTitle);
+
+        PdfPTable annualTable = new PdfPTable(6);
+        annualTable.setWidthPercentage(100);
+        annualTable.setWidths(new float[]{1f, 1f, 1f, 1f, 1f, 1f});
+
+        addCellToTable(annualTable, "Trimestre", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(annualTable, "Évaluations", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(annualTable, "Note Moyenne", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(annualTable, "Satisfaisants (≥6)", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(annualTable, "Taux Satisfaction", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(annualTable, "Recommandation", tableHeaderFont, BaseColor.BLUE);
+
+        String[] trimestres = {"T1", "T2", "T3", "T4"};
+        for (String trimestre : trimestres) {
+            List<EvaluationTrimestrielle> evalTrimestre = evaluations.stream()
+                    .filter(e -> trimestre.equals(e.getTrimestre()))
+                    .toList();
+
+            long count = evalTrimestre.size();
+            double avgNote = evalTrimestre.stream()
+                    .filter(e -> e.getNoteFinale() != null)
+                    .mapToDouble(e -> e.getNoteFinale().doubleValue())
+                    .average()
+                    .orElse(0.0);
+
+            long satisfaisants = evalTrimestre.stream()
+                    .filter(e -> e.getNoteFinale() != null && e.getNoteFinale().doubleValue() >= 6.0)
+                    .count();
+
+            double tauxSatisfaction = count > 0 ? (double) satisfaisants / count * 100 : 0;
+
+            String recommandation = "N/A";
+            if (avgNote >= 7.0) recommandation = "EXCELLENT";
+            else if (avgNote >= 6.0) recommandation = "BON";
+            else if (avgNote >= 5.0) recommandation = "MOYEN";
+            else recommandation = "INSATISFAISANT";
+
+            BaseColor rowColor = trimestres[0].equals(trimestre) ? BaseColor.WHITE : new BaseColor(245, 245, 245);
+            addCellToTable(annualTable, trimestre, normalFont, rowColor);
+            addCellToTable(annualTable, String.valueOf(count), normalFont, rowColor);
+            addCellToTable(annualTable, String.format("%.1f", avgNote), normalFont, rowColor);
+            addCellToTable(annualTable, String.valueOf(satisfaisants), normalFont, rowColor);
+            addCellToTable(annualTable, String.format("%.1f%%", tauxSatisfaction), normalFont, rowColor);
+            addCellToTable(annualTable, recommandation, normalFont, rowColor);
+        }
+
+        annualTable.setSpacingAfter(20);
+        document.add(annualTable);
+
+        // Global statistics
+        Paragraph globalTitle = new Paragraph("BILAN ANNUEL GLOBAL", sectionFont);
+        globalTitle.setSpacingAfter(10);
+        document.add(globalTitle);
+
+        double globalAvg = evaluations.stream()
+                .filter(e -> e.getNoteFinale() != null)
+                .mapToDouble(e -> e.getNoteFinale().doubleValue())
+                .average()
+                .orElse(0.0);
+
+        long globalSatisfaisants = evaluations.stream()
+                .filter(e -> e.getNoteFinale() != null && e.getNoteFinale().doubleValue() >= 6.0)
+                .count();
+
+        double globalTaux = evaluations.size() > 0 ? (double) globalSatisfaisants / evaluations.size() * 100 : 0;
+
+        Paragraph bilan = new Paragraph(
+            "Note moyenne annuelle: " + String.format("%.1f/8", globalAvg) + "\n" +
+            "Taux de satisfaction global: " + String.format("%.1f%%", globalTaux) + "\n" +
+            "Nombre total d'évaluations: " + evaluations.size(), normalFont);
+        bilan.setSpacingAfter(20);
+        document.add(bilan);
+
+        // Footer
+        Paragraph footer = new Paragraph("Rapport annuel généré par le système DGSI Maintenance - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+        footer.setAlignment(Element.ALIGN_CENTER);
+        document.add(footer);
+
+        document.close();
+        return outputStream.toByteArray();
     }
 }

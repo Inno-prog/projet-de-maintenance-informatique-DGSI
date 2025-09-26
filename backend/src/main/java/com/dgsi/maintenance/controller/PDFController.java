@@ -1,10 +1,9 @@
 package com.dgsi.maintenance.controller;
 
 import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
-import com.dgsi.maintenance.entity.FichePrestation;
-import com.dgsi.maintenance.entity.StatutFiche;
+import com.dgsi.maintenance.entity.TypeItem;
 import com.dgsi.maintenance.repository.EvaluationTrimestrielleRepository;
-import com.dgsi.maintenance.repository.FichePrestationRepository;
+import com.dgsi.maintenance.repository.TypeItemRepository;
 import com.dgsi.maintenance.service.PDFGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,20 +24,22 @@ public class PDFController {
     private PDFGenerationService pdfGenerationService;
 
     @Autowired
-    private FichePrestationRepository ficheRepository;
+    private EvaluationTrimestrielleRepository evaluationRepository;
 
     @Autowired
-    private EvaluationTrimestrielleRepository evaluationRepository;
+    private TypeItemRepository typeItemRepository;
 
     @GetMapping("/ordre-commande")
     @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<byte[]> genererOrdreCommande() {
         try {
-            // Récupérer les prestations validées
-            List<FichePrestation> prestationsTerminees = ficheRepository.findByStatut(StatutFiche.VALIDER);
-            
-            if (prestationsTerminees.isEmpty()) {
-                return ResponseEntity.noContent().build();
+            // Récupérer tous les items avec OC1 > 0
+            List<TypeItem> items = typeItemRepository.findAll().stream()
+                    .filter(item -> item.getOc1Quantity() != null && item.getOc1Quantity() > 0)
+                    .toList();
+
+            if (items.isEmpty()) {
+                return ResponseEntity.badRequest().body("Aucun item avec quantité OC1 trouvée".getBytes());
             }
 
             // Générer le trimestre actuel
@@ -46,18 +47,23 @@ public class PDFController {
             String trimestre = "T" + ((mois - 1) / 3 + 1) + "-" + LocalDate.now().getYear();
 
             // Générer le PDF
-            byte[] pdfContent = pdfGenerationService.genererOrdreCommande(prestationsTerminees, trimestre);
+            byte[] pdfContent = pdfGenerationService.genererOrdreCommandeFromItems(items, trimestre);
+
+            if (pdfContent == null || pdfContent.length == 0) {
+                return ResponseEntity.internalServerError().body("Erreur lors de la génération du PDF".getBytes());
+            }
 
             // Préparer la réponse
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "ordre-commande-" + trimestre + ".txt");
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "ordre-commande-" + trimestre + ".pdf");
 
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(pdfContent);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -86,6 +92,72 @@ public class PDFController {
                     .body(pdfContent);
 
         } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/rapport-trimestriel")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
+    public ResponseEntity<byte[]> genererRapportTrimestriel() {
+        try {
+            // Générer le trimestre actuel
+            int mois = LocalDate.now().getMonthValue();
+            String trimestre = "T" + ((mois - 1) / 3 + 1) + "-" + LocalDate.now().getYear();
+
+            // Récupérer toutes les évaluations du trimestre
+            List<EvaluationTrimestrielle> evaluations = evaluationRepository.findByTrimestre(trimestre);
+
+            // Générer le PDF du rapport trimestriel
+            byte[] pdfContent = pdfGenerationService.genererRapportTrimestriel(evaluations, trimestre);
+
+            if (pdfContent == null || pdfContent.length == 0) {
+                return ResponseEntity.internalServerError().body("Erreur lors de la génération du rapport trimestriel".getBytes());
+            }
+
+            // Préparer la réponse
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "rapport-trimestriel-" + trimestre + ".pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfContent);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/rapport-annuel")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
+    public ResponseEntity<byte[]> genererRapportAnnuel() {
+        try {
+            int annee = LocalDate.now().getYear();
+
+            // Récupérer toutes les évaluations de l'année
+            List<EvaluationTrimestrielle> evaluations = evaluationRepository.findAll().stream()
+                    .filter(e -> e.getDateEvaluation() != null && e.getDateEvaluation().getYear() == annee)
+                    .toList();
+
+            // Générer le PDF du rapport annuel
+            byte[] pdfContent = pdfGenerationService.genererRapportAnnuel(evaluations, annee);
+
+            if (pdfContent == null || pdfContent.length == 0) {
+                return ResponseEntity.internalServerError().body("Erreur lors de la génération du rapport annuel".getBytes());
+            }
+
+            // Préparer la réponse
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "rapport-annuel-" + annee + ".pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfContent);
+
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }

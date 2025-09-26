@@ -53,7 +53,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                     <input type="number" id="quantite" formControlName="quantite" min="1">
                   </div>
 
-                  <div class="form-group" *ngIf="authService.isCorrespondantInformatique()">
+                  <div class="form-group" *ngIf="authService.isAgentDGSI()">
                     <label for="statut">Statut</label>
                     <select id="statut" formControlName="statut">
                       <option value="EN_ATTENTE">En attente</option>
@@ -149,12 +149,12 @@ import { ToastService } from '../../../../core/services/toast.service';
                   <td>
                     <div class="action-buttons">
                       <button class="btn btn-success btn-sm" 
-                              *ngIf="authService.isCorrespondantInformatique() && fiche.statut === 'EN_ATTENTE'" 
+                              *ngIf="authService.isAgentDGSI() && fiche.statut === 'EN_ATTENTE'" 
                               (click)="validerFiche(fiche)">
                         Valider
                       </button>
                       <button class="btn btn-danger btn-sm" 
-                              *ngIf="authService.isCorrespondantInformatique() && fiche.statut === 'EN_ATTENTE'" 
+                              *ngIf="authService.isAgentDGSI() && fiche.statut === 'EN_ATTENTE'" 
                               (click)="rejeterFiche(fiche)">
                         Rejeter
                       </button>

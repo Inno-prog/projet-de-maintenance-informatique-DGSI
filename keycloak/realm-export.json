@@ -15,7 +15,7 @@
       "name": "Maintenance Application",
       "description": "Client for Maintenance DGSI Application",
       "enabled": true,
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "implicitFlowEnabled": true,
       "standardFlowEnabled": true,
@@ -151,8 +151,8 @@
         "containerId": "Maintenance-DGSI"
       },
       {
-        "name": "CORRESPONDANT_INFORMATIQUE",
-        "description": "Correspondant informatique",
+        "name": "AGENT_DGSI",
+        "description": "Agent DGSI",
         "composite": false,
         "clientRole": false,
         "containerId": "Maintenance-DGSI"
@@ -199,21 +199,21 @@
       "groups": []
     },
     {
-      "username": "CI",
+      "username": "agent",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Correspondant",
-      "lastName": "Informatique",
-      "email": "ci@gmail.com",
+      "firstName": "Agent",
+      "lastName": "DGSI",
+      "email": "agent@gmail.com",
       "credentials": [
         {
           "type": "password",
-          "value": "ci1234",
+          "value": "agent123",
           "temporary": false
         }
       ],
       "realmRoles": [
-        "CORRESPONDANT_INFORMATIQUE"
+        "AGENT_DGSI"
       ],
       "groups": []
     }

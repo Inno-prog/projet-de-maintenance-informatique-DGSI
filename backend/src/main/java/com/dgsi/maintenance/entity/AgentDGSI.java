@@ -3,14 +3,14 @@ package com.dgsi.maintenance.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "correspondants_informatique")
-public class CorrespondantInformatique extends User {
-    
+@Table(name = "agents_dgsi")
+public class AgentDGSI extends User {
+
     @Column(name = "structure")
     private String structure;
 
-    public CorrespondantInformatique() {
-        super.setRole("CORRESPONDANT_INFORMATIQUE");
+    public AgentDGSI() {
+        super.setRole("AGENT_DGSI");
     }
 
     public String getStructure() { return structure; }

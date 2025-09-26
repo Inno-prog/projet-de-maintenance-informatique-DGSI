@@ -20,6 +20,7 @@ export class AuthService {
     private oauthService: OAuthService
   ) {
     this.configureOAuth();
+    this.initializeOAuth();
     this.loadCurrentUser();
   }
 
@@ -49,10 +50,79 @@ export class AuthService {
     // L'OAuth ne sera utilisé que de manière explicite
   }
 
+  private initializeOAuth(): void {
+    console.log('Initializing OAuth service...');
+    console.log('Issuer URL:', 'http://localhost:8080/realms/Maintenance-DGSI');
+    console.log('Client ID:', 'maintenance-app');
+
+    // Clear any invalid tokens from previous sessions
+    if (!this.oauthService.hasValidAccessToken() && (localStorage.getItem('access_token') || localStorage.getItem('id_token'))) {
+      console.log('Clearing invalid tokens from local storage...');
+      this.oauthService.logOut();
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+      this.currentUserSubject.next(null);
+    }
+
+    // Load discovery document and try login if there are tokens
+    console.log('Loading discovery document...');
+    this.oauthService.loadDiscoveryDocumentAndTryLogin().then(() => {
+      console.log('Discovery document loaded successfully');
+      if (this.oauthService.hasValidAccessToken()) {
+        console.log('Valid access token found, updating user from token');
+        this.updateUserFromToken();
+      } else {
+        console.log('No valid access token found');
+      }
+    }).catch(err => {
+      console.error('OAuth initialization error:', err);
+      console.error('Error details:', err.message);
+      console.error('Check if Keycloak is running on http://localhost:8080');
+    });
+  }
+
   login(credentials?: LoginRequest): void {
-    // The login is now initiated by redirecting to Keycloak.
-    // The callback will be handled automatically by `loadDiscoveryDocumentAndTryLogin`.
-    this.oauthService.initCodeFlow();
+    if (credentials) {
+      // Use password grant for direct login
+      console.log('Using password grant for login...');
+      this.oauthService.fetchTokenUsingPasswordFlow(credentials.email, credentials.password).then(() => {
+        console.log('Password login successful');
+        this.updateUserFromToken();
+      }).catch(err => {
+        console.error('Password login failed:', err);
+      });
+    } else {
+      // The login is now initiated by redirecting to Keycloak.
+      // The callback will be handled automatically by `loadDiscoveryDocumentAndTryLogin`.
+      console.log('Initiating OAuth login flow...');
+      console.log('Current location:', window.location.href);
+      console.log('Redirect URI:', window.location.origin + '/login');
+      console.log('Has discovery document:', !!this.oauthService.discoveryDocumentLoaded);
+
+      if (!this.oauthService.discoveryDocumentLoaded) {
+        console.log('Discovery document not loaded yet, loading...');
+        this.oauthService.loadDiscoveryDocument().then(() => {
+          console.log('Discovery document loaded, now initiating code flow');
+          try {
+            this.oauthService.initCodeFlow();
+            console.log('OAuth initCodeFlow called successfully');
+          } catch (error) {
+            console.error('Error initiating OAuth flow:', error);
+            console.error('Error details:', error instanceof Error ? error.message : String(error));
+          }
+        }).catch(err => {
+          console.error('Failed to load discovery document:', err);
+        });
+      } else {
+        try {
+          this.oauthService.initCodeFlow();
+          console.log('OAuth initCodeFlow called successfully');
+        } catch (error) {
+          console.error('Error initiating OAuth flow:', error);
+          console.error('Error details:', error instanceof Error ? error.message : String(error));
+        }
+      }
+    }
   }
 
   register(userData: RegisterRequest): Observable<any> {
@@ -134,12 +204,12 @@ export class AuthService {
 
         let role = 'USER'; // rôle par défaut
 
-        if (roles.includes('ADMINISTRATEUR')) {
-          role = 'ADMINISTRATEUR';
-        } else if (roles.includes('PRESTATAIRE')) {
+        if (roles.includes('PRESTATAIRE')) {
           role = 'PRESTATAIRE';
-        } else if (roles.includes('CORRESPONDANT_INFORMATIQUE')) {
-          role = 'CORRESPONDANT_INFORMATIQUE';
+        } else if (roles.includes('ADMINISTRATEUR')) {
+          role = 'ADMINISTRATEUR';
+        } else if (roles.includes('AGENT_DGSI')) {
+          role = 'AGENT_DGSI';
         }
 
         console.log('Determined role:', role);
@@ -166,12 +236,12 @@ export class AuthService {
 
     let role = 'USER'; // rôle par défaut
 
-    if (roles.includes('ADMINISTRATEUR')) {
-      role = 'ADMINISTRATEUR';
-    } else if (roles.includes('PRESTATAIRE')) {
+    if (roles.includes('PRESTATAIRE')) {
       role = 'PRESTATAIRE';
-    } else if (roles.includes('CORRESPONDANT_INFORMATIQUE')) {
-      role = 'CORRESPONDANT_INFORMATIQUE';
+    } else if (roles.includes('ADMINISTRATEUR')) {
+      role = 'ADMINISTRATEUR';
+    } else if (roles.includes('AGENT_DGSI')) {
+      role = 'AGENT_DGSI';
     }
 
     console.log('Determined role from ID token:', role);
@@ -209,8 +279,8 @@ export class AuthService {
     return this.hasRole('PRESTATAIRE');
   }
 
-  isCorrespondantInformatique(): boolean {
-    return this.hasRole('CORRESPONDANT_INFORMATIQUE');
+  isAgentDGSI(): boolean {
+    return this.hasRole('AGENT_DGSI');
   }
 
   updateUserProfile(user: User): Observable<User> {
@@ -233,6 +303,15 @@ export class AuthService {
   }
 
   handleOAuthCallback(): Promise<boolean> {
-    return this.oauthService.tryLogin();
+    return this.oauthService.tryLoginCodeFlow().then(() => {
+      if (this.oauthService.hasValidAccessToken()) {
+        this.updateUserFromToken();
+        return true;
+      }
+      return false;
+    }).catch(err => {
+      console.error('OAuth callback failed:', err);
+      return false;
+    });
   }
 }

@@ -47,7 +47,7 @@ import { AuthService } from '../../../core/services/auth.service';
             <span class="nav-text">Fiches de Prestation</span>
           </a>
 
-          <a routerLink="/demandes-intervention" routerLinkActive="active" class="nav-item">
+          <a routerLink="/" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">🔧</span>
             <span class="nav-text">Demandes d'Intervention</span>
           </a>
@@ -81,7 +81,7 @@ import { AuthService } from '../../../core/services/auth.service';
             <span class="nav-text">Ordres de Commande</span>
           </a>
 
-          <a routerLink="/demandes-intervention" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+          <a routerLink="/" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
             <span class="nav-icon">🔧</span>
             <span class="nav-text">Demandes d'Intervention</span>
           </a>
@@ -92,7 +92,7 @@ import { AuthService } from '../../../core/services/auth.service';
           </a>
         </div>
 
-        <div class="nav-section" *ngIf="authService.isCorrespondantInformatique()">
+        <div class="nav-section" *ngIf="authService.isAgentDGSI()">
           <h4 class="section-title">Validation & Évaluation</h4>
           
           <a routerLink="/fiches-prestation" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
@@ -354,7 +354,7 @@ export class SidebarComponent {
     switch (user.role) {
       case 'ADMINISTRATEUR': return 'Administrateur';
       case 'PRESTATAIRE': return 'Prestataire';
-      case 'CORRESPONDANT_INFORMATIQUE': return 'Correspondant IT';
+      case 'AGENT_DGSI': return 'Agent DGSI';
       default: return user.role;
     }
   }

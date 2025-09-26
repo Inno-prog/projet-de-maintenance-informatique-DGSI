@@ -87,18 +87,15 @@ export enum Trimestre {
   T4 = 'T4'
 }
 
-export interface DemandeIntervention {
+
+export interface PrestationItem {
   id?: number;
-  idDemande: string;
-  dateDemande: string;
-  prestataireNom: string;
-  prestataireContact: string;
-  objet: string;
-  description: string;
-  categorie: string;
-  statut: StatutDemande;
-  technicienAssigne?: string;
-  fichiersContrat?: string;
+  numero: string;
+  prestation: string;
+  minArticles: number;
+  maxArticles: number;
+  prixUnitaire: number;
+  lot: string;
 }
 
 export interface FichePrestation {
@@ -121,12 +118,6 @@ export enum StatutFiche {
   REJETER = 'REJETER'
 }
 
-export enum StatutDemande {
-  SOUMISE = 'SOUMISE',
-  EN_COURS = 'EN_COURS',
-  TERMINEE = 'TERMINEE',
-  ANNULEE = 'ANNULEE'
-}
 
 export interface Item {
   id?: number;
@@ -137,8 +128,13 @@ export interface Item {
   ordreCommandeId?: number;
 }
 
-export enum TypeItem {
-  MATERIEL = 'MATERIEL',
-  SERVICE = 'SERVICE',
-  LOGICIEL = 'LOGICIEL'
+export interface TypeItem {
+  id?: number;
+  numero: string;
+  prestation: string;
+  minArticles: number;
+  maxArticles: number;
+  prixUnitaire: number;
+  lot: string;
+  oc1Quantity?: number;
 }

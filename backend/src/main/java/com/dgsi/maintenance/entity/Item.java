@@ -18,7 +18,8 @@ public class Item {
     @NotBlank
     private String libelle;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_item_id")
     private TypeItem type;
 
     @NotNull

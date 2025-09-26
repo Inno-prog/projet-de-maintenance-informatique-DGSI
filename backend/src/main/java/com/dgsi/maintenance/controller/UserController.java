@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('CORRESPONDANT_INFORMATIQUE')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE') or hasRole('AGENT_DGSI')")
     public ResponseEntity<User> updateProfile(@RequestBody User userDetails, java.security.Principal principal) {
         String email = principal.getName();
         return userRepository.findByEmail(email)
