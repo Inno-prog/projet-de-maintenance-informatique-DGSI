@@ -11,7 +11,7 @@ import { AuthService } from '../../../core/services/auth.service';
     <div class="sidebar" [class.sidebar-open]="isOpen">
       <div class="sidebar-header">
         <div class="logo">
-          <span class="logo-icon">DG</span>
+          <img src="/assets/logoFinal.png" alt="DGSI Logo" class="logo-image">
           <div class="logo-text">
             <h3>DGSI Maintenance</h3>
             <p>{{ getRoleLabel() }}</p>
@@ -25,32 +25,20 @@ import { AuthService } from '../../../core/services/auth.service';
           <h4 class="section-title">Tableau de Bord</h4>
           <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📊</span>
-            <span class="nav-text">Dashboard</span>
+        
           </a>
         </div>
 
         <div class="nav-section" *ngIf="authService.isPrestataire()">
           <h4 class="section-title">Mes Services</h4>
           
-          <a routerLink="/contrats" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">📄</span>
-            <span class="nav-text">Contrats</span>
-          </a>
-
-          <a routerLink="/evaluations" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">⭐</span>
-            <span class="nav-text">Évaluations</span>
-          </a>
-
+         
+          
           <a routerLink="/fiches-prestation" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📋</span>
             <span class="nav-text">Fiches de Prestation</span>
           </a>
 
-          <a routerLink="/" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">🔧</span>
-            <span class="nav-text">Demandes d'Intervention</span>
-          </a>
 
           <a routerLink="/ordres-commande" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📦</span>
@@ -61,37 +49,42 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="nav-section" *ngIf="authService.isAdmin()">
           <h4 class="section-title">Administration</h4>
           
-          <a routerLink="/prestations-dashboard" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <span class="nav-icon">📈</span>
-            <span class="nav-text">Tableau de Bord Prestations</span>
-          </a>
+          
 
-          <a routerLink="/users" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+
+            <a routerLink="/users" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
             <span class="nav-icon">👥</span>
             <span class="nav-text">Utilisateurs</span>
           </a>
 
-          <a routerLink="/contrats" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <span class="nav-icon">📄</span>
-            <span class="nav-text">Contrats</span>
-          </a>
-
-          <a routerLink="/ordres-commande" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <span class="nav-icon">📦</span>
-            <span class="nav-text">Ordres de Commande</span>
-          </a>
-
-          <a routerLink="/" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <span class="nav-icon">🔧</span>
-            <span class="nav-text">Demandes d'Intervention</span>
+          <a routerLink="/prestations" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Gestion des Prestations</span>
           </a>
 
           <a routerLink="/evaluations" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
             <span class="nav-icon">⭐</span>
-            <span class="nav-text">Évaluations</span>
+            <span class="nav-text">Gesttion des evaluations</span>
           </a>
-        </div>
 
+          <a routerLink="/ordres-commande" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📦</span>
+            <span class="nav-text">Ordres de Commande</span>
+          </a>
+        
+          <a routerLink="/rapports" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📋</span>
+            <span class="nav-text">Rapports annuels </span>
+          </a>
+
+          <a routerLink="/items" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📈</span>
+            <span class="nav-text">Items de prestations</span>
+          </a>
+
+        </div>
+            
+         
         <div class="nav-section" *ngIf="authService.isAgentDGSI()">
           <h4 class="section-title">Validation & Évaluation</h4>
           
@@ -167,6 +160,13 @@ import { AuthService } from '../../../core/services/auth.service';
       justify-content: center;
       font-weight: 700;
       font-size: 1.1rem;
+    }
+
+    .logo-image {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 8px;
+      object-fit: contain;
     }
 
     .logo-text h3 {

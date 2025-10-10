@@ -1,13 +1,20 @@
 package com.dgsi.maintenance.controller;
 
+import java.util.List;
 import com.dgsi.maintenance.entity.User;
 import com.dgsi.maintenance.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,6 +23,17 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        try {
+            User savedUser = userRepository.save(user);
+            return ResponseEntity.ok(savedUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMINISTRATEUR')")

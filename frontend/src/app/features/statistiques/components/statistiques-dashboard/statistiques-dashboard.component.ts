@@ -52,9 +52,27 @@ import { ToastService } from '../../../../core/services/toast.service';
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-number">{{ stats.demandesEnAttente }}</div>
-            <div class="stat-label">En Attente</div>
+            <div class="stat-icon">💰</div>
+            <div class="stat-number">{{ stats.montantTotal | number:'1.0-0' }} FCFA</div>
+            <div class="stat-label">Montant Total</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-number">{{ stats.ordresApprouves }}</div>
+            <div class="stat-label">Ordres Approuvés</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <div class="stat-number">{{ stats.ordresNonApprouves }}</div>
+            <div class="stat-label">Ordres Non Approuvés</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-number">{{ stats.tauxApprobation | number:'1.1-1' }}%</div>
+            <div class="stat-label">Taux d'Approbation</div>
           </div>
         </div>
 
@@ -183,7 +201,11 @@ export class StatistiquesDashboardComponent implements OnInit {
     totalEvaluations: 0,
     totalDemandes: 0,
     demandesEnAttente: 0,
-    totalPrestations: 0
+    totalPrestations: 0,
+    montantTotal: 0,
+    ordresApprouves: 0,
+    ordresNonApprouves: 0,
+    tauxApprobation: 0
   };
 
   constructor(
@@ -210,6 +232,17 @@ export class StatistiquesDashboardComponent implements OnInit {
 
     this.ordreCommandeService.getAllOrdresCommande().subscribe(ordres => {
       this.stats.totalOrdres = ordres.length;
+
+      // Calcul des statistiques sur les ordres de commande
+      const ordresApprouves = ordres.filter(o => o.statut === 'APPROUVE').length;
+      const ordresNonApprouves = ordres.filter(o => o.statut === 'NON_APPROUVE').length;
+      const montantTotal = ordres.reduce((sum, o) => sum + (o.montant || 0), 0);
+
+      this.stats.ordresApprouves = ordresApprouves;
+      this.stats.ordresNonApprouves = ordresNonApprouves;
+      this.stats.montantTotal = montantTotal;
+      this.stats.tauxApprobation = this.stats.totalOrdres > 0 ?
+        (ordresApprouves / this.stats.totalOrdres) * 100 : 0;
     });
 
     this.evaluationService.getAllEvaluations().subscribe(evaluations => {

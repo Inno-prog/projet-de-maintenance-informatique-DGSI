@@ -10,21 +10,57 @@ export interface Contrat {
 }
 
 export interface OrdreCommande {
+  // Required attributes (as requested)
+  idOC: string;
+  numeroOC?: number;
+  max_prestations?: number;
+  min_prestations?: number;
+  prixUnitPrest?: number;
+  montantOC?: number;
+  statut: StatutCommande;
+  observations?: string;
+
+  // Relations
+  fichePrestations?: FichePrestation[];
+  item?: Item;
+
+  // Optional helpers and legacy fields (kept for compatibility)
   id?: number;
-  numeroCommande: string;
-  idOC?: string;
-  nomItem: string;
-  minArticles: number;
-  maxArticles: number;
-  nombreArticlesUtilise: number;
-  ecartArticles: number;
-  trimestre: string;
-  prestataireItem: string;
-  montant: number;
+  numeroCommande?: string;
+  nomItem?: string;
+  minArticles?: number;
+  maxArticles?: number;
+  nombreArticlesUtilise?: number;
+  ecartArticles?: number;
+  trimestre?: string;
+  prestataireItem?: string;
+  montant?: number;
   description?: string;
   dateCreation?: string;
-  statut: StatutCommande;
   contratId?: number;
+  penalites?: number;
+}
+
+// Shared business helper functions for OrdreCommande
+export function calculer_ecart_item(ordre: OrdreCommande): number {
+  const max = ordre.max_prestations ?? ordre.maxArticles ?? 0;
+  const used = ordre.nombreArticlesUtilise ?? 0;
+  return Math.max(0, max - used);
+}
+
+export function calcul_montantTotal(ordre: OrdreCommande): number {
+  if (typeof ordre.montantOC === 'number') return ordre.montantOC;
+  const qty = ordre.max_prestations ?? ordre.maxArticles ?? 0;
+  const prix = ordre.prixUnitPrest ?? ordre.montant ?? 0;
+  return qty * prix;
+}
+
+export function calcul_penalite(ordre: OrdreCommande): number {
+  const ecart = calculer_ecart_item(ordre);
+  const prix = ordre.prixUnitPrest ?? ordre.montant ?? 0;
+  // Default penalty rule: 10% of unit price per missing prestation
+  const penalite = Math.max(0, ecart) * prix * 0.1;
+  return Math.round(penalite);
 }
 
 export enum StatutCommande {
@@ -137,4 +173,24 @@ export interface TypeItem {
   prixUnitaire: number;
   lot: string;
   oc1Quantity?: number;
+}
+
+export interface RapportSuivi {
+  id?: number;
+  ordreCommandeId?: number;
+  ordreCommande?: OrdreCommande;
+  dateRapport: string;
+  trimestre: string;
+  prestataire: string;
+  prestationsRealisees: number;
+  observations?: string;
+  statut: StatutRapport;
+  dateCreation?: string;
+  dateModification?: string;
+}
+
+export enum StatutRapport {
+  EN_ATTENTE = 'EN_ATTENTE',
+  APPROUVE = 'APPROUVE',
+  REJETE = 'REJETE'
 }

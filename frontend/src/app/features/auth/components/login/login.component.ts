@@ -23,7 +23,7 @@ import { AuthService } from '../../../../core/services/auth.service';
           <p>Accédez à votre espace de gestion</p>
         </div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+  <form *ngIf="!loading" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
           <div class="form-group">
             <label for="email">Email</label>
             <input
@@ -62,6 +62,11 @@ import { AuthService } from '../../../../core/services/auth.service';
             {{ errorMessage }}
           </div>
 
+          <div *ngIf="errorMessage" class="retry-actions">
+            <button class="btn btn-outline" (click)="retryCallback()">Réessayer</button>
+            <button class="btn" (click)="authService.login()">Se reconnecter</button>
+          </div>
+
           <button
             type="submit"
             class="btn btn-primary btn-full"
@@ -70,6 +75,10 @@ import { AuthService } from '../../../../core/services/auth.service';
             <span *ngIf="loading" class="loading"></span>
             {{ loading ? 'Connexion...' : 'Se connecter' }}
           </button>
+
+          <div *ngIf="loading" class="auth-redirecting">
+            Redirection vers le serveur d'authentification…
+          </div>
 
           <div class="auth-footer">
             <p>Pas encore de compte ? <a routerLink="/register">S'inscrire</a></p>
@@ -273,8 +282,8 @@ export class LoginComponent implements OnInit {
   passwordVisible = false;
 
   constructor(
-    private formBuilder: FormBuilder,
-    private authService: AuthService,
+  private formBuilder: FormBuilder,
+  public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -292,8 +301,18 @@ export class LoginComponent implements OnInit {
       this.loading = true;
       this.errorMessage = '';
 
-      // Try to process the OAuth callback
+      // Try to process the OAuth callback. Add a timeout to avoid a persistent blank screen.
+      let resolved = false;
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          this.errorMessage = 'Le traitement du callback OAuth prend trop de temps. Cliquez sur Réessayer.';
+          this.loading = false;
+        }
+      }, 8000);
+
       this.authService.handleOAuthCallback().then((success) => {
+        resolved = true;
+        clearTimeout(timeout);
         if (this.authService.isAuthenticated()) {
           this.redirectToDashboard();
         } else {
@@ -301,18 +320,47 @@ export class LoginComponent implements OnInit {
           this.loading = false;
         }
       }).catch(error => {
+        resolved = true;
+        clearTimeout(timeout);
         console.error('OAuth callback error:', error);
         this.errorMessage = 'Erreur lors du traitement du callback OAuth.';
         this.loading = false;
       });
     }
 
+    // If the page was opened without OAuth callback params and the user is not
+    // authenticated, immediately start the authorization code flow so the user
+    // is redirected to Keycloak (no local login form shown first).
+    if (!urlParams.has('code') && !urlParams.has('error') && !this.authService.isAuthenticated()) {
+      console.log('No OAuth callback present and user not authenticated — redirecting to Keycloak');
+      this.loading = true;
+      this.authService.login();
+      return;
+    }
     // Listen for authentication state changes
     this.authService.currentUser$.subscribe(user => {
       if (user) {
         console.log('User logged in, redirecting...');
         this.redirectToDashboard();
       }
+    });
+  }
+
+  retryCallback(): void {
+    this.errorMessage = '';
+    this.loading = true;
+    // Retry handling the OAuth callback - useful if the first try timed out
+    this.authService.handleOAuthCallback().then((success) => {
+      if (this.authService.isAuthenticated()) {
+        this.redirectToDashboard();
+      } else {
+        this.errorMessage = 'Échec de l\'authentification OAuth après réessai.';
+        this.loading = false;
+      }
+    }).catch(err => {
+      console.error('Retry OAuth callback failed:', err);
+      this.errorMessage = 'Réessai du callback OAuth échoué.';
+      this.loading = false;
     });
   }
 
@@ -352,14 +400,12 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.valid) {
       this.loading = true;
       this.errorMessage = '';
-      console.log('Initiating OAuth login flow');
-      // For now, still use OAuth, but form data is available if needed
-      const credentials = {
-        email: this.loginForm.value.email,
-        password: this.loginForm.value.password
-      };
-      console.log('Form credentials:', credentials);
-      this.authService.login(credentials);
+      console.log('Initiating OAuth redirect login flow');
+      // Use the authorization code flow (redirect to Keycloak) instead of
+      // performing the resource-owner password credentials flow from the
+      // browser (which may be rejected with 400 depending on Keycloak/client config).
+      // The OAuth callback will be handled in ngOnInit when the URL contains code/error.
+      this.authService.login();
     } else {
       this.errorMessage = 'Veuillez remplir tous les champs correctement';
     }

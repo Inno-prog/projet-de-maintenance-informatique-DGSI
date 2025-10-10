@@ -89,6 +89,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/statistiques/components/statistiques-dashboard/statistiques-dashboard.component').then(m => m.StatistiquesDashboardComponent),
     canActivate: [AuthGuard]
   },
+  {
+    path: 'prestations',
+    loadComponent: () => import('./features/prestations/components/prestation-list/prestation-list.component').then(m => m.PrestationListComponent),
+    canActivate: [AuthGuard]
+  },
 
   // Default redirect
   {

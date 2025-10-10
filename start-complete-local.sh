@@ -38,7 +38,7 @@ echo ""
 echo "🔧 Étape 4 : Démarrage de l'application Spring Boot"
 cd backend
 echo "📁 Démarrage depuis : $(pwd)"
-echo "🚀 Lancement de Spring Boot sur le port 8081..."
+echo "🚀 Lancement de Spring Boot sur le port 8082..."
 mvn spring-boot:run > spring-boot.log 2>&1 &
 SPRING_PID=$!
 
@@ -47,7 +47,7 @@ echo "⏳ Attente du démarrage de Spring Boot..."
 sleep 20
 
 # Vérifier que Spring Boot fonctionne
-if curl -s http://localhost:8081/api/test > /dev/null 2>&1; then
+if curl -s http://localhost:8082/api/test > /dev/null 2>&1; then
     echo "✅ Application Spring Boot démarrée avec succès !"
 else
     echo "⚠️  Spring Boot en cours de démarrage... (cette étape peut prendre plus de temps)"
@@ -62,7 +62,7 @@ echo "🌐 URLs d'accès :"
 echo "   🔗 Keycloak Admin Console : http://localhost:8080"
 echo "   👤 Utilisateur admin : admin / admin"
 echo "   🔗 Application Frontend : http://localhost:4200"
-echo "   🔗 Application Backend : http://localhost:8081"
+echo "   🔗 Application Backend : http://localhost:8082"
 echo ""
 echo "📝 Comptes utilisateurs :"
 echo "   👨‍💼 Admin : admin@gmail.com / admin123"

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
@@ -31,56 +32,32 @@ import { ToastService } from '../../../../core/services/toast.service';
             <p class="subtitle">Développé par Direction Générale des Systèmes d'Information</p>
           </div>
 
-          <div class="cta-section">
-            <a href="http://www.it@finances.gov.bf" target="_blank" class="btn btn-primary" *ngIf="!authService.isAuthenticated()">
+            <div class="cta-section">
+            <a href="https://www.it.finances.gov.bf" target="_blank" class="btn btn-primary" *ngIf="!authService.isAuthenticated()">
               En savoir plus
               <span>→</span>
             </a>
             <button class="btn btn-primary" *ngIf="authService.isAuthenticated()" (click)="goToUserDashboard()">
-              Accéder à mon Dashboard
-              <span>→</span>
+              Mon Dashboard
+              
             </button>
           </div>
         </div>
 
-        <div class="features-section">
-          <div class="feature-card">
-            <div class="feature-icon">
-              <span>📋</span>
-            </div>
-            <h3>Gestion Prestataires</h3>
-            <p>Création et gestion complète des prestataires avec leurs items associés</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">
-              <span>✅</span>
-            </div>
-            <h3>Suivi Sécurisé</h3>
-            <p>Suivi rigoureux de l'exécution des prestations de maintenance</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">
-              <span>🎧</span>
-            </div>
-            <h3>Support 24/7</h3>
-            <p>Évaluation continue des prestataires selon 13 critères standardisés</p>
-          </div>
-        </div>
 
 
 
         <div class="stats-section" *ngIf="authService.isAdmin()">
-          <h2>Statistiques du système</h2>
+          <div class="stats-header">
+            <h2>Statistiques du système</h2>
+            <button class="refresh-btn" (click)="refreshStats()" title="Actualiser les statistiques">
+              <span>🔄</span> Actualiser
+            </button>
+          </div>
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-number">{{ stats.totalUsers }}</div>
               <div class="stat-label">Utilisateurs</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">{{ stats.totalContrats }}</div>
-              <div class="stat-label">Contrats</div>
             </div>
             <div class="stat-card">
               <div class="stat-number">{{ stats.totalOrdres }}</div>
@@ -89,14 +66,6 @@ import { ToastService } from '../../../../core/services/toast.service';
             <div class="stat-card">
               <div class="stat-number">{{ stats.totalEvaluations }}</div>
               <div class="stat-label">Évaluations</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">{{ stats.totalDemandes }}</div>
-              <div class="stat-label">Demandes Total</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">{{ stats.demandesEnAttente }}</div>
-              <div class="stat-label">En Attente</div>
             </div>
             <div class="stat-card">
               <div class="stat-number">{{ stats.totalPrestations }}</div>
@@ -147,8 +116,8 @@ import { ToastService } from '../../../../core/services/toast.service';
               </a>
               <a routerLink="/" class="action-card">
                 <div class="action-icon">🔧</div>
-                <h3>Mes Demandes d'Intervention</h3>
-                <p>Créer et gérer mes demandes d'intervention</p>
+                <h3>Mes fiches de prestations</h3>
+                <p>Créer et gérer mes fiches de prestations</p>
               </a>
             </ng-container>
 
@@ -192,6 +161,13 @@ import { ToastService } from '../../../../core/services/toast.service';
                 <div class="action-icon">📋</div>
                 <h3>Reconduire un Contrat</h3>
                 <p>Renouveler et gérer les contrats de maintenance</p>
+              </a>
+
+              <!-- Gestion des rapports de suivi -->
+              <a routerLink="/rapports-suivi" class="action-card">
+                <div class="action-icon">📋</div>
+                <h3>Rapports de Suivi</h3>
+                <p>Gérer et consulter les rapports de suivi des prestations</p>
               </a>
 
               <!-- Génération de rapports -->
@@ -240,12 +216,23 @@ import { ToastService } from '../../../../core/services/toast.service';
           <div class="container">
             <div class="nav-brand">
               <div class="logo">
-                <span class="logo-icon">DG</span>
-                <div>
-                  <h1>DGSI Maintenance</h1>
-                  <p>par Direction Générale</p>
-                </div>
+                <img src="/assets/logoFinal.png" alt="DGSI Logo" class="logo-image">
               </div>
+            </div>
+            
+            <div class="info-dropdown" tabindex="0">
+              <button class="info-toggle" aria-haspopup="true" aria-expanded="false">Informations ▾</button>
+              <ul class="dropdown-menu" role="menu" aria-label="Informations DGSI">
+                <li role="none">
+                  <a role="menuitem" class="dropdown-item" href="https://www.it.finances.gov.bf" target="_blank" rel="noopener noreferrer">Site web</a>
+                </li>
+                <li role="none">
+                  <a role="menuitem" class="dropdown-item" href="mailto:it&#64;finances.gov.bf">Nous envoyer un mail</a>
+                </li>
+                <li role="none">
+                  <a role="menuitem" class="dropdown-item" href="tel:+22620490273">Nous contacter</a>
+                </li>
+              </ul>
             </div>
             
             <div class="nav-actions">
@@ -273,7 +260,7 @@ import { ToastService } from '../../../../core/services/toast.service';
               </div>
               
               <div class="cta-section">
-                <a href="http://www.it@finances.gov.bf" target="_blank" class="btn btn-primary">
+                <a href="https://www.it.finances.gov.bf" target="_blank" class="btn btn-primary">
                   En savoir plus
                   <span>→</span>
                 </a>
@@ -283,15 +270,19 @@ import { ToastService } from '../../../../core/services/toast.service';
             <div class="features-section">
               <div class="feature-card">
                 <div class="feature-icon">
-                  <span>📋</span>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 8H17V6C17 4.9 16.1 4 15 4H9C7.9 4 7 4.9 7 6V8H4C2.9 8 2 8.9 2 10V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V10C22 8.9 21.1 8 20 8ZM9 6H15V8H9V6ZM20 19H4V10H8V12H16V10H20V19Z" fill="#F97316"/>
+                  </svg>
                 </div>
-                <h3>Gestion Prestataires</h3>
+                <h3>Gestion Prestations</h3>
                 <p>Création et gestion complète des prestataires avec leurs items associés</p>
               </div>
 
               <div class="feature-card">
                 <div class="feature-icon">
-                  <span>✅</span>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="#F97316"/>
+                  </svg>
                 </div>
                 <h3>Suivi Sécurisé</h3>
                 <p>Suivi rigoureux de l'exécution des prestations de maintenance</p>
@@ -299,10 +290,13 @@ import { ToastService } from '../../../../core/services/toast.service';
 
               <div class="feature-card">
                 <div class="feature-icon">
-                  <span>🎧</span>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V7H5V3H13V7C13 8.1 13.9 9 15 9H21ZM7 10C5.9 10 5 10.9 5 12V20C5 21.1 5.9 22 7 22H17C18.1 22 19 21.1 19 20V12C19 10.9 18.1 10 17 10H7ZM12 18.5C10.29 18.5 8.93 17.14 8.93 15.43C8.93 13.72 10.29 12.36 12 12.36C13.71 12.36 15.07 13.72 15.07 15.43C15.07 17.14 13.71 18.5 12 18.5Z" fill="#F97316"/>
+                  </svg>
                 </div>
-                <h3>Support 24/7</h3>
-                <p>Évaluation continue des prestataires selon 13 critères standardisés</p>
+                <h3>Rapports et Évaluations
+                </h3>
+                <p>Évaluation continue des prestataires selon des critères standardisés</p>
               </div>
             </div>
           </div>
@@ -364,22 +358,80 @@ import { ToastService } from '../../../../core/services/toast.service';
       font-size: 1.25rem;
     }
 
-    .logo h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 0;
-      color: white;
+    .logo-image {
+      width: 4rem;
+      height: 4rem;
+      border-radius: var(--radius);
+      object-fit: contain;
     }
 
-    .logo p {
-      font-size: 0.875rem;
-      color: #94a3b8;
-      margin: 0;
-    }
 
     .nav-actions {
       display: flex;
       gap: 1rem;
+    }
+
+    .nav-info {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      margin-left: 1rem;
+    }
+
+    .info-toggle {
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+      border: none;
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.16s ease, transform 0.12s ease;
+    }
+
+    .info-toggle:focus,
+    .info-toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: white;
+      color: #0f172a;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+      min-width: 200px;
+      padding: 0.5rem 0;
+      list-style: none;
+      margin: 0;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      z-index: 50;
+    }
+
+    .info-dropdown:focus-within .dropdown-menu,
+    .info-dropdown:hover .dropdown-menu {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 0.6rem 1rem;
+      color: #0f172a;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .dropdown-item:hover {
+      background: #f3f4f6;
     }
 
     .nav-actions .btn {
@@ -438,7 +490,7 @@ import { ToastService } from '../../../../core/services/toast.service';
     .main-content {
       flex: 1;
       padding: 2rem 0;
-      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      background: #f8fafc;
       position: relative;
       overflow: hidden;
     }
@@ -450,18 +502,10 @@ import { ToastService } from '../../../../core/services/toast.service';
       left: 0;
       right: 0;
       bottom: 0;
-      background-image:
-        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
-      animation: float 20s ease-in-out infinite;
+      background: rgba(255, 255, 255, 0.5);
+      z-index: -1;
     }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      33% { transform: translateY(-10px) rotate(120deg); }
-      66% { transform: translateY(10px) rotate(240deg); }
-    }
 
     .floating-shapes {
       position: absolute;
@@ -621,11 +665,13 @@ import { ToastService } from '../../../../core/services/toast.service';
 
     .features-section {
       display: grid;
+      /* auto-fit ensures cards flow and create whitespace when wide */
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-      margin: 3rem auto 4rem auto;
-      max-width: 90%;
-      animation: slideUp 0.8s ease-out;
+      gap: clamp(1rem, 3vw, 2.5rem); /* adaptive gap */
+      margin: 4rem auto;
+      max-width: 1280px;
+      padding: 0 1.5rem;
+      justify-items: center; /* center cards to create visual breathing room */
     }
 
     @keyframes slideUp {
@@ -640,18 +686,19 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .feature-card {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(249, 115, 22, 0.15);
+      background: white;
+      padding: 2.25rem 1.75rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
       text-align: center;
-      transition: all 0.3s ease-in-out;
-      animation: fadeInUp 0.6s ease-out forwards;
-      opacity: 0;
-      position: relative;
-      overflow: hidden;
+      transition: transform 240ms cubic-bezier(.2,.8,.2,1), box-shadow 240ms cubic-bezier(.2,.8,.2,1);
+      border: 1px solid #eef2f7;
+      width: 100%;
+      max-width: 420px; /* limit width so space appears between cards on large screens */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
     }
 
     .feature-card::before {
@@ -685,38 +732,75 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .feature-card:hover {
-      transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(249, 115, 22, 0.25);
-      border-color: rgba(249, 115, 22, 0.5);
-      background: rgba(255, 255, 255, 0.95);
+      transform: translateY(-8px) scale(1.01);
+      box-shadow: 0 22px 60px rgba(2, 6, 23, 0.12);
+      border-color: #F97316;
     }
 
     .feature-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .feature-icon svg {
+      width: 64px;
+      height: 64px;
     }
 
     .feature-card h3 {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      color: var(--text-primary);
+      color: #1f2937;
       margin-bottom: 1rem;
     }
 
     .feature-card p {
-      color: var(--text-secondary);
+      color: #6b7280;
       line-height: 1.6;
+      font-size: 0.95rem;
     }
 
     .stats-section {
       margin-bottom: 3rem;
     }
 
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
     .stats-section h2 {
       font-size: 2rem;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 2rem;
+      margin: 0;
+    }
+
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .refresh-btn:hover {
+      background: #ea580c;
+      transform: translateY(-1px);
+    }
+
+    .refresh-btn span {
+      font-size: 1rem;
     }
 
     .stats-grid {
@@ -883,7 +967,17 @@ import { ToastService } from '../../../../core/services/toast.service';
         font-size: 2rem;
       }
 
-      .features-section,
+      .features-section {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 1rem;
+        margin: 3rem auto;
+      }
+
+      .feature-card {
+        padding: 2rem 1.5rem;
+      }
+
       .stats-grid,
       .actions-grid {
         grid-template-columns: 1fr;
@@ -895,7 +989,7 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
   `]
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   stats = {
     totalUsers: 0,
     totalContrats: 0,
@@ -905,6 +999,9 @@ export class DashboardComponent implements OnInit {
     demandesEnAttente: 0,
     totalPrestations: 0
   };
+
+  private refreshInterval: any;
+  private userSub?: Subscription;
 
 
   constructor(
@@ -920,31 +1017,81 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // If user already present and is admin, load stats immediately
     if (this.authService.isAdmin()) {
       this.loadStats();
+      this.startAutoRefresh();
     }
+
+    // Also subscribe to authentication state — when a user logs in and becomes
+    // available (after OAuth callback), trigger stats loading. This handles
+    // timing cases where the dashboard initializes before the auth flow completes.
+    this.userSub = this.authService.currentUser$.subscribe(user => {
+      if (user && this.authService.isAdmin()) {
+        this.loadStats();
+        this.startAutoRefresh();
+      }
+    });
   }
 
   private loadStats(): void {
-    this.userService.getAllUsers().subscribe(users => {
-      this.stats.totalUsers = users.length;
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        this.stats.totalUsers = users.length;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des utilisateurs:', error);
+        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+        this.toastService.show({
+          type: 'error',
+          title: 'Erreur',
+          message: `Impossible de charger les statistiques des utilisateurs : ${errMsg}`
+        });
+      }
     });
 
-    this.contratService.getAllContrats().subscribe(contrats => {
-      this.stats.totalContrats = contrats.length;
+    this.contratService.getAllContrats().subscribe({
+      next: (contrats) => {
+        this.stats.totalContrats = contrats.length;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des contrats:', error);
+        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des contrats : ${errMsg}` });
+      }
     });
 
-    this.ordreCommandeService.getAllOrdresCommande().subscribe(ordres => {
-      this.stats.totalOrdres = ordres.length;
+    this.ordreCommandeService.getAllOrdresCommande().subscribe({
+      next: (ordres) => {
+        this.stats.totalOrdres = ordres.length;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des ordres:', error);
+        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des ordres : ${errMsg}` });
+      }
     });
 
-    this.evaluationService.getAllEvaluations().subscribe(evaluations => {
-      this.stats.totalEvaluations = evaluations.length;
+    this.evaluationService.getAllEvaluations().subscribe({
+      next: (evaluations) => {
+        this.stats.totalEvaluations = evaluations.length;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des évaluations:', error);
+        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des évaluations : ${errMsg}` });
+      }
     });
 
-
-    this.prestationService.getAllFiches().subscribe(prestations => {
-      this.stats.totalPrestations = prestations.length;
+    this.prestationService.getAllFiches().subscribe({
+      next: (prestations) => {
+        this.stats.totalPrestations = prestations.length;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des prestations:', error);
+        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des prestations : ${errMsg}` });
+      }
     });
   }
 
@@ -1052,6 +1199,33 @@ export class DashboardComponent implements OnInit {
         this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la génération du rapport annuel' });
       }
     });
+  }
+
+  startAutoRefresh(): void {
+    // Refresh stats every 30 seconds
+    this.refreshInterval = setInterval(() => {
+      this.refreshStats();
+    }, 30000);
+  }
+
+  refreshStats(): void {
+    if (this.authService.isAdmin()) {
+      this.loadStats();
+      this.toastService.show({
+        type: 'success',
+        title: 'Statistiques actualisées',
+        message: 'Les statistiques ont été mises à jour avec succès'
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+    if (this.userSub) {
+      this.userSub.unsubscribe();
+    }
   }
 
   cloturerTrimestre(): void {

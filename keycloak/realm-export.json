@@ -17,10 +17,11 @@
       "enabled": true,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
-      "implicitFlowEnabled": true,
+      "implicitFlowEnabled": false,
       "standardFlowEnabled": true,
       "publicClient": true,
       "protocol": "openid-connect",
+      "secret": "",
       "attributes": {
         "saml.assertion.signature": "false",
         "saml.multivalued.roles": "false",

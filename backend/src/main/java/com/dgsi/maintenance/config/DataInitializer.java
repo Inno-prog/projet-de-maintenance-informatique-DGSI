@@ -1,5 +1,8 @@
 package com.dgsi.maintenance.config;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.StatutCommande;
 import com.dgsi.maintenance.entity.TypeItem;
@@ -10,9 +13,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Logger;
 
 @Configuration
 public class DataInitializer {
@@ -44,6 +44,34 @@ public class DataInitializer {
                 logger.info("Database connection successful. Current user count: " + userCount);
             } catch (Exception e) {
                 logger.warning("Database connection issue: " + e.getMessage());
+            }
+
+            // Ensure a local AgentDGSI exists so that after Keycloak authentication
+            // the backend can load user details (authorities/role) from the database.
+            try {
+                String agentEmail = "agent@gmail.com";
+                if (!userRepository.findByEmail(agentEmail).isPresent()) {
+                    logger.info("Creating local AgentDGSI user with email: " + agentEmail);
+                    com.dgsi.maintenance.entity.AgentDGSI agent = new com.dgsi.maintenance.entity.AgentDGSI();
+                    agent.setNom("Agent DGSI");
+                    agent.setEmail(agentEmail);
+                    // Use PasswordEncoder if available, otherwise store plain (for dev only)
+                    if (passwordEncoder != null) {
+                        agent.setPassword(passwordEncoder.encode("agent123"));
+                    } else {
+                        agent.setPassword("agent123");
+                    }
+                    agent.setContact(null);
+                    agent.setAdresse(null);
+                    agent.setQualification(null);
+                    // role is set in AgentDGSI constructor to AGENT_DGSI
+                    userRepository.save(agent);
+                    logger.info("Local AgentDGSI created");
+                } else {
+                    logger.info("Local AgentDGSI already exists, skipping creation");
+                }
+            } catch (Exception e) {
+                logger.warning("Error creating local AgentDGSI: " + e.getMessage());
             }
         };
     }
