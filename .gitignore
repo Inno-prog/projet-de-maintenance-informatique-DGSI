@@ -4,3 +4,4 @@ node_modules
 .env
 node_modules/
 keycloak-23.0.4/
+backend/target/*.jar
