@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { OrdreCommandeService } from '../../../../core/services/ordre-commande.service';
 import { OrdreCommande, RapportSuivi, StatutRapport } from '../../../../core/models/business.models';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -11,10 +10,8 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-rapport-suivi-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LayoutComponent],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="page-header">
           <div>
             <h1>Rapports de Suivi</h1>
@@ -158,7 +155,6 @@ import { ToastService } from '../../../../core/services/toast.service';
           Chargement des rapports de suivi...
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .page-header {

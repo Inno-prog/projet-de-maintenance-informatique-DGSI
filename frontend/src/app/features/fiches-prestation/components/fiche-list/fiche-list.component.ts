@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { FichePrestationService } from '../../../../core/services/fiche-prestation.service';
 import { FichePrestation, StatutFiche } from '../../../../core/models/business.models';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -12,10 +11,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-fiche-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LayoutComponent, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="page-header">
           <div>
             <h1>Gestion des Prestations</h1>
@@ -188,7 +186,6 @@ import { ToastService } from '../../../../core/services/toast.service';
           Chargement des prestations...
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .no-data {

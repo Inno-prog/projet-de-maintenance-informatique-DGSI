@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { TypeItemService } from '../../../../core/services/type-item.service';
 import { TypeItem } from '../../../../core/models/business.models';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -8,10 +7,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-item-list',
   standalone: true,
-  imports: [CommonModule, LayoutComponent],
+  imports: [CommonModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="header-section">
           <h1>Gestion des Équipements</h1>
           <p>Gérez les types d'équipements et leurs caractéristiques</p>
@@ -54,7 +52,6 @@ import { ToastService } from '../../../../core/services/toast.service';
           </ng-template>
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container {

@@ -1119,3 +1119,279 @@ Database is already closed (to disable automatic closing at VM shutdown, add ";D
 	at io.quarkus.runtime.Application.stop(Application.java:208)
 	at io.quarkus.runtime.Application.stop(Application.java:155)
 	at io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread.run(ApplicationLifecycleManager.java:436)
+2025-10-11 09:46:02.478555Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientConnectionException: La base de données est déjà fermée (pour désactiver la fermeture automatique à l'arrêt de la VM, ajoutez "; DB_CLOSE_ON_EXIT = FALSE" à l'URL db)
+Database is already closed (to disable automatic closing at VM shutdown, add ";DB_CLOSE_ON_EXIT=FALSE" to the db URL) [90121-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:690)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.message.DbException.get(DbException.java:188)
+	at org.h2.jdbc.JdbcConnection.checkClosed(JdbcConnection.java:1425)
+	at org.h2.jdbcx.JdbcXAConnection$PooledJdbcConnection.checkClosed(JdbcXAConnection.java:485)
+	at org.h2.jdbc.JdbcConnection.rollback(JdbcConnection.java:511)
+	at org.h2.jdbcx.JdbcXAConnection$PooledJdbcConnection.close(JdbcXAConnection.java:455)
+	at org.h2.jdbcx.JdbcXAConnection.close(JdbcXAConnection.java:76)
+	at io.agroal.pool.ConnectionHandler.closeConnection(ConnectionHandler.java:185)
+	at io.agroal.pool.ConnectionPool$DestroyConnectionTask.run(ConnectionPool.java:787)
+	at io.agroal.pool.ConnectionPool.close(ConnectionPool.java:196)
+	at io.agroal.pool.DataSource.close(DataSource.java:79)
+	at io.quarkus.agroal.runtime.DataSources.stop(DataSources.java:454)
+	at io.quarkus.agroal.runtime.DataSources_Bean.doDestroy(Unknown Source)
+	at io.quarkus.agroal.runtime.DataSources_Bean.destroy(Unknown Source)
+	at io.quarkus.agroal.runtime.DataSources_Bean.destroy(Unknown Source)
+	at io.quarkus.arc.impl.AbstractInstanceHandle.destroyInternal(AbstractInstanceHandle.java:82)
+	at io.quarkus.arc.impl.ContextInstanceHandleImpl.destroy(ContextInstanceHandleImpl.java:21)
+	at io.quarkus.arc.impl.AbstractSharedContext.destroy(AbstractSharedContext.java:96)
+	at io.quarkus.arc.impl.ArcContainerImpl.shutdown(ArcContainerImpl.java:472)
+	at io.quarkus.arc.Arc.shutdown(Arc.java:66)
+	at io.quarkus.arc.runtime.ArcRecorder$1.run(ArcRecorder.java:53)
+	at io.quarkus.runtime.StartupContext.runAllInReverseOrder(StartupContext.java:84)
+	at io.quarkus.runtime.StartupContext.close(StartupContext.java:73)
+	at io.quarkus.runner.ApplicationImpl.doStop(Unknown Source)
+	at io.quarkus.runtime.Application.stop(Application.java:208)
+	at io.quarkus.runtime.Application.stop(Application.java:155)
+	at io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread.run(ApplicationLifecycleManager.java:436)
+2025-10-14 22:27:34.936546Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientConnectionException: La base de données est déjà fermée (pour désactiver la fermeture automatique à l'arrêt de la VM, ajoutez "; DB_CLOSE_ON_EXIT = FALSE" à l'URL db)
+Database is already closed (to disable automatic closing at VM shutdown, add ";DB_CLOSE_ON_EXIT=FALSE" to the db URL) [90121-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:690)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.message.DbException.get(DbException.java:188)
+	at org.h2.jdbc.JdbcConnection.checkClosed(JdbcConnection.java:1425)
+	at org.h2.jdbcx.JdbcXAConnection$PooledJdbcConnection.checkClosed(JdbcXAConnection.java:485)
+	at org.h2.jdbc.JdbcConnection.rollback(JdbcConnection.java:511)
+	at org.h2.jdbcx.JdbcXAConnection$PooledJdbcConnection.close(JdbcXAConnection.java:455)
+	at org.h2.jdbcx.JdbcXAConnection.close(JdbcXAConnection.java:76)
+	at io.agroal.pool.ConnectionHandler.closeConnection(ConnectionHandler.java:185)
+	at io.agroal.pool.ConnectionPool$DestroyConnectionTask.run(ConnectionPool.java:787)
+	at io.agroal.pool.ConnectionPool.close(ConnectionPool.java:196)
+	at io.agroal.pool.DataSource.close(DataSource.java:79)
+	at io.quarkus.agroal.runtime.DataSources.stop(DataSources.java:454)
+	at io.quarkus.agroal.runtime.DataSources_Bean.doDestroy(Unknown Source)
+	at io.quarkus.agroal.runtime.DataSources_Bean.destroy(Unknown Source)
+	at io.quarkus.agroal.runtime.DataSources_Bean.destroy(Unknown Source)
+	at io.quarkus.arc.impl.AbstractInstanceHandle.destroyInternal(AbstractInstanceHandle.java:82)
+	at io.quarkus.arc.impl.ContextInstanceHandleImpl.destroy(ContextInstanceHandleImpl.java:21)
+	at io.quarkus.arc.impl.AbstractSharedContext.destroy(AbstractSharedContext.java:96)
+	at io.quarkus.arc.impl.ArcContainerImpl.shutdown(ArcContainerImpl.java:472)
+	at io.quarkus.arc.Arc.shutdown(Arc.java:66)
+	at io.quarkus.arc.runtime.ArcRecorder$1.run(ArcRecorder.java:53)
+	at io.quarkus.runtime.StartupContext.runAllInReverseOrder(StartupContext.java:84)
+	at io.quarkus.runtime.StartupContext.close(StartupContext.java:73)
+	at io.quarkus.runner.ApplicationImpl.doStop(Unknown Source)
+	at io.quarkus.runtime.Application.stop(Application.java:208)
+	at io.quarkus.runtime.Application.stop(Application.java:155)
+	at io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread.run(ApplicationLifecycleManager.java:436)
+2025-10-15 11:43:46.997734Z database: CREATE CACHED TABLE "PUBLIC"."USER_FEDERATION_PROVIDER"(
+    "ID" CHARACTER VARYING(36) NOT NULL,
+    "CHANGED_SYNC_PERIOD" INTEGER,
+    "DISPLAY_NAME" CHARACTER VARYING(255),
+    "FULL_SYNC_PERIOD" INTEGER,
+    "LAST_SYNC" INTEGER,
+    "PRIORITY" INTEGER,
+    "PROVIDER_NAME" CHARACTER VARYING(255),
+    "REALM_ID" CHARACTER VARYING(36)
+)
+org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "/home/inno/dev/dgsi-maintenance/keycloak-23.0.4/data/h2/keycloakdb.mv.db"
+IO Exception: "/home/inno/dev/dgsi-maintenance/keycloak-23.0.4/data/h2/keycloakdb.mv.db"; SQL statement:
+CREATE CACHED TABLE "PUBLIC"."USER_FEDERATION_PROVIDER"(
+    "ID" CHARACTER VARYING(36) NOT NULL,
+    "CHANGED_SYNC_PERIOD" INTEGER,
+    "DISPLAY_NAME" CHARACTER VARYING(255),
+    "FULL_SYNC_PERIOD" INTEGER,
+    "LAST_SYNC" INTEGER,
+    "PRIORITY" INTEGER,
+    "PROVIDER_NAME" CHARACTER VARYING(255),
+    "REALM_ID" CHARACTER VARYING(36)
+) [90028-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.mvstore.db.Store.convertMVStoreException(Store.java:168)
+	at org.h2.mvstore.db.Store.createTable(Store.java:220)
+	at org.h2.schema.Schema.createTable(Schema.java:797)
+	at org.h2.command.ddl.CreateTable.update(CreateTable.java:112)
+	at org.h2.engine.MetaRecord.prepareAndExecute(MetaRecord.java:77)
+	at org.h2.engine.Database.executeMeta(Database.java:666)
+	at org.h2.engine.Database.executeMeta(Database.java:638)
+	at org.h2.engine.Database.<init>(Database.java:359)
+	at org.h2.engine.Engine.openSession(Engine.java:92)
+	at org.h2.engine.Engine.openSession(Engine.java:222)
+	at org.h2.engine.Engine.createSession(Engine.java:201)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:343)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:125)
+	at org.h2.jdbcx.JdbcDataSource.getXAConnection(JdbcDataSource.java:322)
+	at io.agroal.pool.ConnectionFactory.createConnection(ConnectionFactory.java:232)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:536)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:517)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at io.agroal.pool.util.PriorityScheduledExecutor.beforeExecute(PriorityScheduledExecutor.java:75)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.h2.mvstore.MVStoreException: Reading from file sun.nio.ch.FileChannelImpl@1706c36e failed at 51968 (length -1), read 0, remaining 3072 [2.2.224/1]
+	at org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
+	at org.h2.mvstore.DataUtils.readFully(DataUtils.java:455)
+	at org.h2.mvstore.FileStore.readFully(FileStore.java:719)
+	at org.h2.mvstore.SingleFileStore.readFully(SingleFileStore.java:60)
+	at org.h2.mvstore.SingleFileStore.readFully(SingleFileStore.java:28)
+	at org.h2.mvstore.SFChunk.readFully(SFChunk.java:35)
+	at org.h2.mvstore.Chunk.readBufferForPage(Chunk.java:465)
+	at org.h2.mvstore.FileStore.readPage(FileStore.java:1960)
+	at org.h2.mvstore.MVStore.readPage(MVStore.java:1021)
+	at org.h2.mvstore.MVMap.readPage(MVMap.java:632)
+	at org.h2.mvstore.Page$NonLeaf.getChildPage(Page.java:1117)
+	at org.h2.mvstore.CursorPos.traverseDown(CursorPos.java:61)
+	at org.h2.mvstore.MVMap.operate(MVMap.java:1766)
+	at org.h2.mvstore.MVMap.putIfAbsent(MVMap.java:529)
+	at org.h2.mvstore.tx.TransactionStore$TxMapBuilder.registerDataType(TransactionStore.java:859)
+	at org.h2.mvstore.tx.TransactionStore$TxMapBuilder.create(TransactionStore.java:899)
+	at org.h2.mvstore.MVStore.openMap(MVStore.java:477)
+	at org.h2.mvstore.MVStore.openMap(MVStore.java:426)
+	at org.h2.mvstore.tx.TransactionStore.openMap(TransactionStore.java:564)
+	at org.h2.mvstore.tx.TransactionStore.openVersionedMap(TransactionStore.java:550)
+	at org.h2.mvstore.tx.Transaction.openMap(Transaction.java:456)
+	at org.h2.mvstore.db.MVPrimaryIndex.<init>(MVPrimaryIndex.java:53)
+	at org.h2.mvstore.db.MVTable.<init>(MVTable.java:156)
+	at org.h2.mvstore.db.Store.createTable(Store.java:216)
+	... 20 more
+Caused by: java.nio.channels.ClosedByInterruptException
+	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:200)
+	at java.base/sun.nio.ch.FileChannelImpl.endBlocking(FileChannelImpl.java:172)
+	at java.base/sun.nio.ch.FileChannelImpl.readInternal(FileChannelImpl.java:990)
+	at java.base/sun.nio.ch.FileChannelImpl.read(FileChannelImpl.java:965)
+	at org.h2.mvstore.DataUtils.readFully(DataUtils.java:441)
+	... 42 more
+2025-10-15 11:43:47.023454Z database: opening /home/inno/dev/dgsi-maintenance/keycloak-23.0.4/data/h2/keycloakdb
+org.h2.message.DbException: IO Exception: "/home/inno/dev/dgsi-maintenance/keycloak-23.0.4/data/h2/keycloakdb.mv.db"
+IO Exception: "/home/inno/dev/dgsi-maintenance/keycloak-23.0.4/data/h2/keycloakdb.mv.db" [90028-224]
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.mvstore.db.Store.convertMVStoreException(Store.java:168)
+	at org.h2.mvstore.db.Store.createTable(Store.java:220)
+	at org.h2.schema.Schema.createTable(Schema.java:797)
+	at org.h2.command.ddl.CreateTable.update(CreateTable.java:112)
+	at org.h2.engine.MetaRecord.prepareAndExecute(MetaRecord.java:77)
+	at org.h2.engine.Database.executeMeta(Database.java:666)
+	at org.h2.engine.Database.executeMeta(Database.java:638)
+	at org.h2.engine.Database.<init>(Database.java:359)
+	at org.h2.engine.Engine.openSession(Engine.java:92)
+	at org.h2.engine.Engine.openSession(Engine.java:222)
+	at org.h2.engine.Engine.createSession(Engine.java:201)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:343)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:125)
+	at org.h2.jdbcx.JdbcDataSource.getXAConnection(JdbcDataSource.java:322)
+	at io.agroal.pool.ConnectionFactory.createConnection(ConnectionFactory.java:232)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:536)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:517)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at io.agroal.pool.util.PriorityScheduledExecutor.beforeExecute(PriorityScheduledExecutor.java:75)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: "/home/inno/dev/dgsi-maintenance/keycloak-23.0.4/data/h2/keycloakdb.mv.db"
+IO Exception: "/home/inno/dev/dgsi-maintenance/keycloak-23.0.4/data/h2/keycloakdb.mv.db"; SQL statement:
+CREATE CACHED TABLE "PUBLIC"."USER_FEDERATION_PROVIDER"(
+    "ID" CHARACTER VARYING(36) NOT NULL,
+    "CHANGED_SYNC_PERIOD" INTEGER,
+    "DISPLAY_NAME" CHARACTER VARYING(255),
+    "FULL_SYNC_PERIOD" INTEGER,
+    "LAST_SYNC" INTEGER,
+    "PRIORITY" INTEGER,
+    "PROVIDER_NAME" CHARACTER VARYING(255),
+    "REALM_ID" CHARACTER VARYING(36)
+) [90028-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 23 more
+Caused by: org.h2.mvstore.MVStoreException: Reading from file sun.nio.ch.FileChannelImpl@1706c36e failed at 51968 (length -1), read 0, remaining 3072 [2.2.224/1]
+	at org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
+	at org.h2.mvstore.DataUtils.readFully(DataUtils.java:455)
+	at org.h2.mvstore.FileStore.readFully(FileStore.java:719)
+	at org.h2.mvstore.SingleFileStore.readFully(SingleFileStore.java:60)
+	at org.h2.mvstore.SingleFileStore.readFully(SingleFileStore.java:28)
+	at org.h2.mvstore.SFChunk.readFully(SFChunk.java:35)
+	at org.h2.mvstore.Chunk.readBufferForPage(Chunk.java:465)
+	at org.h2.mvstore.FileStore.readPage(FileStore.java:1960)
+	at org.h2.mvstore.MVStore.readPage(MVStore.java:1021)
+	at org.h2.mvstore.MVMap.readPage(MVMap.java:632)
+	at org.h2.mvstore.Page$NonLeaf.getChildPage(Page.java:1117)
+	at org.h2.mvstore.CursorPos.traverseDown(CursorPos.java:61)
+	at org.h2.mvstore.MVMap.operate(MVMap.java:1766)
+	at org.h2.mvstore.MVMap.putIfAbsent(MVMap.java:529)
+	at org.h2.mvstore.tx.TransactionStore$TxMapBuilder.registerDataType(TransactionStore.java:859)
+	at org.h2.mvstore.tx.TransactionStore$TxMapBuilder.create(TransactionStore.java:899)
+	at org.h2.mvstore.MVStore.openMap(MVStore.java:477)
+	at org.h2.mvstore.MVStore.openMap(MVStore.java:426)
+	at org.h2.mvstore.tx.TransactionStore.openMap(TransactionStore.java:564)
+	at org.h2.mvstore.tx.TransactionStore.openVersionedMap(TransactionStore.java:550)
+	at org.h2.mvstore.tx.Transaction.openMap(Transaction.java:456)
+	at org.h2.mvstore.db.MVPrimaryIndex.<init>(MVPrimaryIndex.java:53)
+	at org.h2.mvstore.db.MVTable.<init>(MVTable.java:156)
+	at org.h2.mvstore.db.Store.createTable(Store.java:216)
+	... 20 more
+Caused by: java.nio.channels.ClosedByInterruptException
+	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:200)
+	at java.base/sun.nio.ch.FileChannelImpl.endBlocking(FileChannelImpl.java:172)
+	at java.base/sun.nio.ch.FileChannelImpl.readInternal(FileChannelImpl.java:990)
+	at java.base/sun.nio.ch.FileChannelImpl.read(FileChannelImpl.java:965)
+	at org.h2.mvstore.DataUtils.readFully(DataUtils.java:441)
+	... 42 more
+2025-10-15 11:43:47.119705Z database: flush
+org.h2.message.DbException: Erreur générale: "org.h2.mvstore.MVStoreException: Writing to sun.nio.ch.FileChannelImpl@1706c36e failed; length 8192 at 61440 [2.2.224/2]"
+General error: "org.h2.mvstore.MVStoreException: Writing to sun.nio.ch.FileChannelImpl@1706c36e failed; length 8192 at 61440 [2.2.224/2]" [50000-224]
+	at org.h2.message.DbException.get(DbException.java:212)
+	at org.h2.message.DbException.convert(DbException.java:407)
+	at org.h2.mvstore.db.Store.lambda$new$0(Store.java:122)
+	at org.h2.mvstore.MVStore.handleException(MVStore.java:1546)
+	at org.h2.mvstore.MVStore.panic(MVStore.java:371)
+	at org.h2.mvstore.FileStore.storeBuffer(FileStore.java:1527)
+	at org.h2.mvstore.FileStore.lambda$serializeAndStore$3(FileStore.java:1432)
+	at org.h2.mvstore.FileStore.submitOrRun(FileStore.java:1401)
+	at org.h2.mvstore.FileStore.serializeAndStore(FileStore.java:1432)
+	at org.h2.mvstore.FileStore.lambda$storeIt$2(FileStore.java:1376)
+	at org.h2.mvstore.FileStore.submitOrRun(FileStore.java:1401)
+	at org.h2.mvstore.FileStore.storeIt(FileStore.java:1375)
+	at org.h2.mvstore.MVStore.storeNow(MVStore.java:843)
+	at org.h2.mvstore.MVStore.store(MVStore.java:808)
+	at org.h2.mvstore.MVStore.commit(MVStore.java:778)
+	at org.h2.mvstore.MVStore.commit(MVStore.java:770)
+	at org.h2.mvstore.tx.TransactionStore.close(TransactionStore.java:365)
+	at org.h2.mvstore.db.Store.close(Store.java:349)
+	at org.h2.engine.Database.closeOpenFilesAndUnlock(Database.java:1293)
+	at org.h2.engine.Database.<init>(Database.java:401)
+	at org.h2.engine.Engine.openSession(Engine.java:92)
+	at org.h2.engine.Engine.openSession(Engine.java:222)
+	at org.h2.engine.Engine.createSession(Engine.java:201)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:343)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:125)
+	at org.h2.jdbcx.JdbcDataSource.getXAConnection(JdbcDataSource.java:322)
+	at io.agroal.pool.ConnectionFactory.createConnection(ConnectionFactory.java:232)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:536)
+	at io.agroal.pool.ConnectionPool$CreateConnectionTask.call(ConnectionPool.java:517)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at io.agroal.pool.util.PriorityScheduledExecutor.beforeExecute(PriorityScheduledExecutor.java:75)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: org.h2.jdbc.JdbcSQLNonTransientException: Erreur générale: "org.h2.mvstore.MVStoreException: Writing to sun.nio.ch.FileChannelImpl@1706c36e failed; length 8192 at 61440 [2.2.224/2]"
+General error: "org.h2.mvstore.MVStoreException: Writing to sun.nio.ch.FileChannelImpl@1706c36e failed; length 8192 at 61440 [2.2.224/2]" [50000-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 34 more
+Caused by: org.h2.mvstore.MVStoreException: Writing to sun.nio.ch.FileChannelImpl@1706c36e failed; length 8192 at 61440 [2.2.224/2]
+	at org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
+	at org.h2.mvstore.DataUtils.writeFully(DataUtils.java:478)
+	at org.h2.mvstore.SingleFileStore.writeFully(SingleFileStore.java:67)
+	at org.h2.mvstore.SingleFileStore.writeFully(SingleFileStore.java:28)
+	at org.h2.mvstore.RandomAccessStore.writeChunk(RandomAccessStore.java:366)
+	at org.h2.mvstore.RandomAccessStore.writeChunk(RandomAccessStore.java:28)
+	at org.h2.mvstore.FileStore.storeBuffer(FileStore.java:1524)
+	... 28 more
+Caused by: java.nio.channels.ClosedChannelException
+	at java.base/sun.nio.ch.FileChannelImpl.ensureOpen(FileChannelImpl.java:160)
+	at java.base/sun.nio.ch.FileChannelImpl.write(FileChannelImpl.java:1000)
+	at org.h2.mvstore.DataUtils.writeFully(DataUtils.java:474)
+	... 33 more

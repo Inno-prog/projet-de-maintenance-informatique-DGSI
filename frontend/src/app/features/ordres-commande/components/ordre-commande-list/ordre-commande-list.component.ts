@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { OrdreCommandeService } from '../../../../core/services/ordre-commande.service';
 import { ContratService } from '../../../../core/services/contrat.service';
 import { OrdreCommande, StatutCommande, Contrat, calculer_ecart_item, calcul_montantTotal, calcul_penalite } from '../../../../core/models/business.models';
@@ -12,10 +11,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-ordre-commande-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <!-- Header Section -->
         <div class="prestation-header">
           <div class="header-content">
@@ -166,7 +164,6 @@ import { ToastService } from '../../../../core/services/toast.service';
 
         <div class="loading" *ngIf="loadingList">Chargement des ordres de commande...</div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container { padding: 2rem; max-width: 1400px; margin: 0 auto; }

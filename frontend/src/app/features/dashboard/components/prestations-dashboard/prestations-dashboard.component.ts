@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { FichePrestationService } from '../../../../core/services/fiche-prestation.service';
 import { ContratService } from '../../../../core/services/contrat.service';
 import { FichePrestation, Contrat, StatutFiche } from '../../../../core/models/business.models';
@@ -24,10 +23,9 @@ interface PrestationDashboard {
 @Component({
   selector: 'app-prestations-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LayoutComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="page-header">
           <h1>Tableau de Bord des Prestations</h1>
           <p>Suivi et évaluation des prestations</p>
@@ -258,7 +256,6 @@ interface PrestationDashboard {
           </div>
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .stats-grid {

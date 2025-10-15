@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { ContratService } from '../../../../core/services/contrat.service';
 import { Contrat } from '../../../../core/models/business.models';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -11,10 +10,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-contrat-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, LayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="page-header">
           <h1>Gestion des Contrats</h1>
           <p>Gérez les contrats de maintenance avec les prestataires</p>
@@ -153,7 +151,6 @@ import { ToastService } from '../../../../core/services/toast.service';
           Chargement des contrats...
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container {

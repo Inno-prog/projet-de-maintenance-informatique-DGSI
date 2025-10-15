@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { UserService } from '../../../../core/services/user.service';
 import { ContratService } from '../../../../core/services/contrat.service';
 import { OrdreCommandeService } from '../../../../core/services/ordre-commande.service';
@@ -11,10 +10,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-statistiques-dashboard',
   standalone: true,
-  imports: [CommonModule, LayoutComponent],
+  imports: [CommonModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="header-section">
           <h1>Tableau de Bord Statistiques</h1>
           <p>Consultez les statistiques détaillées du système de maintenance</p>
@@ -96,7 +94,6 @@ import { ToastService } from '../../../../core/services/toast.service';
           </div>
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container {

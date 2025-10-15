@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { UserService } from '../../../../core/services/user.service';
 import { User } from '../../../../core/models/auth.models';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
@@ -10,10 +9,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LayoutComponent],
+  imports: [CommonModule, FormsModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="page-header">
           <h1>Gestion des Utilisateurs</h1>
           <p>Gérez les utilisateurs du système DGSI Maintenance</p>
@@ -136,7 +134,6 @@ import { ToastService } from '../../../../core/services/toast.service';
           </form>
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container {

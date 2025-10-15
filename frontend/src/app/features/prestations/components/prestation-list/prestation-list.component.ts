@@ -2,17 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { PrestationService, Prestation } from '../../../../core/services/prestation.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-prestation-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LayoutComponent],
+  imports: [CommonModule, FormsModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <!-- Header Section -->
         <div class="prestation-header">
           <div class="header-content">
@@ -159,7 +157,6 @@ import { ToastService } from '../../../../core/services/toast.service';
           </div>
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container {

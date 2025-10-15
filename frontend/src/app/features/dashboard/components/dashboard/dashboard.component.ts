@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
+
 import { AuthService } from '../../../../core/services/auth.service';
 import { ContratService } from '../../../../core/services/contrat.service';
 import { OrdreCommandeService } from '../../../../core/services/ordre-commande.service';
@@ -15,10 +15,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LayoutComponent],
+  imports: [CommonModule, RouterModule],
   template: `
-    <app-layout *ngIf="authService.isAuthenticated(); else publicView">
-      <div class="container">
+    <div class="container">
         <div class="dashboard-header">
           <div class="welcome-section">
             <h1>Bienvenue sur <span class="text-primary">DGSI Maintenance</span></h1>
@@ -207,8 +206,7 @@ import { ToastService } from '../../../../core/services/toast.service';
           </div>
         </div>
 
-      </div>
-    </app-layout>
+    </div>
 
     <ng-template #publicView>
       <div class="public-layout">

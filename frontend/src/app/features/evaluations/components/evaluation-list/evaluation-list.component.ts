@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 import { EvaluationService } from '../../../../core/services/evaluation.service';
 import { EvaluationTrimestrielle } from '../../../../core/models/business.models';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -11,7 +10,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-evaluation-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, LayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './evaluation-list.component.html',
   styles: [`
     .container {

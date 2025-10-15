@@ -1,14 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LayoutComponent } from '../../../../shared/components/layout/layout.component';
 
 @Component({
   selector: 'app-lot-list',
   standalone: true,
-  imports: [CommonModule, LayoutComponent],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="header-section">
           <h1>Gestion des Lots</h1>
           <p>Organisation et gestion des lots de maintenance</p>
@@ -23,7 +20,6 @@ import { LayoutComponent } from '../../../../shared/components/layout/layout.com
           </div>
         </div>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container {

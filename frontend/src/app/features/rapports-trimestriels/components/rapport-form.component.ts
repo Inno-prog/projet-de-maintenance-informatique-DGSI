@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { FileUploadService } from '../../../core/services/file-upload.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -9,10 +8,8 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-rapport-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LayoutComponent],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="page-header">
           <h1>Soumettre Rapport Trimestriel</h1>
           <p>Soumettez votre rapport et vos fiches de prestations</p>
@@ -105,7 +102,6 @@ import { AuthService } from '../../../core/services/auth.service';
           </div>
         </form>
       </div>
-    </app-layout>
   `,
   styles: [`
     .form-sections {
@@ -286,7 +282,7 @@ export class RapportFormComponent implements OnInit {
     const user = this.authService.getCurrentUser();
     if (user) {
       this.rapportForm.patchValue({
-        prestataire: user.username
+        prestataire: user.nom
       });
     }
   }
@@ -389,7 +385,7 @@ export class RapportFormComponent implements OnInit {
   private resetForm(): void {
     this.rapportForm.reset({
       annee: this.currentYear,
-      prestataire: this.authService.getCurrentUser()?.username
+      prestataire: this.authService.getCurrentUser()?.nom
     });
     this.rapportFile = null;
     this.fichesFiles = [];

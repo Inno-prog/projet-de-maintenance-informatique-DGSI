@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -8,7 +8,16 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="sidebar" [class.sidebar-open]="isOpen">
+    <div class="sidebar" [class.open]="isOpen" [style.width.px]="sidebarWidth" [style.--sidebar-width.px]="sidebarWidth">
+      <button class="sidebar-toggle" [class.collapsed]="!isOpen" (click)="toggleSidebar()">
+        <span class="arrow" *ngIf="isOpen">◀</span>
+        <div class="hamburger" *ngIf="!isOpen">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </div>
+      </button>
+      <div class="sidebar-resizer" (mousedown)="startResize($event)"></div>
       <div class="sidebar-header">
         <div class="logo">
           <img src="/assets/logoFinal.png" alt="DGSI Logo" class="logo-image">
@@ -22,23 +31,18 @@ import { AuthService } from '../../../core/services/auth.service';
 
       <nav class="sidebar-nav">
         <div class="nav-section">
-          <h4 class="section-title">Tableau de Bord</h4>
           <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📊</span>
-        
+            <span class="nav-text">Tableau de bord</span>
           </a>
         </div>
 
         <div class="nav-section" *ngIf="authService.isPrestataire()">
           <h4 class="section-title">Mes Services</h4>
-          
-         
-          
           <a routerLink="/fiches-prestation" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📋</span>
             <span class="nav-text">Fiches de Prestation</span>
           </a>
-
 
           <a routerLink="/ordres-commande" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📦</span>
@@ -48,92 +52,169 @@ import { AuthService } from '../../../core/services/auth.service';
 
         <div class="nav-section" *ngIf="authService.isAdmin()">
           <h4 class="section-title">Administration</h4>
-          
-          
-
-
-            <a routerLink="/users" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+          <a routerLink="/users" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">👥</span>
             <span class="nav-text">Utilisateurs</span>
           </a>
 
-          <a routerLink="/prestations" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+          <a routerLink="/prestations" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📋</span>
             <span class="nav-text">Gestion des Prestations</span>
           </a>
 
-          <a routerLink="/evaluations" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <span class="nav-icon">⭐</span>
-            <span class="nav-text">Gesttion des evaluations</span>
-          </a>
-
-          <a routerLink="/ordres-commande" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">📦</span>
-            <span class="nav-text">Ordres de Commande</span>
-          </a>
-        
-          <a routerLink="/rapports" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">📋</span>
-            <span class="nav-text">Rapports annuels </span>
+          <a routerLink="/contrats" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">Contrats</span>
           </a>
 
           <a routerLink="/items" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">📈</span>
-            <span class="nav-text">Items de prestations</span>
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Items</span>
           </a>
 
-        </div>
-            
-         
-        <div class="nav-section" *ngIf="authService.isAgentDGSI()">
-          <h4 class="section-title">Validation & Évaluation</h4>
-          
-          <a routerLink="/fiches-prestation" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-            <span class="nav-icon">✅</span>
-            <span class="nav-text">Valider Fiches</span>
-          </a>
-
-          <a routerLink="/evaluations" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+          <a routerLink="/evaluations" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">⭐</span>
-            <span class="nav-text">Créer Évaluations</span>
+            <span class="nav-text">Evaluations</span>
+          </a>
+        </div>
+
+        <div class="nav-section" *ngIf="authService.isAdminOrPrestataire()">
+          <h4 class="section-title">Rapports</h4>
+          <a routerLink="/rapports-suivi" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Rapports de Suivi</span>
+          </a>
+
+          <a routerLink="/rapports-trimestriels" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📈</span>
+            <span class="nav-text">Rapports Trimestriels</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <h4 class="section-title">Statistiques</h4>
+          <a routerLink="/statistiques" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Statistiques</span>
           </a>
         </div>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-info">
-          <div class="user-avatar">{{ getUserInitials() }}</div>
-          <div class="user-details">
-            <span class="user-name">{{ authService.getCurrentUser()?.nom }}</span>
-            <span class="user-role">{{ getRoleLabel() }}</span>
-          </div>
-        </div>
         <button class="logout-btn" (click)="logout()">
-          <span>🚪</span> Déconnexion
+          <span class="logout-icon">🚪</span>
+          <span class="logout-text">Déconnexion</span>
         </button>
       </div>
+
+      <div class="sidebar-overlay" *ngIf="!isOpen" (click)="closeSidebar()"></div>
     </div>
-
-
   `,
   styles: [`
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
-      width: 320px;
+      width: 280px;
       height: 100vh;
       background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
       color: white;
-      z-index: 1000;
-      transition: left 0.3s ease-in-out;
+      z-index: 1001;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
       display: flex;
       flex-direction: column;
       box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
     }
 
-    .sidebar:not(.sidebar-open) {
-      left: -320px;
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-toggle {
+      position: absolute;
+      top: 1rem;
+      right: -40px;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: none;
+      border-radius: 0 8px 8px 0;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1002;
+      transition: all 0.3s ease;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar-toggle:hover {
+      background: linear-gradient(135deg, #334155 0%, #475569 100%);
+    }
+
+    .sidebar-toggle .arrow {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-toggle.collapsed .arrow {
+      transform: rotate(180deg);
+    }
+
+    .sidebar-toggle .hamburger {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 20px;
+      height: 20px;
+    }
+
+    .sidebar-toggle .line {
+      width: 100%;
+      height: 2px;
+      background: white;
+      border-radius: 1px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-resizer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: col-resize;
+      z-index: 1002;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .sidebar-resizer:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .sidebar.open .sidebar-resizer {
+      opacity: 0;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: none;
+    }
+
+    .sidebar.open .sidebar-overlay {
+      display: block;
     }
 
     .sidebar-header {
@@ -142,24 +223,33 @@ import { AuthService } from '../../../core/services/auth.service';
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: inherit;
+      z-index: 10;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      margin-right: 1rem;
+    }
+
+    .close-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
 
     .logo {
       display: flex;
       align-items: center;
       gap: 1rem;
-    }
-
-    .logo-icon {
-      width: 2.5rem;
-      height: 2.5rem;
-      background: var(--primary);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.1rem;
+      flex: 1;
     }
 
     .logo-image {
@@ -181,25 +271,9 @@ import { AuthService } from '../../../core/services/auth.service';
       color: #94a3b8;
     }
 
-    .close-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 4px;
-      transition: background-color 0.2s;
-    }
-
-    .close-btn:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-
     .sidebar-nav {
       flex: 1;
       padding: 1rem 0;
-      overflow-y: auto;
     }
 
     .nav-section {
@@ -253,6 +327,7 @@ import { AuthService } from '../../../core/services/auth.service';
     .sidebar-footer {
       padding: 1.5rem;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: inherit;
     }
 
     .user-info {
@@ -310,37 +385,33 @@ import { AuthService } from '../../../core/services/auth.service';
       background: rgba(239, 68, 68, 0.2);
       color: #ef4444;
     }
-
-    .sidebar-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease-in-out;
-    }
-
-    .sidebar-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
   `]
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnChanges {
+  @Input() open: boolean = true;
+  @Output() toggleChange = new EventEmitter<boolean>();
   isOpen = true;
+  sidebarWidth = 320;
+  isResizing = false;
+  private startX = 0;
+  private startWidth = 0;
 
   constructor(public authService: AuthService) {}
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open']) {
+      this.isOpen = this.open;
+    }
+  }
+
   toggleSidebar(): void {
     this.isOpen = !this.isOpen;
+    this.toggleChange.emit(this.isOpen);
   }
 
   closeSidebar(): void {
     this.isOpen = false;
+    this.toggleChange.emit(this.isOpen);
   }
 
   logout(): void {
@@ -359,15 +430,28 @@ export class SidebarComponent {
     }
   }
 
-  getUserInitials(): string {
-    const user = this.authService.getCurrentUser();
-    if (!user?.nom) return 'U';
-    
-    return user.nom
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+  startResize(event: MouseEvent): void {
+    if (!this.isOpen) return;
+    this.isResizing = true;
+    this.startX = event.clientX;
+    this.startWidth = this.sidebarWidth;
+
+    document.addEventListener('mousemove', this.resize.bind(this));
+    document.addEventListener('mouseup', this.stopResize.bind(this));
+  }
+
+  private resize(event: MouseEvent): void {
+    if (!this.isResizing) return;
+
+    const deltaX = event.clientX - this.startX;
+    const newWidth = this.startWidth + deltaX;
+
+    this.sidebarWidth = Math.max(200, Math.min(600, newWidth));
+  }
+
+  private stopResize(): void {
+    this.isResizing = false;
+    document.removeEventListener('mousemove', this.resize.bind(this));
+    document.removeEventListener('mouseup', this.stopResize.bind(this));
   }
 }

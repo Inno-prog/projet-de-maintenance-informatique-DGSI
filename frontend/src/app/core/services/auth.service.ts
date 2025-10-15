@@ -353,6 +353,10 @@ export class AuthService {
     return this.hasRole('AGENT_DGSI');
   }
 
+  isAdminOrPrestataire(): boolean {
+    return this.isAdmin() || this.isPrestataire();
+  }
+
   updateUserProfile(user: User): Observable<User> {
     return this.http.put<User>(`${environment.apiUrl}/users/profile`, user).pipe(
       map(updatedUser => {

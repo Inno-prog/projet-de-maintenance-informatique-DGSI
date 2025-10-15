@@ -11,7 +11,6 @@ import { InformationsDropdownComponent } from '../informations-dropdown/informat
 import { ConfirmationService } from '../../../core/services/confirmation.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { NotificationService, Notification } from '../../../core/services/notification.service';
-
 @Component({
   selector: 'app-layout',
   standalone: true,
@@ -21,9 +20,11 @@ import { NotificationService, Notification } from '../../../core/services/notifi
       <nav class="navbar">
         <div class="container">
           <div class="nav-brand">
-            <div class="logo">
-              <img src="/assets/logoFinal.png" alt="DGSI Logo" class="logo-image">
-            </div>
+            <button class="hamburger" (click)="toggleSidebar()">
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+            </button>
           </div>
 
           <div class="nav-center">
@@ -109,9 +110,11 @@ import { NotificationService, Notification } from '../../../core/services/notifi
         </div>
       </nav>
 
-      <app-sidebar #sidebar></app-sidebar>
+      <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
 
-      <main class="main-content" [style.margin-left.px]="currentUser ? 320 : 0">
+      <app-sidebar #sidebar [open]="sidebarOpen" (toggleChange)="onSidebarToggle($event)"></app-sidebar>
+
+      <main class="main-content" [style.margin-left.px]="sidebarOpen ? 320 : 0">
         <ng-content></ng-content>
       </main>
 
@@ -184,6 +187,8 @@ import { NotificationService, Notification } from '../../../core/services/notifi
       color: white;
       padding: 1rem 0;
       box-shadow: var(--shadow-md);
+      position: relative;
+      z-index: 1002;
     }
 
     .navbar .container {
@@ -199,38 +204,49 @@ import { NotificationService, Notification } from '../../../core/services/notifi
        align-items: center;
      }
 
+    .hamburger {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 30px;
+      height: 30px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-right: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .hamburger:hover {
+      opacity: 0.8;
+    }
+
+    .bar {
+      width: 100%;
+      height: 3px;
+      background: white;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+
+    .hamburger.active .bar:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .hamburger.active .bar:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active .bar:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+
     .logo {
       display: flex;
       align-items: center;
       gap: 1rem;
-    }
-
-    .menu-toggle {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 4px;
-      transition: background-color 0.2s;
-    }
-
-    .menu-toggle:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .logo-icon {
-      width: 3rem;
-      height: 3rem;
-      background: var(--primary);
-      color: white;
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.25rem;
     }
 
     .logo-image {
@@ -238,27 +254,6 @@ import { NotificationService, Notification } from '../../../core/services/notifi
       height: 4rem;
       border-radius: var(--radius);
       object-fit: contain;
-    }
-
-
-    .nav-menu {
-      display: flex;
-      gap: 2rem;
-    }
-
-    .nav-menu a {
-      color: #e2e8f0;
-      text-decoration: none;
-      font-weight: 500;
-      padding: 0.5rem 1rem;
-      border-radius: var(--radius);
-      transition: all 0.2s ease-in-out;
-    }
-
-    .nav-menu a:hover,
-    .nav-menu a.active {
-      background-color: rgba(249, 115, 22, 0.1);
-      color: var(--primary);
     }
 
     .nav-user {
@@ -743,6 +738,7 @@ export class LayoutComponent implements AfterViewInit, OnDestroy {
   profileMenuOpen = false;
   notifications: Notification[] = [];
   showNotifications = false;
+  sidebarOpen = true;
   notificationPollingInterval: any;
   @ViewChild('sidebar') sidebar!: SidebarComponent;
   @ViewChild('toast') toast!: ToastComponent;
@@ -778,7 +774,22 @@ export class LayoutComponent implements AfterViewInit, OnDestroy {
   }
 
   toggleSidebar(): void {
-    this.sidebar.toggleSidebar();
+    this.sidebarOpen = !this.sidebarOpen;
+    // Update sidebar component state
+    if (this.sidebar) {
+      this.sidebar.isOpen = this.sidebarOpen;
+    }
+  }
+
+  closeSidebar(): void {
+    this.sidebarOpen = false;
+    if (this.sidebar) {
+      this.sidebar.isOpen = false;
+    }
+  }
+
+  onSidebarToggle(isOpen: boolean): void {
+    this.sidebarOpen = isOpen;
   }
 
   toggleProfileMenu(): void {

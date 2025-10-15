@@ -2,7 +2,6 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { EvaluationService } from '../../core/services/evaluation.service';
 import { EvaluationTrimestrielle } from '../../core/models/business.models';
 import { ToastService } from '../../core/services/toast.service';
@@ -11,10 +10,9 @@ import { PdfService } from '../../core/services/pdf.service';
 @Component({
   selector: 'app-evaluation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <app-layout>
-      <div class="container">
+    <div class="container">
         <div class="page-header">
           <h1>Évaluation du Prestataire</h1>
           <p *ngIf="prestataireNom">Prestataire: {{ prestataireNom }} - {{ nomItem }}</p>
@@ -247,7 +245,6 @@ import { PdfService } from '../../core/services/pdf.service';
         </div>
       </form>
       </div>
-    </app-layout>
   `,
   styles: [`
     .container {
