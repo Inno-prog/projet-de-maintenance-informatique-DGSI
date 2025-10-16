@@ -10,6 +10,7 @@
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/controller/FichePrestationController.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/controller/FileController.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/controller/FileUploadController.java
+/home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/controller/ItemController.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/controller/NotificationController.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/controller/OrdreCommandeController.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/controller/PDFController.java
@@ -39,6 +40,7 @@
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/repository/ContratRepository.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/repository/EvaluationTrimestrielleRepository.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/repository/FichePrestationRepository.java
+/home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/repository/ItemRepository.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/repository/NotificationRepository.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/repository/OrdreCommandeRepository.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/repository/PrestataireRepository.java

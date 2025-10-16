@@ -76,7 +76,7 @@ import { ToastService } from '../../../../core/services/toast.service';
               <tbody>
                 <tr *ngFor="let ordre of ordres" [ngClass]="getRowClass(ordre.statut)" (click)="openDetails(ordre)" tabindex="0">
                   <td data-label="Num OC">{{ ordre.numeroOC || '-' }}</td>
-                  <td data-label="Item"><strong>{{ ordre.item?.libelle || ordre.nomItem || '-' }}</strong></td>
+                  <td data-label="Item"><strong>{{ ordre.item?.nomItem || ordre.nomItem || '-' }}</strong></td>
                   <td data-label="Prestataire">{{ ordre.prestataireItem || (ordre.fichePrestations && ordre.fichePrestations.length ? ordre.fichePrestations[0].nomPrestataire : null) || '-' }}</td>
                   <td data-label="Min/Max">{{ ordre.min_prestations ?? ordre.minArticles ?? 0 }} / {{ ordre.max_prestations ?? ordre.maxArticles ?? 0 }}</td>
                   <td data-label="Prix unitaire">{{ (ordre.prixUnitPrest || ordre.item?.prix || ordre.montant || 0) | number:'1.0-0' }} FCFA</td>
@@ -122,7 +122,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                   <section class="card">
                     <h3>Informations générales</h3>
                     <p><strong>Numéro OC:</strong> {{ so.numeroOC || so.idOC }}</p>
-                    <p><strong>Item:</strong> {{ so.item?.libelle || so.nomItem || '-' }}</p>
+                    <p><strong>Item:</strong> {{ so.item?.nomItem || so.nomItem || '-' }}</p>
                     <p><strong>Prestataire:</strong> {{ so.prestataireItem || '-' }}</p>
                     <p><strong>Statut:</strong> {{ getStatusLabel(so.statut) }}</p>
                     <p><strong>Observations:</strong> {{ so.observations || so.description || '-' }}</p>

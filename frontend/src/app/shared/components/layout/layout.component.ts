@@ -7,14 +7,13 @@ import { User } from '../../../core/models/auth.models';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ToastComponent } from '../toast/toast.component';
 import { ConfirmationComponent } from '../confirmation/confirmation.component';
-import { InformationsDropdownComponent } from '../informations-dropdown/informations-dropdown.component';
 import { ConfirmationService } from '../../../core/services/confirmation.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { NotificationService, Notification } from '../../../core/services/notification.service';
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, SidebarComponent, ToastComponent, ConfirmationComponent, InformationsDropdownComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, SidebarComponent, ToastComponent, ConfirmationComponent],
   template: `
     <div class="layout">
       <nav class="navbar">
@@ -28,7 +27,6 @@ import { NotificationService, Notification } from '../../../core/services/notifi
           </div>
 
           <div class="nav-center">
-            <app-informations-dropdown></app-informations-dropdown>
           </div>
 
           <div class="nav-user" *ngIf="currentUser">

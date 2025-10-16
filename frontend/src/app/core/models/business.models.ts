@@ -156,13 +156,14 @@ export enum StatutFiche {
 
 
 export interface Item {
-  id?: number;
-  codeItem: string;
-  libelle: string;
-  type: TypeItem;
-  prix: number;
-  ordreCommandeId?: number;
-}
+    id?: number;
+    idItem: number;
+    nomItem: string;
+    description?: string;
+    prix: number;
+    qteEquipDefini: number;
+    quantiteMaxTrimestre: number;
+  }
 
 export interface TypeItem {
   id?: number;

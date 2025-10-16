@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth.service';
 import { PrestationService, Prestation } from '../../../../core/services/prestation.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
@@ -105,7 +106,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                   </td>
                   <td>
                     <div class="prestation-info">
-                      <strong>{{ prestation.nomPrestation }}</strong>
+                      <strong class="prestation-name">{{ formatPrestationName(prestation.nomPrestation) }}</strong>
                       <div class="description" *ngIf="prestation.description">
                         {{ prestation.description.length > 60 ? (prestation.description | slice:0:60) + '...' : prestation.description }}
                       </div>
@@ -160,19 +161,20 @@ import { ToastService } from '../../../../core/services/toast.service';
   `,
   styles: [`
     .container {
-      padding: 2rem;
-      max-width: 1400px;
+      padding: 1.5rem;
+      max-width: 100vw;
       margin: 0 auto;
+      width: 100%;
     }
 
     .prestation-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 3rem;
-      padding: 2rem;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
       background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      border-radius: 16px;
+      border-radius: 12px;
       color: white;
     }
 
@@ -233,9 +235,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
 
     .stat-card {
@@ -303,12 +305,13 @@ import { ToastService } from '../../../../core/services/toast.service';
 
     .prestation-table th {
       background: #f8fafc;
-      padding: 1.5rem 1rem;
+      padding: 1rem 0.75rem;
       text-align: left;
       font-weight: 600;
       color: #374151;
       border-bottom: 1px solid #f1f5f9;
       white-space: nowrap;
+      font-size: 0.875rem;
     }
 
     .prestation-table th:first-child {
@@ -320,9 +323,10 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .prestation-table td {
-      padding: 1.5rem 1rem;
+      padding: 1rem 0.75rem;
       border-bottom: 1px solid #f8fafc;
       vertical-align: middle;
+      font-size: 0.875rem;
     }
 
     .prestation-table td:first-child {
@@ -338,7 +342,8 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .prestataire-cell {
-      min-width: 200px;
+      min-width: 150px;
+      max-width: 200px;
     }
 
     .prestataire-info strong {
@@ -353,6 +358,21 @@ import { ToastService } from '../../../../core/services/toast.service';
       margin-bottom: 0.25rem;
     }
 
+    .prestation-name {
+      white-space: pre-line;
+      line-height: 1.4;
+      word-wrap: break-word;
+      min-height: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .prestation-table td {
+      vertical-align: top;
+      min-height: 80px;
+    }
+
     .description {
       color: #6b7280;
       font-size: 0.85rem;
@@ -360,7 +380,8 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .montant-cell {
-      min-width: 120px;
+      min-width: 100px;
+      max-width: 120px;
     }
 
     .montant {
@@ -426,7 +447,8 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .actions-cell {
-      min-width: 120px;
+      min-width: 140px;
+      max-width: 160px;
     }
 
     .action-buttons {
@@ -583,6 +605,8 @@ export class PrestationListComponent implements OnInit {
   selectedStatut = '';
 
   constructor(
+    private authService: AuthService,
+
     private prestationService: PrestationService,
     private toastService: ToastService
   ) {}
@@ -689,5 +713,20 @@ export class PrestationListComponent implements OnInit {
       title: 'Données actualisées',
       message: 'Les prestations ont été rechargées'
     });
+  }
+
+  formatPrestationName(name: string): string {
+    if (!name) return '';
+
+    const words = name.trim().split(/\s+/);
+    if (words.length <= 4) return name;
+
+    // Instead of line breaks, use a shorter format for better table display
+    if (words.length <= 6) {
+      return words.slice(0, 3).join(' ') + '\n' + words.slice(3).join(' ');
+    } else {
+      // For longer names, show first 3 words, then ellipsis
+      return words.slice(0, 3).join(' ') + '\n...';
+    }
   }
 }

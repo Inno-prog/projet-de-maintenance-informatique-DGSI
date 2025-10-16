@@ -24,4 +24,16 @@ export class TypeItemService {
   getTypeItemsByLot(lot: string): Observable<TypeItem[]> {
     return this.http.get<TypeItem[]>(`${this.API_URL}/lot/${lot}`);
   }
+
+  createTypeItem(item: Omit<TypeItem, 'id'>): Observable<TypeItem> {
+    return this.http.post<TypeItem>(this.API_URL, item);
+  }
+
+  updateTypeItem(id: number, item: Partial<TypeItem>): Observable<TypeItem> {
+    return this.http.put<TypeItem>(`${this.API_URL}/${id}`, item);
+  }
+
+  deleteTypeItem(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/${id}`);
+  }
 }

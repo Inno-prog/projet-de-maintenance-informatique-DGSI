@@ -1,6 +1,14 @@
 package com.dgsi.maintenance.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -11,19 +19,28 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(name = "code_item", unique = true)
-    private String codeItem;
+    @NotNull
+    @Column(name = "id_item", unique = true)
+    private Integer idItem;
 
     @NotBlank
-    private String libelle;
+    @Column(name = "nom_item")
+    private String nomItem;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_item_id")
-    private TypeItem type;
+    @Column(name = "description", length = 1000)
+    private String description;
 
     @NotNull
-    private Double prix;
+    @Column(name = "prix")
+    private Float prix;
+
+    @NotNull
+    @Column(name = "qte_equip_defini")
+    private Integer qteEquipDefini;
+
+    @NotNull
+    @Column(name = "quantite_max_trimestre")
+    private Integer quantiteMaxTrimestre;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordre_commande_id")
@@ -33,17 +50,23 @@ public class Item {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getCodeItem() { return codeItem; }
-    public void setCodeItem(String codeItem) { this.codeItem = codeItem; }
+    public Integer getIdItem() { return idItem; }
+    public void setIdItem(Integer idItem) { this.idItem = idItem; }
 
-    public String getLibelle() { return libelle; }
-    public void setLibelle(String libelle) { this.libelle = libelle; }
+    public String getNomItem() { return nomItem; }
+    public void setNomItem(String nomItem) { this.nomItem = nomItem; }
 
-    public TypeItem getType() { return type; }
-    public void setType(TypeItem type) { this.type = type; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public Double getPrix() { return prix; }
-    public void setPrix(Double prix) { this.prix = prix; }
+    public Float getPrix() { return prix; }
+    public void setPrix(Float prix) { this.prix = prix; }
+
+    public Integer getQteEquipDefini() { return qteEquipDefini; }
+    public void setQteEquipDefini(Integer qteEquipDefini) { this.qteEquipDefini = qteEquipDefini; }
+
+    public Integer getQuantiteMaxTrimestre() { return quantiteMaxTrimestre; }
+    public void setQuantiteMaxTrimestre(Integer quantiteMaxTrimestre) { this.quantiteMaxTrimestre = quantiteMaxTrimestre; }
 
     public OrdreCommande getOrdreCommande() { return ordreCommande; }
     public void setOrdreCommande(OrdreCommande ordreCommande) { this.ordreCommande = ordreCommande; }

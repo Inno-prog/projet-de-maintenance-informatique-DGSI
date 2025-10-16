@@ -44,6 +44,11 @@ import { AuthService } from '../../../core/services/auth.service';
             <span class="nav-text">Fiches de Prestation</span>
           </a>
 
+          <a routerLink="/prestations" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Mes Prestations</span>
+          </a>
+
           <a routerLink="/ordres-commande" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📦</span>
             <span class="nav-text">Ordres de Commande</span>
