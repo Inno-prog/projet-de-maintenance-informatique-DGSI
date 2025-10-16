@@ -16,14 +16,14 @@ public class PrestationDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Only initialize if no data exists
+        // Initialiser uniquement si aucune donnée n'existe
         if (prestationRepository.count() == 0) {
             initializeSampleData();
         }
     }
 
     private void initializeSampleData() {
-        // Sample data as provided by user
+        // Données d'exemple fournies par l'utilisateur
         Prestation prestation1 = new Prestation();
         prestation1.setNomPrestataire("TechServe SARL");
         prestation1.setNomPrestation("Maintenance serveurs régionaux");
@@ -72,12 +72,12 @@ public class PrestationDataInitializer implements CommandLineRunner {
         prestation4.setStatut("en cours");
         prestation4.setDescription("Mise à jour des applications métier et systèmes");
 
-        // Save all prestations
+        // Sauvegarder toutes les prestations
         prestationRepository.save(prestation1);
         prestationRepository.save(prestation2);
         prestationRepository.save(prestation3);
         prestationRepository.save(prestation4);
 
-        System.out.println("Sample prestation data initialized successfully!");
+        System.out.println("Données d'exemple de prestations initialisées avec succès !");
     }
 }

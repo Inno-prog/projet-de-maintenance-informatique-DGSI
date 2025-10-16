@@ -15,14 +15,14 @@ public class OrdreCommandeDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Only initialize if no data exists
+        // Initialiser uniquement si aucune donnée n'existe
         if (ordreCommandeRepository.count() == 0) {
             initializeSampleData();
         }
     }
 
     private void initializeSampleData() {
-        // Sample OrdreCommande data
+        // Données d'exemple OrdreCommande
         OrdreCommande ordre1 = new OrdreCommande();
         ordre1.setNumeroCommande("OC001");
         ordre1.setIdOC("OC-001-2025");
@@ -75,12 +75,12 @@ public class OrdreCommandeDataInitializer implements CommandLineRunner {
         ordre4.setDescription("Mise à jour des logiciels et applications");
         ordre4.setStatut(StatutCommande.EN_COURS);
 
-        // Save all orders
+        // Sauvegarder toutes les commandes
         ordreCommandeRepository.save(ordre1);
         ordreCommandeRepository.save(ordre2);
         ordreCommandeRepository.save(ordre3);
         ordreCommandeRepository.save(ordre4);
 
-        System.out.println("Sample ordre commande data initialized successfully!");
+        System.out.println("Données d'exemple d'ordre de commande initialisées avec succès !");
     }
 }

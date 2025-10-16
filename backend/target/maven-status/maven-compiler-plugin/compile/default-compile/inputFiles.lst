@@ -52,6 +52,7 @@
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/security/WebSecurityConfig.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/service/EvaluationService.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/service/FileUploadService.java
+/home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/service/KeycloakService.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/service/NotificationService.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/service/PDFGenerationService.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/service/UserService.java

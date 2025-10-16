@@ -30,8 +30,8 @@ public class RegisterRequest {
     @Size(max = 100)
     private String qualification;
 
-    private String poste; // For Administrator
-    private String structure; // For CorrespondantInformatique
+    private String poste; // Pour Administrateur
+    private String structure; // Pour CorrespondantInformatique
 
     // Getters and Setters
     public String getNom() { return nom; }

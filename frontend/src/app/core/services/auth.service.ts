@@ -26,38 +26,49 @@ export class AuthService {
 
   private configureOAuth(): void {
     // Configuration pour client public - pas d'initialisation automatique
+    const isProduction = window.location.protocol === 'https:';
     const authConfig: AuthConfig = {
-      issuer: 'http://localhost:8080/realms/Maintenance-DGSI',
+      issuer: isProduction
+        ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI'
+        : 'http://localhost:8080/realms/Maintenance-DGSI',
       redirectUri: window.location.origin + '/login',
       clientId: 'maintenance-app',
-    responseType: 'code',
+      responseType: 'code',
       scope: 'openid roles',
-      showDebugInformation: true,
-      requireHttps: false,
-      skipIssuerCheck: true,
-      strictDiscoveryDocumentValidation: false,
+      showDebugInformation: !isProduction, // Désactiver les informations de débogage en production
+      requireHttps: isProduction, // Exiger HTTPS en production
+      skipIssuerCheck: !isProduction, // Vérification stricte de l'émetteur en production
+      strictDiscoveryDocumentValidation: isProduction, // Validation stricte en production
       oidc: true,
       useSilentRefresh: false,
-      disableAtHashCheck: true,
-      loginUrl: 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/auth',
-      logoutUrl: 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/logout',
-      tokenEndpoint: 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/token',
-      userinfoEndpoint: 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/userinfo',
+      disableAtHashCheck: false, // Activer la vérification de hachage pour la sécurité
+      loginUrl: isProduction
+        ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI/protocol/openid-connect/auth'
+        : 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/auth',
+      logoutUrl: isProduction
+        ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI/protocol/openid-connect/logout'
+        : 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/logout',
+      tokenEndpoint: isProduction
+        ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI/protocol/openid-connect/token'
+        : 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/token',
+      userinfoEndpoint: isProduction
+        ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI/protocol/openid-connect/userinfo'
+        : 'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/userinfo',
       // Configuration spécifique pour client public
       dummyClientSecret: '', // Important pour les clients publics
       useHttpBasicAuth: false // Désactiver l'authentification HTTP Basic
     };
 
-  // Some versions of angular-oauth2-oidc may not expose `usePkce` on the AuthConfig
-  // type. Assign it defensively via a cast so TS doesn't fail while still enabling PKCE.
+  // Certaines versions de angular-oauth2-oidc peuvent ne pas exposer `usePkce` sur le type AuthConfig
+  // L'assigner défensivement via un cast pour que TS ne échoue pas tout en activant PKCE.
   (authConfig as any).usePkce = true;
   this.oauthService.configure(authConfig);
 
-  // Persist tokens into localStorage so code verifier / PKCE state survives redirects
+  // Persister les tokens dans localStorage pour que le vérificateur de code / état PKCE survive aux redirections
   try {
     this.oauthService.setStorage(localStorage);
   } catch (e) {
-    // Some library versions may not expose setStorage; ignore if not available
+    // Certaines versions de bibliothèque peuvent ne pas exposer setStorage ; ignorer si non disponible
     console.warn('oauthService.setStorage not available, falling back to default storage', e);
   }
 
@@ -66,69 +77,69 @@ export class AuthService {
   }
 
   private initializeOAuth(): void {
-    console.log('Initializing OAuth service...');
-    console.log('Issuer URL:', 'http://localhost:8080/realms/Maintenance-DGSI');
-    console.log('Client ID:', 'maintenance-app');
+    console.log('Initialisation du service OAuth...');
+    console.log('URL de l\'émetteur:', 'http://localhost:8080/realms/Maintenance-DGSI');
+    console.log('ID client:', 'maintenance-app');
 
-    // Clear any invalid tokens from previous sessions without triggering a logout redirect
+    // Effacer les tokens invalides des sessions précédentes sans déclencher une redirection de déconnexion
     if (!this.oauthService.hasValidAccessToken() && (localStorage.getItem('access_token') || localStorage.getItem('id_token'))) {
-      console.log('Clearing invalid tokens from local storage (no remote logout)');
+      console.log('Effacement des tokens invalides du stockage local (pas de déconnexion distante)');
       try {
-        // don't call oauthService.logOut() here because it may redirect the browser.
+        // ne pas appeler oauthService.logOut() ici car cela peut rediriger le navigateur.
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('id_token');
         localStorage.removeItem('token');
         localStorage.removeItem('currentUser');
       } catch (e) {
-        console.warn('Error clearing tokens from storage', e);
+        console.warn('Erreur lors de l\'effacement des tokens du stockage', e);
       }
       this.currentUserSubject.next(null);
     }
 
-    // Load discovery document and try login if there are tokens
-    console.log('Loading discovery document...');
+    // Charger le document de découverte et essayer de se connecter s'il y a des tokens
+    console.log('Chargement du document de découverte...');
     this.oauthService.loadDiscoveryDocumentAndTryLogin().then(() => {
-      console.log('Discovery document loaded successfully');
+      console.log('Document de découverte chargé avec succès');
       if (this.oauthService.hasValidAccessToken()) {
-        console.log('Valid access token found, updating user from token');
+        console.log('Token d\'accès valide trouvé, mise à jour de l\'utilisateur depuis le token');
         this.updateUserFromToken();
       } else {
-        console.log('No valid access token found');
+        console.log('Aucun token d\'accès valide trouvé');
       }
     }).catch(err => {
-      console.error('OAuth initialization error:', err);
-      console.error('Error details:', err.message);
-      console.error('Check if Keycloak is running on http://localhost:8080');
+      console.error('Erreur d\'initialisation OAuth:', err);
+      console.error('Détails de l\'erreur:', err.message);
+      console.error('Vérifiez si Keycloak fonctionne sur http://localhost:8080');
     });
   }
 
   login(credentials?: LoginRequest): void {
     if (credentials) {
-      // Use password grant for direct login. Some Keycloak setups require
-      // the request body to be application/x-www-form-urlencoded and the
-      // client to be configured for direct access grants. If the library
-      // helper fails, fallback to a manual HTTP request to the token endpoint
-      // with proper headers.
-      console.log('Using password grant for login...');
+      // Utiliser le flux de mot de passe pour la connexion directe. Certaines configurations Keycloak nécessitent
+      // que le corps de la requête soit application/x-www-form-urlencoded et que
+      // le client soit configuré pour les subventions d'accès direct. Si l'aide de bibliothèque
+      // échoue, revenir à une requête HTTP manuelle vers le point de terminaison du token
+      // avec les en-têtes appropriés.
+      console.log('Utilisation du flux de mot de passe pour la connexion...');
       this.oauthService.fetchTokenUsingPasswordFlow(credentials.email, credentials.password).then(() => {
-        console.log('Password login successful');
+        console.log('Connexion par mot de passe réussie');
         this.updateUserFromToken();
       }).catch(err => {
-        console.warn('fetchTokenUsingPasswordFlow failed, trying manual token request. Error:', err);
+        console.warn('fetchTokenUsingPasswordFlow a échoué, tentative de requête de token manuelle. Erreur:', err);
 
-        // Manual token request fallback
-        // Try to read configured token endpoint from the oauthService options, fallback to constant
-        // The OAuthService type may expose the config under `options` or `_config`, so we defensively
-        // check common properties. Otherwise use the known Keycloak token endpoint.
+        // Requête de token manuelle de secours
+        // Essayer de lire le point de terminaison du token configuré depuis les options oauthService, revenir à la constante
+        // Le type OAuthService peut exposer la config sous `options` ou `_config`, donc nous vérifions défensivement
+        // les propriétés communes. Sinon, utiliser le point de terminaison Keycloak connu.
         const tokenUrl = (
           (this.oauthService as any).options?.tokenEndpoint ||
           (this.oauthService as any)._config?.tokenEndpoint ||
           'http://localhost:8080/realms/Maintenance-DGSI/protocol/openid-connect/token'
         );
         const body = new URLSearchParams();
-        // Keycloak expects 'username' (not email) unless realm is set to loginWithEmail
-        // We send both username and email as username if the input looks like an email.
+        // Keycloak attend 'username' (pas email) sauf si le realm est configuré pour loginWithEmail
+        // Nous envoyons à la fois username et email comme username si l'entrée ressemble à un email.
         const username = credentials.email;
         body.set('grant_type', 'password');
         body.set('username', username);
@@ -140,8 +151,8 @@ export class AuthService {
         };
 
         this.http.post<any>(tokenUrl, body.toString(), { headers }).toPromise().then(response => {
-          console.log('Manual token request successful', response);
-          // The oauthService expects tokens in its storage; store them consistently
+          console.log('Requête de token manuelle réussie', response);
+          // L'oauthService attend les tokens dans son stockage ; les stocker de manière cohérente
           if (response['access_token']) {
             this.oauthService.setStorage(localStorage);
             localStorage.setItem('access_token', response['access_token']);
@@ -149,37 +160,37 @@ export class AuthService {
             if (response['id_token']) localStorage.setItem('id_token', response['id_token']);
             this.updateUserFromToken();
           } else {
-            console.error('Token response did not contain access_token:', response);
+            console.error('La réponse du token ne contenait pas access_token:', response);
           }
         }).catch(httpErr => {
-          console.error(`Password login failed: ${httpErr.message || httpErr.statusText || httpErr}`);
-          console.error('Full error response:', httpErr);
+          console.error(`Connexion par mot de passe échouée: ${httpErr.message || httpErr.statusText || httpErr}`);
+          console.error('Réponse d\'erreur complète:', httpErr);
         }).finally(() => {
           this.loadingCleanup();
         });
       });
     } else {
-      // The login is now initiated by redirecting to Keycloak.
-      // The callback will be handled automatically by `loadDiscoveryDocumentAndTryLogin`.
-      console.log('Initiating OAuth login flow (authorization code + PKCE)');
-      console.log('Redirect URI:', window.location.origin + '/login');
+      // La connexion est maintenant initiée en redirigeant vers Keycloak.
+      // Le callback sera géré automatiquement par `loadDiscoveryDocumentAndTryLogin`.
+      console.log('Initiation du flux de connexion OAuth (code d\'autorisation + PKCE)');
+      console.log('URI de redirection:', window.location.origin + '/login');
 
-      // Always ensure discovery document is loaded then start the code flow.
+      // S'assurer toujours que le document de découverte est chargé puis démarrer le flux de code.
       const startCodeFlow = () => {
         try {
           this.oauthService.initCodeFlow();
-          console.log('OAuth initCodeFlow called successfully');
+          console.log('OAuth initCodeFlow appelé avec succès');
         } catch (error) {
-          console.error('Error initiating OAuth flow:', error);
+          console.error('Erreur lors de l\'initiation du flux OAuth:', error);
         }
       };
 
       if (!this.oauthService.discoveryDocumentLoaded) {
         this.oauthService.loadDiscoveryDocument().then(() => {
-          console.log('Discovery document loaded, starting code flow');
+          console.log('Document de découverte chargé, démarrage du flux de code');
           startCodeFlow();
         }).catch(err => {
-          console.error('Failed to load discovery document - cannot start code flow:', err);
+          console.error('Échec du chargement du document de découverte - impossible de démarrer le flux de code:', err);
         });
       } else {
         startCodeFlow();
@@ -188,38 +199,34 @@ export class AuthService {
   }
 
   private loadingCleanup(): void {
-    // Placeholder for any cleanup like toggling loading state in UI; left empty
-    // because AuthService doesn't own component loading flags. Components should
-    // listen to auth state and update their own loading flags.
+    // Espace réservé pour tout nettoyage comme basculer l'état de chargement dans l'UI ; laissé vide
+    // car AuthService ne possède pas les indicateurs de chargement des composants. Les composants doivent
+    // écouter l'état d'authentification et mettre à jour leurs propres indicateurs de chargement.
   }
 
   register(userData: RegisterRequest): Observable<any> {
-    // L'inscription se fait via Keycloak admin ou interface dédiée
-    // Pour l'instant, retourner une erreur
-    return new Observable(observer => {
-      observer.error('L\'inscription doit être faite via l\'interface d\'administration Keycloak');
-    });
+    return this.http.post(`${this.API_URL}/register`, userData);
   }
 
   logout(): void {
-    // Clear OAuth tokens and session
+    // Effacer les tokens OAuth et la session
     try {
       this.oauthService.logOut();
     } catch (error) {
-      console.warn('OAuth logout failed, continuing with local cleanup:', error);
+      console.warn('Échec de la déconnexion OAuth, continuation avec le nettoyage local:', error);
     }
 
-    // Clear all local storage
+    // Effacer tout le stockage local
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('id_token');
 
-    // Clear current user
+    // Effacer l'utilisateur actuel
     this.currentUserSubject.next(null);
 
-    // Force navigation to homepage instead of Keycloak
+    // Forcer la navigation vers la page d'accueil au lieu de Keycloak
     window.location.href = '/';
   }
 
@@ -262,15 +269,15 @@ export class AuthService {
   }
 
   private getUserFromToken(): User | null {
-    // Try to get roles from access token first
+    // Essayer d'obtenir les rôles depuis le token d'accès en premier
     const accessToken = this.oauthService.getAccessToken();
     if (accessToken) {
       try {
         const payload = JSON.parse(atob(accessToken.split('.')[1]));
-        console.log('Access token payload:', payload);
+        console.log('Charge utile du token d\'accès:', payload);
 
         const roles = payload['realm_access']?.['roles'] || [];
-        console.log('Extracted roles from access token:', roles);
+        console.log('Rôles extraits du token d\'accès:', roles);
 
         let role = 'USER'; // rôle par défaut
 
@@ -282,7 +289,7 @@ export class AuthService {
           role = 'AGENT_DGSI';
         }
 
-        console.log('Determined role:', role);
+        console.log('Rôle déterminé:', role);
 
         return {
           id: payload['sub'] || '',
@@ -291,18 +298,18 @@ export class AuthService {
           role: role
         };
       } catch (error) {
-        console.error('Error parsing access token:', error);
+        console.error('Erreur lors de l\'analyse du token d\'accès:', error);
       }
     }
 
-    // Fallback to ID token claims
+    // Revenir aux claims du token ID
     const claims = this.oauthService.getIdentityClaims();
-    console.log('ID token claims:', claims);
+    console.log('Claims du token ID:', claims);
 
     if (!claims) return null;
 
     const roles = claims['realm_access']?.['roles'] || [];
-    console.log('Extracted roles from ID token:', roles);
+    console.log('Rôles extraits du token ID:', roles);
 
     let role = 'USER'; // rôle par défaut
 
@@ -314,7 +321,7 @@ export class AuthService {
       role = 'AGENT_DGSI';
     }
 
-    console.log('Determined role from ID token:', role);
+    console.log('Rôle déterminé depuis le token ID:', role);
 
     return {
       id: claims['sub'] || '',
@@ -384,7 +391,7 @@ export class AuthService {
       }
       return false;
     }).catch(err => {
-      console.error('OAuth callback failed:', err);
+      console.error('Échec du callback OAuth:', err);
       return false;
     });
   }

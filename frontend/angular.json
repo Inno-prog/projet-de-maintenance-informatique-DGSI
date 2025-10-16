@@ -48,12 +48,16 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "dgsi-maintenance:build:production"
             },
             "development": {
-              "buildTarget": "dgsi-maintenance:build:development"
+              "buildTarget": "dgsi-maintenance:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

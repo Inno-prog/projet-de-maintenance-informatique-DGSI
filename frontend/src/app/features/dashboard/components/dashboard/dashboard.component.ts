@@ -17,7 +17,11 @@ import { ToastService } from '../../../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="container">
+    <ng-container *ngIf="!authService.isAuthenticated()">
+      <ng-container *ngTemplateOutlet="publicView"></ng-container>
+    </ng-container>
+
+    <div class="container" *ngIf="authService.isAuthenticated()">
         <div class="dashboard-header">
           <div class="welcome-section">
             <h1>Bienvenue sur <span class="text-primary">DGSI Maintenance</span></h1>
@@ -217,22 +221,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                 <img src="/assets/logoFinal.png" alt="DGSI Logo" class="logo-image">
               </div>
             </div>
-            
-            <div class="info-dropdown" tabindex="0">
-              <button class="info-toggle" aria-haspopup="true" aria-expanded="false">Informations ▾</button>
-              <ul class="dropdown-menu" role="menu" aria-label="Informations DGSI">
-                <li role="none">
-                  <a role="menuitem" class="dropdown-item" href="https://www.it.finances.gov.bf" target="_blank" rel="noopener noreferrer">Site web</a>
-                </li>
-                <li role="none">
-                  <a role="menuitem" class="dropdown-item" href="mailto:it&#64;finances.gov.bf">Nous envoyer un mail</a>
-                </li>
-                <li role="none">
-                  <a role="menuitem" class="dropdown-item" href="tel:+22620490273">Nous contacter</a>
-                </li>
-              </ul>
-            </div>
-            
+
             <div class="nav-actions">
               <a routerLink="/login" class="btn btn-outline">Connexion</a>
               <a routerLink="/register" class="btn btn-primary">S'inscrire</a>
@@ -266,7 +255,7 @@ import { ToastService } from '../../../../core/services/toast.service';
             </div>
 
             <div class="features-section">
-              <div class="feature-card">
+              <div class="feature-card" routerLink="/login">
                 <div class="feature-icon">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 8H17V6C17 4.9 16.1 4 15 4H9C7.9 4 7 4.9 7 6V8H4C2.9 8 2 8.9 2 10V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V10C22 8.9 21.1 8 20 8ZM9 6H15V8H9V6ZM20 19H4V10H8V12H16V10H20V19Z" fill="#F97316"/>
@@ -276,7 +265,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                 <p>Création et gestion complète des prestataires avec leurs items associés</p>
               </div>
 
-              <div class="feature-card">
+              <div class="feature-card" routerLink="/login">
                 <div class="feature-icon">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="#F97316"/>
@@ -286,7 +275,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                 <p>Suivi rigoureux de l'exécution des prestations de maintenance</p>
               </div>
 
-              <div class="feature-card">
+              <div class="feature-card" routerLink="/login">
                 <div class="feature-icon">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V7H5V3H13V7C13 8.1 13.9 9 15 9H21ZM7 10C5.9 10 5 10.9 5 12V20C5 21.1 5.9 22 7 22H17C18.1 22 19 21.1 19 20V12C19 10.9 18.1 10 17 10H7ZM12 18.5C10.29 18.5 8.93 17.14 8.93 15.43C8.93 13.72 10.29 12.36 12 12.36C13.71 12.36 15.07 13.72 15.07 15.43C15.07 17.14 13.71 18.5 12 18.5Z" fill="#F97316"/>
@@ -1015,15 +1004,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // If user already present and is admin, load stats immediately
+    // Si l'utilisateur est déjà présent et est administrateur, charger les statistiques immédiatement
     if (this.authService.isAdmin()) {
       this.loadStats();
       this.startAutoRefresh();
     }
 
-    // Also subscribe to authentication state — when a user logs in and becomes
-    // available (after OAuth callback), trigger stats loading. This handles
-    // timing cases where the dashboard initializes before the auth flow completes.
+    // S'abonner également à l'état d'authentification — lorsqu'un utilisateur se connecte et devient
+    // disponible (après le rappel OAuth), déclencher le chargement des statistiques. Cela gère
+    // les cas de synchronisation où le tableau de bord s'initialise avant la fin du flux d'authentification.
     this.userSub = this.authService.currentUser$.subscribe(user => {
       if (user && this.authService.isAdmin()) {
         this.loadStats();
@@ -1200,7 +1189,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   startAutoRefresh(): void {
-    // Refresh stats every 30 seconds
+    // Actualiser les statistiques toutes les 30 secondes
     this.refreshInterval = setInterval(() => {
       this.refreshStats();
     }, 30000);

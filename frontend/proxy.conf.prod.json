@@ -1,0 +1,18 @@
+{
+  "/api": {
+    "target": "https://your-api-domain.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "info",
+    "headers": {
+      "X-Forwarded-Proto": "https",
+      "X-Forwarded-Host": "your-frontend-domain.com"
+    }
+  },
+  "/realms": {
+    "target": "https://your-keycloak-domain.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "info"
+  }
+}

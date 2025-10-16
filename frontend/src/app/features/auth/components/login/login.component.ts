@@ -294,14 +294,14 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Check if we have OAuth callback parameters in the URL
+    // Vérifier si nous avons des paramètres de callback OAuth dans l'URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('code') || urlParams.has('error')) {
-      // Handle OAuth callback
+      // Gérer le callback OAuth
       this.loading = true;
       this.errorMessage = '';
 
-      // Try to process the OAuth callback. Add a timeout to avoid a persistent blank screen.
+      // Essayer de traiter le callback OAuth. Ajouter un timeout pour éviter un écran blanc persistant.
       let resolved = false;
       const timeout = setTimeout(() => {
         if (!resolved) {
@@ -322,25 +322,25 @@ export class LoginComponent implements OnInit {
       }).catch(error => {
         resolved = true;
         clearTimeout(timeout);
-        console.error('OAuth callback error:', error);
+        console.error('Erreur de callback OAuth:', error);
         this.errorMessage = 'Erreur lors du traitement du callback OAuth.';
         this.loading = false;
       });
     }
 
-    // If the page was opened without OAuth callback params and the user is not
-    // authenticated, immediately start the authorization code flow so the user
-    // is redirected to Keycloak (no local login form shown first).
+    // Si la page a été ouverte sans paramètres de callback OAuth et que l'utilisateur n'est pas
+    // authentifié, démarrer immédiatement le flux de code d'autorisation pour que l'utilisateur
+    // soit redirigé vers Keycloak (pas de formulaire de connexion local affiché en premier).
     if (!urlParams.has('code') && !urlParams.has('error') && !this.authService.isAuthenticated()) {
-      console.log('No OAuth callback present and user not authenticated — redirecting to Keycloak');
+      console.log('Aucun callback OAuth présent et utilisateur non authentifié — redirection vers Keycloak');
       this.loading = true;
       this.authService.login();
       return;
     }
-    // Listen for authentication state changes
+    // Écouter les changements d'état d'authentification
     this.authService.currentUser$.subscribe(user => {
       if (user) {
-        console.log('User logged in, redirecting...');
+        console.log('Utilisateur connecté, redirection...');
         this.redirectToDashboard();
       }
     });
@@ -401,10 +401,10 @@ export class LoginComponent implements OnInit {
       this.loading = true;
       this.errorMessage = '';
       console.log('Initiating OAuth redirect login flow');
-      // Use the authorization code flow (redirect to Keycloak) instead of
-      // performing the resource-owner password credentials flow from the
-      // browser (which may be rejected with 400 depending on Keycloak/client config).
-      // The OAuth callback will be handled in ngOnInit when the URL contains code/error.
+      // Utilisez le flux de code d'autorisation (redirection vers Keycloak) au lieu d'effectuer
+      // le flux d'informations d'identification du propriétaire de la ressource depuis le navigateur
+      // (qui peut être rejeté avec 400 selon la configuration Keycloak/client).
+      // Le callback OAuth sera géré dans ngOnInit lorsque l'URL contient code/error.
       this.authService.login();
     } else {
       this.errorMessage = 'Veuillez remplir tous les champs correctement';

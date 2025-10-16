@@ -760,7 +760,7 @@ export class LayoutComponent implements AfterViewInit, OnDestroy {
     this.confirmationService.setComponent(this.confirmation);
     this.toastService.setComponent(this.toast);
 
-    // Load notifications for prestataires
+    // Charger les notifications pour les prestataires
     if (this.authService.isPrestataire()) {
       this.loadNotifications();
       this.startNotificationPolling();

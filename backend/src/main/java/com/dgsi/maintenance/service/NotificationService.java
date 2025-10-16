@@ -1,14 +1,13 @@
 package com.dgsi.maintenance.service;
 
+import java.util.List;
+import java.util.Optional;
 import com.dgsi.maintenance.entity.Notification;
 import com.dgsi.maintenance.entity.User;
 import com.dgsi.maintenance.repository.NotificationRepository;
 import com.dgsi.maintenance.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -20,7 +19,7 @@ public class NotificationService {
     private UserRepository userRepository;
 
     public void envoyerNotificationPrestationTerminee(String prestataire, Long prestationId, String nomItem) {
-        // Find user by name to get email
+        // Trouver l'utilisateur par nom pour obtenir l'email
         Optional<User> userOpt = userRepository.findByNom(prestataire);
         if (userOpt.isPresent()) {
             Notification notification = new Notification();
@@ -38,7 +37,7 @@ public class NotificationService {
     }
 
     public void envoyerNotificationEvaluationTerminee(String prestataire, String resultat) {
-        // Find user by name to get email
+        // Trouver l'utilisateur par nom pour obtenir l'email
         Optional<User> userOpt = userRepository.findByNom(prestataire);
         if (userOpt.isPresent()) {
             Notification notification = new Notification();

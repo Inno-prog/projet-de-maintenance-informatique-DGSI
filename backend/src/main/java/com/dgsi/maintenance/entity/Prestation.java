@@ -59,7 +59,7 @@ public class Prestation {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    // Constructors
+    // Constructeurs
     public Prestation() {}
 
     public Prestation(String nomPrestataire, String nomPrestation, BigDecimal montantPrest,
