@@ -2,14 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PrestationService, Prestation } from '../../../../core/services/prestation.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
+import { PrestationFormComponent } from '../prestation-form/prestation-form.component';
 
 @Component({
   selector: 'app-prestation-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatDialogModule],
   template: `
     <div class="container">
         <!-- Header Section -->
@@ -37,6 +40,7 @@ import { ToastService } from '../../../../core/services/toast.service';
               <option value="en cours">En cours</option>
               <option value="en attente">En attente</option>
             </select>
+
             <button class="btn btn-primary" (click)="refreshData()">
               <span>🔄</span>
               Actualiser
@@ -79,10 +83,24 @@ import { ToastService } from '../../../../core/services/toast.service';
         <!-- Prestations Table -->
         <div class="table-container">
           <div class="table-header">
-            <h3>Liste des Prestations</h3>
+            <div class="table-header-content">
+              <h3>Liste des Prestations</h3>
+              <button class="btn btn-success" (click)="creerNouvellePrestation()">
+                <span>➕</span>
+                Nouvelle Prestation
+              </button>
+            </div>
           </div>
 
-          <div class="table-responsive">
+          <div class="loading-container" *ngIf="loading; else tableContent">
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Chargement des prestations...</p>
+            </div>
+          </div>
+
+          <ng-template #tableContent>
+            <div class="table-responsive">
             <table class="prestation-table">
               <thead>
                 <tr>
@@ -156,7 +174,10 @@ import { ToastService } from '../../../../core/services/toast.service';
             <h3>Aucune prestation trouvée</h3>
             <p>{{ searchTerm || selectedStatut ? 'Aucun résultat ne correspond à vos critères.' : 'Aucune prestation n\'a été enregistrée pour le moment.' }}</p>
           </div>
+          </ng-template>
         </div>
+
+
       </div>
   `,
   styles: [`
@@ -292,6 +313,13 @@ import { ToastService } from '../../../../core/services/toast.service';
       font-weight: 600;
       color: #1f2937;
       margin: 0;
+    }
+
+    .table-header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 50rem;
     }
 
     .table-responsive {
@@ -596,6 +624,44 @@ import { ToastService } from '../../../../core/services/toast.service';
         width: 100%;
       }
     }
+
+    /* Loading Styles */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .loading-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #F97316;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-spinner p {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   `]
 })
 export class PrestationListComponent implements OnInit {
@@ -604,11 +670,15 @@ export class PrestationListComponent implements OnInit {
   searchTerm = '';
   selectedStatut = '';
 
+  // Loading state
+  loading = false;
+
   constructor(
     private authService: AuthService,
-
     private prestationService: PrestationService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private confirmationService: ConfirmationService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -616,10 +686,12 @@ export class PrestationListComponent implements OnInit {
   }
 
   loadPrestations(): void {
+    this.loading = true;
     this.prestationService.getAllPrestations().subscribe({
       next: (data) => {
         this.prestations = data;
         this.filteredPrestations = [...this.prestations];
+        this.loading = false;
       },
       error: (error) => {
         console.error('Erreur lors du chargement des prestations:', error);
@@ -628,6 +700,7 @@ export class PrestationListComponent implements OnInit {
           title: 'Erreur',
           message: 'Impossible de charger les prestations'
         });
+        this.loading = false;
       }
     });
   }
@@ -675,16 +748,41 @@ export class PrestationListComponent implements OnInit {
   }
 
   editPrestation(prestation: Prestation): void {
-    // TODO: Implement edit functionality
-    this.toastService.show({
-      type: 'info',
-      title: 'Fonctionnalité à venir',
-      message: 'La modification des prestations sera bientôt disponible'
+    const dialogRef = this.dialog.open(PrestationFormComponent, {
+      width: '800px',
+      data: { prestation }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadPrestations();
+      }
     });
   }
 
-  deletePrestation(prestation: Prestation): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer la prestation "${prestation.nomPrestation}" ?`)) {
+  creerNouvellePrestation(): void {
+    const dialogRef = this.dialog.open(PrestationFormComponent, {
+      width: '800px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadPrestations();
+      }
+    });
+  }
+
+  async deletePrestation(prestation: Prestation): Promise<void> {
+    const confirmed = await this.confirmationService.show({
+      title: 'Supprimer la prestation',
+      message: `Êtes-vous sûr de vouloir supprimer la prestation "${prestation.nomPrestation}" ?`,
+      type: 'danger',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler'
+    });
+
+    if (confirmed) {
       this.prestationService.deletePrestation(prestation.id!).subscribe({
         next: () => {
           this.loadPrestations();

@@ -1,5 +1,6 @@
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/MaintenanceApplication.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/config/DataInitializer.java
+/home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/config/ItemDataInitializer.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/config/JacksonConfig.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/config/OrdreCommandeDataInitializer.java
 /home/inno/dev/dgsi-maintenance/backend/src/main/java/com/dgsi/maintenance/config/PrestationDataInitializer.java

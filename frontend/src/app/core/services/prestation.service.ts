@@ -9,7 +9,7 @@ export interface Prestation {
   nomPrestataire: string;
   nomPrestation: string;
   montantPrest: number;
-  quantiteItem: number;
+  quantiteItem: number; // Kept for backend compatibility, but not used in frontend form
   nbPrestRealise: number;
   trimestre: string;
   dateDebut: string;

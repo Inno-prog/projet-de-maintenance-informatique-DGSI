@@ -12,7 +12,7 @@ export interface Contrat {
 export interface OrdreCommande {
   // Required attributes (as requested)
   idOC: string;
-  numeroOC?: number;
+  numeroOC?: string;
   max_prestations?: number;
   min_prestations?: number;
   prixUnitPrest?: number;
@@ -131,7 +131,6 @@ export interface PrestationItem {
   minArticles: number;
   maxArticles: number;
   prixUnitaire: number;
-  lot: string;
 }
 
 export interface FichePrestation {
@@ -157,7 +156,7 @@ export enum StatutFiche {
 
 export interface Item {
     id?: number;
-    idItem: number;
+    idItem?: number;
     nomItem: string;
     description?: string;
     prix: number;
@@ -172,7 +171,6 @@ export interface TypeItem {
   minArticles: number;
   maxArticles: number;
   prixUnitaire: number;
-  lot: string;
   oc1Quantity?: number;
 }
 

@@ -11,6 +11,7 @@ import { UserService } from '../../../../core/services/user.service';
 import { FichePrestationService } from '../../../../core/services/fiche-prestation.service';
 import { PdfService } from '../../../../core/services/pdf.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -1000,7 +1001,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private router: Router,
     private prestationService: FichePrestationService,
     private pdfService: PdfService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -1215,9 +1217,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  cloturerTrimestre(): void {
+  async cloturerTrimestre(): Promise<void> {
     const trimestre = this.getCurrentTrimestre();
-    if (confirm(`Êtes-vous sûr de vouloir clôturer le trimestre ${trimestre} ? Cette action est irréversible.`)) {
+    const confirmed = await this.confirmationService.show({
+      title: 'Clôturer le trimestre',
+      message: `Êtes-vous sûr de vouloir clôturer le trimestre ${trimestre} ? Cette action est irréversible.`,
+      confirmText: 'Clôturer',
+      cancelText: 'Annuler',
+      type: 'warning'
+    });
+
+    if (confirmed) {
       // TODO: Implement trimestre closure logic
       this.toastService.show({ type: 'success', title: 'Trimestre clôturé', message: `Le trimestre ${trimestre} a été clôturé avec succès` });
     }

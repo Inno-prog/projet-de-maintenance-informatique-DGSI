@@ -1,16 +1,24 @@
 package com.dgsi.maintenance.service;
 
-import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
-import com.dgsi.maintenance.entity.OrdreCommande;
-import com.dgsi.maintenance.entity.TypeItem;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-import org.springframework.stereotype.Service;
-
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
+import com.dgsi.maintenance.entity.OrdreCommande;
+import com.dgsi.maintenance.entity.TypeItem;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PDFGenerationService {

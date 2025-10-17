@@ -384,6 +384,10 @@ export class AuthService {
   }
 
   handleOAuthCallback(): Promise<boolean> {
+    if (this.oauthService.hasValidAccessToken()) {
+      this.updateUserFromToken();
+      return Promise.resolve(true);
+    }
     return this.oauthService.tryLoginCodeFlow().then(() => {
       if (this.oauthService.hasValidAccessToken()) {
         this.updateUserFromToken();

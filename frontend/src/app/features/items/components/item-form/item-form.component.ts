@@ -13,7 +13,7 @@ import { ToastService } from '../../../../core/services/toast.service';
     <div class="form-overlay" *ngIf="isVisible" (click)="onOverlayClick($event)">
       <div class="form-container">
         <div class="form-header">
-          <h2>{{ isEditing ? 'Modifier l\'item' : 'Ajouter un nouvel item' }}</h2>
+          <h2>{{ title }}</h2>
           <button class="btn-close" (click)="closeForm()" aria-label="Fermer">
             <i class="icon-close">×</i>
           </button>
@@ -22,22 +22,6 @@ import { ToastService } from '../../../../core/services/toast.service';
         <form (ngSubmit)="onSubmit()" #itemForm="ngForm">
           <div class="form-body">
             <div class="form-row">
-              <div class="form-group">
-                <label for="idItem" class="required">ID Item *</label>
-                <input
-                  type="number"
-                  id="idItem"
-                  name="idItem"
-                  class="form-control"
-                  [(ngModel)]="formData.idItem"
-                  required
-                  #idItem="ngModel"
-                  placeholder="Ex: 123">
-                <div class="error-message" *ngIf="idItem.invalid && idItem.touched">
-                  L'ID Item est obligatoire
-                </div>
-              </div>
-
               <div class="form-group">
                 <label for="nomItem" class="required">Nom Item *</label>
                 <input
@@ -104,20 +88,20 @@ import { ToastService } from '../../../../core/services/toast.service';
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="quantiteMaxTrimestre" class="required">Quantité Max Trimestre *</label>
-              <input
-                type="number"
-                id="quantiteMaxTrimestre"
-                name="quantiteMaxTrimestre"
-                class="form-control"
-                [(ngModel)]="formData.quantiteMaxTrimestre"
-                required
-                #quantiteMaxTrimestre="ngModel"
-                min="1"
-                placeholder="100">
+              <div class="form-group">
+                <label for="quantiteMaxTrimestre" class="required">Nombre Max Prestations Trimestre *</label>
+                <input
+                  type="number"
+                  id="quantiteMaxTrimestre"
+                  name="quantiteMaxTrimestre"
+                  class="form-control"
+                  [(ngModel)]="formData.quantiteMaxTrimestre"
+                  required
+                  #quantiteMaxTrimestre="ngModel"
+                  min="1"
+                  placeholder="100">
               <div class="error-message" *ngIf="quantiteMaxTrimestre.invalid && quantiteMaxTrimestre.touched">
-                La quantité maximum par trimestre est obligatoire
+                Le nombre maximum de prestations par trimestre est obligatoire
               </div>
             </div>
           </div>
@@ -316,8 +300,11 @@ export class ItemFormComponent implements OnInit {
    @Output() formClosed = new EventEmitter<void>();
    @Output() itemSaved = new EventEmitter<Item>();
 
+  get title(): string {
+    return this.isEditing ? "Modifier l'item" : "Ajouter un nouvel item";
+  }
+
    formData: Item = {
-     idItem: 0,
      nomItem: '',
      description: '',
      prix: 0,
@@ -350,7 +337,6 @@ export class ItemFormComponent implements OnInit {
 
   private resetForm(): void {
     this.formData = {
-      idItem: 0,
       nomItem: '',
       description: '',
       prix: 0,

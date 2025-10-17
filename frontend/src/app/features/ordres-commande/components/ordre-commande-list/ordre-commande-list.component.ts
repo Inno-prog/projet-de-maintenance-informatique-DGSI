@@ -75,7 +75,7 @@ import { ToastService } from '../../../../core/services/toast.service';
               </thead>
               <tbody>
                 <tr *ngFor="let ordre of ordres" [ngClass]="getRowClass(ordre.statut)" (click)="openDetails(ordre)" tabindex="0">
-                  <td data-label="Num OC">{{ ordre.numeroOC || '-' }}</td>
+                  <td data-label="Num OC">{{ ordre.numeroOC || ordre.numeroCommande || '-' }}</td>
                   <td data-label="Item"><strong>{{ ordre.item?.nomItem || ordre.nomItem || '-' }}</strong></td>
                   <td data-label="Prestataire">{{ ordre.prestataireItem || (ordre.fichePrestations && ordre.fichePrestations.length ? ordre.fichePrestations[0].nomPrestataire : null) || '-' }}</td>
                   <td data-label="Min/Max">{{ ordre.min_prestations ?? ordre.minArticles ?? 0 }} / {{ ordre.max_prestations ?? ordre.maxArticles ?? 0 }}</td>
@@ -111,7 +111,7 @@ import { ToastService } from '../../../../core/services/toast.service';
           <div class="details-modal" (click)="$event.stopPropagation()">
             <ng-container *ngIf="selectedOrdre as so">
               <div class="details-header">
-                <h2>Détails - Ordre {{ so.numeroOC || so.idOC }}</h2>
+                <h2>Détails - Ordre {{ so.numeroOC || so.numeroCommande || so.idOC }}</h2>
                 <div class="details-actions">
                   <button class="btn btn-outline" (click)="closeDetails()">Fermer</button>
                 </div>
@@ -121,7 +121,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                 <div class="details-left">
                   <section class="card">
                     <h3>Informations générales</h3>
-                    <p><strong>Numéro OC:</strong> {{ so.numeroOC || so.idOC }}</p>
+                    <p><strong>Numéro OC:</strong> {{ so.numeroOC || so.numeroCommande || so.idOC }}</p>
                     <p><strong>Item:</strong> {{ so.item?.nomItem || so.nomItem || '-' }}</p>
                     <p><strong>Prestataire:</strong> {{ so.prestataireItem || '-' }}</p>
                     <p><strong>Statut:</strong> {{ getStatusLabel(so.statut) }}</p>

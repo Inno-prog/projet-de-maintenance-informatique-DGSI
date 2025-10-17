@@ -25,7 +25,7 @@ export class ItemService {
     return this.http.get<Item[]>(`${this.API_URL}/search?nom=${nom}`);
   }
 
-  createItem(item: Omit<Item, 'id'>): Observable<Item> {
+  createItem(item: Omit<Item, 'id' | 'idItem'>): Observable<Item> {
     return this.http.post<Item>(this.API_URL, item);
   }
 

@@ -48,6 +48,15 @@ public class ItemController {
     @PostMapping
     @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public Item createItem(@RequestBody Item item) {
+        // Auto-generate idItem if not provided
+        if (item.getIdItem() == null) {
+            // Find the maximum idItem and increment by 1
+            Integer maxIdItem = itemRepository.findAll().stream()
+                .mapToInt(Item::getIdItem)
+                .max()
+                .orElse(0);
+            item.setIdItem(maxIdItem + 1);
+        }
         return itemRepository.save(item);
     }
 

@@ -1,7 +1,9 @@
 package com.dgsi.maintenance.controller;
 
 import java.util.List;
+import com.dgsi.maintenance.entity.Item;
 import com.dgsi.maintenance.entity.Prestation;
+import com.dgsi.maintenance.repository.ItemRepository;
 import com.dgsi.maintenance.repository.PrestationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +27,28 @@ public class PrestationController {
     @Autowired
     private PrestationRepository prestationRepository;
 
+    @Autowired
+    private ItemRepository itemRepository;
+
     @PostMapping
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
     public ResponseEntity<Prestation> createPrestation(@RequestBody Prestation prestation) {
         try {
+            // Validate that the number of prestations for this item in this trimestre doesn't exceed the maximum
+            Item item = itemRepository.findByNomItem(prestation.getNomPrestation());
+            if (item == null) {
+                return ResponseEntity.badRequest().build(); // Item not found
+            }
+
+            List<Prestation> existingPrestations = prestationRepository.findByTrimestre(prestation.getTrimestre());
+            long countPrestationsForItem = existingPrestations.stream()
+                .filter(p -> p.getNomPrestation().equals(prestation.getNomPrestation()))
+                .count();
+
+            if (countPrestationsForItem >= item.getQuantiteMaxTrimestre()) {
+                return ResponseEntity.badRequest().build(); // Exceeds maximum number of prestations
+            }
+
             Prestation savedPrestation = prestationRepository.save(prestation);
             return ResponseEntity.ok(savedPrestation);
         } catch (Exception e) {

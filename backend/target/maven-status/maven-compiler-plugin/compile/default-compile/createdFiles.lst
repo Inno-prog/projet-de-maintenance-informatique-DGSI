@@ -17,6 +17,7 @@ com/dgsi/maintenance/security/UserPrincipal.class
 com/dgsi/maintenance/entity/StatutCommande.class
 com/dgsi/maintenance/entity/Administrator.class
 com/dgsi/maintenance/entity/Prestataire.class
+com/dgsi/maintenance/repository/ItemRepository.class
 com/dgsi/maintenance/entity/Prestation.class
 com/dgsi/maintenance/entity/Role.class
 com/dgsi/maintenance/controller/PDFController.class
@@ -40,6 +41,7 @@ com/dgsi/maintenance/config/DataInitializer.class
 com/dgsi/maintenance/controller/TypeItemController.class
 com/dgsi/maintenance/service/NotificationService.class
 com/dgsi/maintenance/config/JacksonConfig.class
+com/dgsi/maintenance/controller/ItemController.class
 com/dgsi/maintenance/dto/AuthResponse.class
 com/dgsi/maintenance/repository/ContratRepository.class
 com/dgsi/maintenance/repository/PrestataireRepository.class

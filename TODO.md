@@ -1,28 +1,15 @@
-# TODO: Translate all code comments to French
+# TODO: Remove Quantité Field and Change Validation Logic
 
-## Java Files
-- [x] backend/src/main/java/com/dgsi/maintenance/service/NotificationService.java
-- [x] backend/src/main/java/com/dgsi/maintenance/controller/AuthController.java
-- [x] backend/src/main/java/com/dgsi/maintenance/security/WebSecurityConfig.java
-- [x] backend/src/main/java/com/dgsi/maintenance/security/KeycloakJwtAuthenticationConverter.java
-- [x] backend/src/main/java/com/dgsi/maintenance/config/PrestationDataInitializer.java
-- [x] backend/src/main/java/com/dgsi/maintenance/config/OrdreCommandeDataInitializer.java
-- [x] backend/src/main/java/com/dgsi/maintenance/dto/AuthResponse.java
-- [x] backend/src/main/java/com/dgsi/maintenance/dto/RegisterRequest.java
-- [x] backend/src/main/java/com/dgsi/maintenance/entity/Prestation.java
+## Backend Changes
+- [x] Update PrestationController.createPrestation() to count prestations instead of summing quantities
+- [x] Update validation logic to check if number of prestations >= quantiteMaxTrimestre
 
-## TypeScript Files
-- [x] frontend/src/environments/environment.ts
-- [x] frontend/src/app/features/dashboard/components/dashboard/dashboard.component.ts
-- [x] frontend/src/app/features/dashboard/components/prestations-dashboard/prestations-dashboard.component.ts
-- [x] frontend/src/app/features/users/components/user-list/user-list.component.ts
-- [x] frontend/src/app/shared/components/layout/layout.component.ts
-- [x] frontend/src/app/features/auth/components/login/login.component.ts
-- [ ] frontend/src/app/features/evaluation/evaluation-form.component.ts
-- [ ] frontend/src/app/features/rapports-trimestriels/components/rapport-form.component.ts
-- [ ] frontend/src/app/features/fiches-prestation/components/fiche-list/fiche-list.component.ts
-- [ ] frontend/src/app/features/statistiques/components/statistiques-dashboard/statistiques-dashboard.component.ts
-- [ ] frontend/src/app/features/ordres-commande/components/ordre-commande-list/ordre-commande-list.component.ts
-- [ ] frontend/src/app/features/prestations/components/prestation-list/prestation-list.component.ts
-- [ ] frontend/src/app/app.routes.ts
-- [ ] frontend/src/app/features/rapports-suivi/components/rapport-suivi-list/rapport-suivi-list.component.ts
+## Frontend Changes
+- [x] Remove quantiteItem field from prestation-form.component.html
+- [x] Remove quantiteItem from prestation-form.component.ts form group
+- [x] Update validation messages and info messages
+- [x] Update Prestation interface in business.models.ts if needed
+
+## Testing
+- [ ] Test that creating prestations respects the max count per trimestre
+- [ ] Verify error messages when limit is reached

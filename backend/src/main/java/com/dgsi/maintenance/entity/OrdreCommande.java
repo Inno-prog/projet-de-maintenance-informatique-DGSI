@@ -1,12 +1,24 @@
 package com.dgsi.maintenance.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "ordres_commande")
@@ -15,39 +27,53 @@ public class OrdreCommande {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(name = "numero_commande", unique = true)
+    @Column(name = "numero_oc", unique = true)
+    private Integer numeroOc;
+
+    @Column(name = "numero_commande")
     private String numeroCommande;
-    
+
     @Column(name = "id_oc")
     private String idOC;
-    
+
     @Column(name = "nom_item")
     private String nomItem;
-    
+
+    @Column(name = "min_prestations")
+    private Integer min_prestations;
+
     @Column(name = "min_articles")
     private Integer minArticles;
-    
+
+    @Column(name = "max_prestations")
+    private Integer max_prestations;
+
     @Column(name = "max_articles")
     private Integer maxArticles;
-    
+
     @Column(name = "nombre_articles_utilise")
     private Integer nombreArticlesUtilise;
-    
-    @Column(name = "ecart_articles")
-    private Integer ecartArticles;
-    
-    @Column(name = "trimestre")
-    private String trimestre;
-    
-    @Column(name = "prestataire_item")
-    private String prestataireItem;
-    
+
+    @Column(name = "prix_unit_prest")
+    private Float prixUnitPrest;
+
+    @Column(name = "montant_oc")
+    private Float montantOc;
+
     @Column(name = "montant")
     private Double montant;
 
+    @Column(name = "observations")
+    private String observations;
+
     @Column(name = "description")
     private String description;
+
+    @Column(name = "trimestre")
+    private String trimestre;
+
+    @Column(name = "prestataire_item")
+    private String prestataireItem;
 
     @NotNull
     @Column(name = "date_creation")
@@ -71,56 +97,64 @@ public class OrdreCommande {
         if (idOC == null || idOC.isEmpty()) {
             idOC = "OC-" + System.currentTimeMillis();
         }
-        calculateEcart();
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
-        calculateEcart();
-    }
-    
-    private void calculateEcart() {
-        if (maxArticles != null && nombreArticlesUtilise != null) {
-            ecartArticles = maxArticles - nombreArticlesUtilise;
-        }
+        // No automatic calculation needed
     }
 
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getNumeroCommande() { return numeroCommande; }
-    public void setNumeroCommande(String numeroCommande) { this.numeroCommande = numeroCommande; }
-    
+    public Integer getNumeroOc() { return numeroOc; }
+    public void setNumeroOc(Integer numeroOc) { this.numeroOc = numeroOc; }
+
     public String getIdOC() { return idOC; }
     public void setIdOC(String idOC) { this.idOC = idOC; }
-    
+
     public String getNomItem() { return nomItem; }
     public void setNomItem(String nomItem) { this.nomItem = nomItem; }
-    
+
+    public Integer getMin_prestations() { return min_prestations; }
+    public void setMin_prestations(Integer min_prestations) { this.min_prestations = min_prestations; }
+
+    public Integer getMax_prestations() { return max_prestations; }
+    public void setMax_prestations(Integer max_prestations) { this.max_prestations = max_prestations; }
+
     public Integer getMinArticles() { return minArticles; }
     public void setMinArticles(Integer minArticles) { this.minArticles = minArticles; }
-    
+
     public Integer getMaxArticles() { return maxArticles; }
     public void setMaxArticles(Integer maxArticles) { this.maxArticles = maxArticles; }
-    
+
     public Integer getNombreArticlesUtilise() { return nombreArticlesUtilise; }
     public void setNombreArticlesUtilise(Integer nombreArticlesUtilise) { this.nombreArticlesUtilise = nombreArticlesUtilise; }
-    
-    public Integer getEcartArticles() { return ecartArticles; }
-    public void setEcartArticles(Integer ecartArticles) { this.ecartArticles = ecartArticles; }
-    
-    public String getTrimestre() { return trimestre; }
-    public void setTrimestre(String trimestre) { this.trimestre = trimestre; }
-    
-    public String getPrestataireItem() { return prestataireItem; }
-    public void setPrestataireItem(String prestataireItem) { this.prestataireItem = prestataireItem; }
-    
+
+    public Float getPrixUnitPrest() { return prixUnitPrest; }
+    public void setPrixUnitPrest(Float prixUnitPrest) { this.prixUnitPrest = prixUnitPrest; }
+
+    public Float getMontantOc() { return montantOc; }
+    public void setMontantOc(Float montantOc) { this.montantOc = montantOc; }
+
     public Double getMontant() { return montant; }
     public void setMontant(Double montant) { this.montant = montant; }
 
+    public String getObservations() { return observations; }
+    public void setObservations(String observations) { this.observations = observations; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getTrimestre() { return trimestre; }
+    public void setTrimestre(String trimestre) { this.trimestre = trimestre; }
+
+    public String getPrestataireItem() { return prestataireItem; }
+    public void setPrestataireItem(String prestataireItem) { this.prestataireItem = prestataireItem; }
+
+    public String getNumeroCommande() { return numeroCommande; }
+    public void setNumeroCommande(String numeroCommande) { this.numeroCommande = numeroCommande; }
 
     public LocalDateTime getDateCreation() { return dateCreation; }
     public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
@@ -134,20 +168,44 @@ public class OrdreCommande {
     public List<Item> getItems() { return items; }
     public void setItems(List<Item> items) { this.items = items; }
     
+    public int calculer_ecart_item() {
+        if (max_prestations != null && min_prestations != null) {
+            return max_prestations - min_prestations;
+        }
+        return 0;
+    }
+
+    public Float calcul_montantTotal() {
+        return montantOc;
+    }
+
+    public Float calcul_penalite() {
+        int ecart = calculer_ecart_item();
+        if (ecart < 0) {
+            return Math.abs(ecart) * 10.0f;
+        }
+        return 0.0f;
+    }
+
+    public int getEcartArticles() {
+        if (maxArticles != null && minArticles != null) {
+            return maxArticles - minArticles;
+        }
+        return 0;
+    }
+
     @Override
     public String toString() {
         return "OrdreCommande{" +
                 "id=" + id +
-                ", numeroCommande='" + numeroCommande + '\'' +
+                ", numeroOc=" + numeroOc +
                 ", idOC='" + idOC + '\'' +
                 ", nomItem='" + nomItem + '\'' +
-                ", minArticles=" + minArticles +
-                ", maxArticles=" + maxArticles +
-                ", nombreArticlesUtilise=" + nombreArticlesUtilise +
-                ", ecartArticles=" + ecartArticles +
-                ", trimestre='" + trimestre + '\'' +
-                ", prestataireItem='" + prestataireItem + '\'' +
-                ", montant=" + montant +
+                ", min_prestations=" + min_prestations +
+                ", max_prestations=" + max_prestations +
+                ", prixUnitPrest=" + prixUnitPrest +
+                ", montantOc=" + montantOc +
+                ", observations='" + observations + '\'' +
                 ", statut=" + statut +
                 '}';
     }

@@ -1,15 +1,21 @@
 package com.dgsi.maintenance.controller;
 
+import java.util.List;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.StatutCommande;
 import com.dgsi.maintenance.repository.OrdreCommandeRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/ordres-commande")
@@ -37,11 +43,11 @@ public class OrdreCommandeController {
     @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<?> createOrdreCommande(@RequestBody OrdreCommande ordreCommande) {
         try {
-            System.out.println("Creating ordre commande: " + ordreCommande.getNumeroCommande());
+            System.out.println("Creating ordre commande: " + ordreCommande.getNumeroOc());
             System.out.println("Data received: " + ordreCommande.toString());
             
-            if (ordreCommandeRepository.existsByNumeroCommande(ordreCommande.getNumeroCommande())) {
-                System.out.println("Numero commande already exists: " + ordreCommande.getNumeroCommande());
+            if (ordreCommandeRepository.existsByNumeroOc(ordreCommande.getNumeroOc())) {
+                System.out.println("Numero commande already exists: " + ordreCommande.getNumeroOc());
                 return ResponseEntity.badRequest().body("Le numéro de commande existe déjà");
             }
             
@@ -60,15 +66,13 @@ public class OrdreCommandeController {
     public ResponseEntity<OrdreCommande> updateOrdreCommande(@PathVariable Long id, @RequestBody OrdreCommande ordreDetails) {
         return ordreCommandeRepository.findById(id)
             .map(ordre -> {
-                ordre.setNumeroCommande(ordreDetails.getNumeroCommande());
+                ordre.setNumeroOc(ordreDetails.getNumeroOc());
                 ordre.setNomItem(ordreDetails.getNomItem());
-                ordre.setMinArticles(ordreDetails.getMinArticles());
-                ordre.setMaxArticles(ordreDetails.getMaxArticles());
-                ordre.setNombreArticlesUtilise(ordreDetails.getNombreArticlesUtilise());
-                ordre.setTrimestre(ordreDetails.getTrimestre());
-                ordre.setPrestataireItem(ordreDetails.getPrestataireItem());
-                ordre.setMontant(ordreDetails.getMontant());
-                ordre.setDescription(ordreDetails.getDescription());
+                ordre.setMin_prestations(ordreDetails.getMin_prestations());
+                ordre.setMax_prestations(ordreDetails.getMax_prestations());
+                ordre.setPrixUnitPrest(ordreDetails.getPrixUnitPrest());
+                ordre.setMontantOc(ordreDetails.getMontantOc());
+                ordre.setObservations(ordreDetails.getObservations());
                 ordre.setStatut(ordreDetails.getStatut());
                 return ResponseEntity.ok(ordreCommandeRepository.save(ordre));
             })

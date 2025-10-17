@@ -13,7 +13,7 @@ import { ToastService } from '../../../../core/services/toast.service';
     <div class="form-overlay" *ngIf="isVisible" (click)="onOverlayClick($event)">
       <div class="form-container">
         <div class="form-header">
-          <h2>{{ isEditing ? 'Modifier l\'item' : 'Ajouter un nouvel item' }}</h2>
+          <h2>{{ title }}</h2>
           <button class="btn-close" (click)="closeForm()" aria-label="Fermer">
             <i class="icon-close">×</i>
           </button>
@@ -91,39 +91,21 @@ import { ToastService } from '../../../../core/services/toast.service';
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="prixUnitaire" class="required">Prix Unitaire (FCFA) *</label>
-                <input
-                  type="number"
-                  id="prixUnitaire"
-                  name="prixUnitaire"
-                  class="form-control"
-                  [(ngModel)]="formData.prixUnitaire"
-                  required
-                  #prixUnitaire="ngModel"
-                  min="0"
-                  step="0.01"
-                  placeholder="0">
-                <div class="error-message" *ngIf="prixUnitaire.invalid && prixUnitaire.touched">
-                  Le prix unitaire est obligatoire
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="lot" class="required">Lot *</label>
-                <input
-                  type="text"
-                  id="lot"
-                  name="lot"
-                  class="form-control"
-                  [(ngModel)]="formData.lot"
-                  required
-                  #lot="ngModel"
-                  placeholder="Ex: LOT-001">
-                <div class="error-message" *ngIf="lot.invalid && lot.touched">
-                  Le lot est obligatoire
-                </div>
+            <div class="form-group">
+              <label for="prixUnitaire" class="required">Prix Unitaire (FCFA) *</label>
+              <input
+                type="number"
+                id="prixUnitaire"
+                name="prixUnitaire"
+                class="form-control"
+                [(ngModel)]="formData.prixUnitaire"
+                required
+                #prixUnitaire="ngModel"
+                min="0"
+                step="0.01"
+                placeholder="0">
+              <div class="error-message" *ngIf="prixUnitaire.invalid && prixUnitaire.touched">
+                Le prix unitaire est obligatoire
               </div>
             </div>
 
@@ -330,13 +312,16 @@ export class TypeItemFormComponent implements OnInit {
   @Output() formClosed = new EventEmitter<void>();
   @Output() itemSaved = new EventEmitter<TypeItem>();
 
+  get title(): string {
+    return this.isEditing ? "Modifier le type d'item" : "Ajouter un nouveau type d'item";
+  }
+
   formData: TypeItem = {
     numero: '',
     prestation: '',
     minArticles: 0,
     maxArticles: 0,
     prixUnitaire: 0,
-    lot: '',
     oc1Quantity: 0
   };
 
@@ -370,7 +355,6 @@ export class TypeItemFormComponent implements OnInit {
       minArticles: 0,
       maxArticles: 0,
       prixUnitaire: 0,
-      lot: '',
       oc1Quantity: 0
     };
   }

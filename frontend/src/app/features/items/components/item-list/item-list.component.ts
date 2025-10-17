@@ -1,15 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TypeItemService } from '../../../../core/services/type-item.service';
-import { TypeItem } from '../../../../core/models/business.models';
+import { ItemService } from '../../../../core/services/item.service';
+import { Item } from '../../../../core/models/business.models';
 import { ToastService } from '../../../../core/services/toast.service';
-import { TypeItemFormComponent } from '../type-item-form/type-item-form.component';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
+import { ItemFormComponent } from '../item-form/item-form.component';
 
 @Component({
   selector: 'app-item-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TypeItemFormComponent],
+  imports: [CommonModule, FormsModule, ItemFormComponent],
   template: `
     <div class="container">
         <div class="header-section">
@@ -68,16 +69,8 @@ import { TypeItemFormComponent } from '../type-item-form/type-item-form.componen
           <div class="filters-grid">
 
             <div class="filter-group">
-              <label for="prestation-filter">Filtrer par Prestation:</label>
-              <select id="prestation-filter" class="filter-select" [(ngModel)]="selectedPrestation" (change)="applyFilters()">
-                <option value="">Toutes les prestations</option>
-                <option *ngFor="let prestation of getUniquePrestations()" [value]="prestation">{{ prestation }}</option>
-              </select>
-            </div>
-
-            <div class="filter-group">
               <label for="search-filter">Rechercher:</label>
-              <input id="search-filter" type="text" class="filter-input" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Numéro, prestation...">
+              <input id="search-filter" type="text" class="filter-input" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="ID, nom, description...">
             </div>
 
             <div class="filter-actions">
@@ -94,31 +87,35 @@ import { TypeItemFormComponent } from '../type-item-form/type-item-form.componen
             </button>
           </div>
 
-          <div class="table-container" *ngIf="filteredItems.length > 0; else noData">
-            <table class="items-table">
+          <div class="loading-container" *ngIf="loading; else tableContent">
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Chargement des items...</p>
+            </div>
+          </div>
+
+          <ng-template #tableContent>
+            <div class="table-container" *ngIf="filteredItems.length > 0; else noData">
+              <table class="items-table">
               <thead>
                 <tr>
-                  <th>N°</th>
-                  <th>Prestation</th>
-                  <th>Min Articles</th>
-                  <th>Max Articles</th>
-                  <th>Prix Unitaire</th>
-                  <th>Quantité OC1</th>
-                  <th>Montant OC1</th>
+                  <th>ID Item</th>
+                  <th>Nom Item</th>
+                  <th>Description</th>
+                  <th>Prix</th>
+                  <th>Qté Equip Défini</th>
+                  <th>Quantité Max Trimestre</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let item of filteredItems">
-                  <td>{{ item.numero }}</td>
-                  <td>
-                    <div class="prestation-name">{{ formatPrestationName(item.prestation) }}</div>
-                  </td>
-                  <td>{{ item.minArticles }}</td>
-                  <td>{{ item.maxArticles }}</td>
-                  <td>{{ item.prixUnitaire }} FCFA</td>
-                  <td>{{ item.oc1Quantity || 0 }}</td>
-                  <td>{{ (item.prixUnitaire * (item.oc1Quantity || 0)) }} FCFA</td>
+                  <td>{{ item.idItem }}</td>
+                  <td class="prestation-name">{{ formatPrestationName(item.nomItem) }}</td>
+                  <td>{{ item.description || '-' }}</td>
+                  <td>{{ item.prix }} FCFA</td>
+                  <td>{{ item.qteEquipDefini }}</td>
+                  <td>{{ item.quantiteMaxTrimestre }}</td>
                   <td>
                     <div class="action-buttons">
                       <button class="btn-edit" (click)="onEdit(item)" title="Modifier">
@@ -136,19 +133,20 @@ import { TypeItemFormComponent } from '../type-item-form/type-item-form.componen
 
           <ng-template #noData>
             <div class="no-data">
-              <p>Aucun équipement trouvé</p>
+              <p>Aucun item trouvé</p>
             </div>
+          </ng-template>
           </ng-template>
         </div>
 
-        <!-- TypeItem Form Modal -->
-        <app-type-item-form
+        <!-- Item Form Modal -->
+        <app-item-form
           [isVisible]="showForm"
           [isEditing]="isEditing"
           [itemToEdit]="itemToEdit"
           (formClosed)="onFormClosed()"
           (itemSaved)="onItemSaved()">
-        </app-type-item-form>
+        </app-item-form>
       </div>
     `,
   styles: [`
@@ -201,45 +199,38 @@ import { TypeItemFormComponent } from '../type-item-form/type-item-form.componen
 
     .items-table th:nth-child(1),
     .items-table td:nth-child(1) {
-      width: 4%;
-      min-width: 50px;
+      width: 8%;
+      min-width: 80px;
     }
 
     .items-table th:nth-child(2),
     .items-table td:nth-child(2) {
-      width: 25%;
-      min-width: 180px;
-      max-width: 250px;
+      width: 20%;
+      min-width: 150px;
     }
 
     .items-table th:nth-child(3),
     .items-table td:nth-child(3) {
-      width: 12%;
-      min-width: 90px;
+      width: 25%;
+      min-width: 200px;
     }
 
     .items-table th:nth-child(4),
     .items-table td:nth-child(4) {
       width: 12%;
-      min-width: 90px;
+      min-width: 100px;
     }
 
     .items-table th:nth-child(5),
     .items-table td:nth-child(5) {
-      width: 14%;
-      min-width: 110px;
+      width: 12%;
+      min-width: 100px;
     }
 
     .items-table th:nth-child(6),
     .items-table td:nth-child(6) {
-      width: 12%;
-      min-width: 90px;
-    }
-
-    .items-table th:nth-child(7),
-    .items-table td:nth-child(7) {
-      width: 16%;
-      min-width: 150px;
+      width: 15%;
+      min-width: 120px;
     }
 
     .items-table th {
@@ -462,24 +453,65 @@ import { TypeItemFormComponent } from '../type-item-form/type-item-form.componen
       width: 120px;
       min-width: 120px;
     }
+
+    /* Loading Styles */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .loading-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-spinner p {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   `]
 })
 export class ItemListComponent implements OnInit {
-  items: TypeItem[] = [];
-  filteredItems: TypeItem[] = [];
+  items: Item[] = [];
+  filteredItems: Item[] = [];
 
   // Filter properties
-   selectedPrestation: string = '';
    searchTerm: string = '';
 
   // Form properties
   showForm = false;
   isEditing = false;
-  itemToEdit: TypeItem | null = null;
+  itemToEdit: Item | null = null;
+
+  // Loading state
+  loading = false;
 
   constructor(
-    private typeItemService: TypeItemService,
-    private toastService: ToastService
+    private itemService: ItemService,
+    private toastService: ToastService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -487,18 +519,21 @@ export class ItemListComponent implements OnInit {
   }
 
   private loadItems(): void {
-    this.typeItemService.getAllTypeItems().subscribe({
-      next: (items) => {
+    this.loading = true;
+    this.itemService.getAllItems().subscribe({
+      next: (items: Item[]) => {
         this.items = items;
         this.filteredItems = [...items];
+        this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading items:', error);
         this.toastService.show({
           type: 'error',
           title: 'Erreur',
-          message: 'Erreur lors du chargement des équipements'
+          message: 'Erreur lors du chargement des items'
         });
+        this.loading = false;
       }
     });
   }
@@ -525,66 +560,73 @@ export class ItemListComponent implements OnInit {
 
   getAveragePrice(): number {
     if (this.filteredItems.length === 0) return 0;
-    const total = this.filteredItems.reduce((sum, item) => sum + item.prixUnitaire, 0);
+    const total = this.filteredItems.reduce((sum, item) => sum + item.prix, 0);
     return total / this.filteredItems.length;
   }
 
   getTotalValue(): number {
     return this.filteredItems.reduce((sum, item) => {
-      const quantity = item.oc1Quantity || 0;
-      return sum + (item.prixUnitaire * quantity);
+      const quantity = item.qteEquipDefini;
+      return sum + (item.prix * quantity);
     }, 0);
   }
 
 
   getUniquePrestationsCount(): number {
-    const prestations = new Set(this.filteredItems.map(item => item.prestation));
-    return prestations.size;
+    const noms = new Set(this.filteredItems.map(item => item.nomItem));
+    return noms.size;
   }
 
   // Filter methods
 
   getUniquePrestations(): string[] {
-    const prestations = new Set(this.items.map(item => item.prestation));
-    return Array.from(prestations).sort();
+    const noms = new Set(this.items.map(item => item.nomItem));
+    return Array.from(noms).sort();
   }
 
   applyFilters(): void {
     this.filteredItems = this.items.filter(item => {
-      const matchesPrestation = !this.selectedPrestation || item.prestation === this.selectedPrestation;
       const matchesSearch = !this.searchTerm ||
-        item.numero.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        item.prestation.toLowerCase().includes(this.searchTerm.toLowerCase());
+        (item.idItem && item.idItem.toString().toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        item.nomItem.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (item.description && item.description.toLowerCase().includes(this.searchTerm.toLowerCase()));
 
-      return matchesPrestation && matchesSearch;
+      return matchesSearch;
     });
   }
 
   clearFilters(): void {
-    this.selectedPrestation = '';
     this.searchTerm = '';
     this.filteredItems = [...this.items];
   }
 
   // CRUD methods
-  onEdit(item: TypeItem): void {
+  onEdit(item: Item): void {
     this.isEditing = true;
     this.itemToEdit = item;
     this.showForm = true;
   }
 
-  onDelete(item: TypeItem): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer l'item ${item.numero} ?`)) {
-      this.typeItemService.deleteTypeItem(item.id!).subscribe({
+  async onDelete(item: Item): Promise<void> {
+    const confirmed = await this.confirmationService.show({
+      title: 'Supprimer l\'item',
+      message: `Êtes-vous sûr de vouloir supprimer l'item ${item.nomItem} ?`,
+      type: 'danger',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler'
+    });
+
+    if (confirmed) {
+      this.itemService.deleteItem(item.id!).subscribe({
         next: () => {
           this.toastService.show({
             type: 'success',
             title: 'Succès',
-            message: `Item ${item.numero} supprimé avec succès`
+            message: `Item ${item.nomItem} supprimé avec succès`
           });
           this.loadItems();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error deleting item:', error);
           this.toastService.show({
             type: 'error',

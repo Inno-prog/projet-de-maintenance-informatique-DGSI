@@ -19,7 +19,6 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @Column(name = "id_item", unique = true)
     private Integer idItem;
 
