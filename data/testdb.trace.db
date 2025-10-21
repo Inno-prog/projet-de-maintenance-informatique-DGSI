@@ -1,0 +1,3 @@
+2025-10-21 12:42:48 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CONTRATS" not found (this database is empty); SQL statement:
+select id_contrat, type_contrat, nom_prestataire, montant from contrats [42104-214]

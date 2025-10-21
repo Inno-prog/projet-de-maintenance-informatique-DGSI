@@ -4,9 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -59,6 +62,10 @@ public class Prestation {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ordre_commande_id")
+    private OrdreCommande ordreCommande;
+
     // Constructeurs
     public Prestation() {}
 
@@ -110,4 +117,7 @@ public class Prestation {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public OrdreCommande getOrdreCommande() { return ordreCommande; }
+    public void setOrdreCommande(OrdreCommande ordreCommande) { this.ordreCommande = ordreCommande; }
 }

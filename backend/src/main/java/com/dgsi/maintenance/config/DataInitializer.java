@@ -3,10 +3,7 @@ package com.dgsi.maintenance.config;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import com.dgsi.maintenance.entity.OrdreCommande;
-import com.dgsi.maintenance.entity.StatutCommande;
 import com.dgsi.maintenance.entity.TypeItem;
-import com.dgsi.maintenance.repository.OrdreCommandeRepository;
 import com.dgsi.maintenance.repository.TypeItemRepository;
 import com.dgsi.maintenance.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -19,7 +16,7 @@ public class DataInitializer {
     private static final Logger logger = Logger.getLogger(DataInitializer.class.getName());
 
     @Bean
-    public CommandLineRunner initDatabase(UserRepository userRepository, TypeItemRepository typeItemRepository, OrdreCommandeRepository ordreCommandeRepository, @org.springframework.lang.Nullable PasswordEncoder passwordEncoder) {
+    public CommandLineRunner initDatabase(UserRepository userRepository, TypeItemRepository typeItemRepository, @org.springframework.lang.Nullable PasswordEncoder passwordEncoder) {
         return args -> {
             // Avec Keycloak, nous n'avons pas besoin de créer d'utilisateurs locaux
             logger.info("Data initialization skipped - using Keycloak for authentication");
@@ -31,12 +28,6 @@ public class DataInitializer {
                 logger.info("TypeItem data initialized");
             }
 
-            // Initialiser les ordres de commande si la base est vide
-            if (ordreCommandeRepository.count() == 0) {
-                logger.info("Initializing OrdreCommande data...");
-                initOrdresCommande(typeItemRepository, ordreCommandeRepository);
-                logger.info("OrdreCommande data initialized");
-            }
 
             // Vérifier si la base de données est accessible
             try {
@@ -236,49 +227,5 @@ public class DataInitializer {
         typeItemRepository.saveAll(items);
     }
 
-    private void initOrdresCommande(TypeItemRepository typeItemRepository, OrdreCommandeRepository ordreCommandeRepository) {
-        List<TypeItem> itemsWithOrders = typeItemRepository.findAll().stream()
-            .filter(item -> item.getOc1Quantity() != null && item.getOc1Quantity() > 0)
-            .toList();
 
-        List<OrdreCommande> ordres = itemsWithOrders.stream()
-            .map(item -> {
-                OrdreCommande ordre = new OrdreCommande();
-                ordre.setNumeroCommande("OC-" + item.getNumero() + "-T4-2025");
-                ordre.setNomItem(item.getPrestation());
-                ordre.setMinArticles(item.getMinArticles());
-                ordre.setMaxArticles(item.getMaxArticles());
-                ordre.setNombreArticlesUtilise(item.getOc1Quantity());
-                ordre.setTrimestre("T4-2025");
-                ordre.setPrestataireItem(assignPrestataire(item.getLot()));
-                ordre.setMontant((double) (item.getPrixUnitaire() * item.getOc1Quantity()));
-                ordre.setDescription("Ordre de commande généré automatiquement depuis les données Excel");
-                ordre.setStatut(StatutCommande.EN_ATTENTE);
-                return ordre;
-            })
-            .toList();
-
-        ordreCommandeRepository.saveAll(ordres);
-        logger.info("Created " + ordres.size() + " ordre de commande entries");
-    }
-
-    private String assignPrestataire(String category) {
-        // Assign prestataires based on category
-        switch (category) {
-            case "Ordinateur de bureau":
-                return "TechBureau SARL";
-            case "Ordinateur portable":
-                return "PortablePlus";
-            case "Imprimante (Laser, Jet d'encre, multifonction et matricielle)":
-                return "PrintMaster";
-            case "Onduleur":
-                return "PowerSecure";
-            case "Scanneur et Disques externes":
-                return "ScanTech";
-            case "Maintenance préventive":
-                return "MaintenancePro";
-            default:
-                return "Prestataire Générique";
-        }
-    }
 }

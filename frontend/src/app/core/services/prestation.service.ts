@@ -16,6 +16,11 @@ export interface Prestation {
   dateFin: string;
   statut: string;
   description?: string;
+  ordreCommande?: {
+    id: number;
+    numeroCommande: string;
+    statut: string;
+  };
 }
 
 @Injectable({

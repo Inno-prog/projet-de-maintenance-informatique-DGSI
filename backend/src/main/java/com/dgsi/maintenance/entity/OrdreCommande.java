@@ -3,6 +3,7 @@ package com.dgsi.maintenance.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "ordres_commande")
+@JsonIgnoreProperties({"contrat", "items", "prestations", "hibernateLazyInitializer", "handler"})
 public class OrdreCommande {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,6 +77,15 @@ public class OrdreCommande {
     @Column(name = "prestataire_item")
     private String prestataireItem;
 
+    @Column(name = "date_modification")
+    private LocalDateTime dateModification;
+
+    @Column(name = "total_prestations_realisees")
+    private Integer totalPrestationsRealisees;
+
+    @Column(name = "pourcentage_avancement")
+    private Float pourcentageAvancement;
+
     @NotNull
     @Column(name = "date_creation")
     private LocalDateTime dateCreation;
@@ -88,6 +99,9 @@ public class OrdreCommande {
 
     @OneToMany(mappedBy = "ordreCommande", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Item> items = new ArrayList<>();
+
+    @OneToMany(mappedBy = "ordreCommande", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Prestation> prestations = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -159,6 +173,15 @@ public class OrdreCommande {
     public LocalDateTime getDateCreation() { return dateCreation; }
     public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
 
+    public LocalDateTime getDateModification() { return dateModification; }
+    public void setDateModification(LocalDateTime dateModification) { this.dateModification = dateModification; }
+
+    public Integer getTotalPrestationsRealisees() { return totalPrestationsRealisees; }
+    public void setTotalPrestationsRealisees(Integer totalPrestationsRealisees) { this.totalPrestationsRealisees = totalPrestationsRealisees; }
+
+    public Float getPourcentageAvancement() { return pourcentageAvancement; }
+    public void setPourcentageAvancement(Float pourcentageAvancement) { this.pourcentageAvancement = pourcentageAvancement; }
+
     public StatutCommande getStatut() { return statut; }
     public void setStatut(StatutCommande statut) { this.statut = statut; }
 
@@ -167,6 +190,9 @@ public class OrdreCommande {
 
     public List<Item> getItems() { return items; }
     public void setItems(List<Item> items) { this.items = items; }
+
+    public List<Prestation> getPrestations() { return prestations; }
+    public void setPrestations(List<Prestation> prestations) { this.prestations = prestations; }
     
     public int calculer_ecart_item() {
         if (max_prestations != null && min_prestations != null) {

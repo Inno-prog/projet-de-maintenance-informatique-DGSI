@@ -2,9 +2,11 @@ package com.dgsi.maintenance.controller;
 
 import java.util.List;
 import com.dgsi.maintenance.entity.Item;
+import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.Prestation;
 import com.dgsi.maintenance.repository.ItemRepository;
 import com.dgsi.maintenance.repository.PrestationRepository;
+import com.dgsi.maintenance.service.OrdreCommandeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +32,9 @@ public class PrestationController {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Autowired
+    private OrdreCommandeService ordreCommandeService;
+
     @PostMapping
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
     public ResponseEntity<Prestation> createPrestation(@RequestBody Prestation prestation) {
@@ -49,9 +54,21 @@ public class PrestationController {
                 return ResponseEntity.badRequest().build(); // Exceeds maximum number of prestations
             }
 
+            // Sauvegarder d'abord la prestation
             Prestation savedPrestation = prestationRepository.save(prestation);
+
+            // Créer automatiquement un ordre de commande pour cette prestation
+            try {
+                OrdreCommande ordreCommande = ordreCommandeService.creerOuObtenirOrdreCommandePourPrestation(savedPrestation);
+                System.out.println("Ordre de commande créé/automatisé avec ID: " + ordreCommande.getId());
+            } catch (Exception e) {
+                System.err.println("Erreur lors de la création de l'ordre de commande: " + e.getMessage());
+                // Ne pas échouer la création de prestation si l'ordre de commande échoue
+            }
+
             return ResponseEntity.ok(savedPrestation);
         } catch (Exception e) {
+            System.err.println("Erreur lors de la création de la prestation: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

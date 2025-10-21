@@ -1,11 +1,19 @@
 package com.dgsi.maintenance.entity;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "prestataires")
+// Avoid serializing the 'contrats' collection when a Prestataire is serialized
+@JsonIgnoreProperties({"contrats", "hibernateLazyInitializer", "handler"})
 public class Prestataire extends User {
     
     @Column(name = "document_contrats", length = 500)

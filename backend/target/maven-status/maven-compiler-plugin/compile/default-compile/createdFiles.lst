@@ -36,14 +36,15 @@ com/dgsi/maintenance/controller/TestController.class
 com/dgsi/maintenance/controller/ContratController.class
 com/dgsi/maintenance/controller/FichePrestationController.class
 com/dgsi/maintenance/service/KeycloakService.class
-com/dgsi/maintenance/config/OrdreCommandeDataInitializer.class
 com/dgsi/maintenance/config/DataInitializer.class
 com/dgsi/maintenance/controller/TypeItemController.class
 com/dgsi/maintenance/service/NotificationService.class
 com/dgsi/maintenance/config/JacksonConfig.class
+com/dgsi/maintenance/service/OrdreCommandeService.class
 com/dgsi/maintenance/controller/ItemController.class
 com/dgsi/maintenance/dto/AuthResponse.class
 com/dgsi/maintenance/repository/ContratRepository.class
+com/dgsi/maintenance/config/TestFicheInitializer.class
 com/dgsi/maintenance/repository/PrestataireRepository.class
 com/dgsi/maintenance/controller/UserController.class
 com/dgsi/maintenance/repository/NotificationRepository.class
@@ -58,4 +59,5 @@ com/dgsi/maintenance/service/FileUploadService.class
 com/dgsi/maintenance/service/EvaluationService.class
 com/dgsi/maintenance/repository/OrdreCommandeRepository.class
 com/dgsi/maintenance/repository/TypeItemRepository.class
+com/dgsi/maintenance/config/ContratDataInitializer.class
 com/dgsi/maintenance/controller/NotificationController.class

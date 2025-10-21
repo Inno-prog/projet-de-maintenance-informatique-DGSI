@@ -143,6 +143,11 @@ export interface FichePrestation {
   quantite: number;
   commentaire?: string;
   fichiersContrat?: string;
+  ordreCommande?: {
+    id: number;
+    numeroCommande: string;
+    statut: StatutCommande;
+  };
 }
 
 export enum StatutFiche {

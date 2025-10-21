@@ -921,7 +921,7 @@ export class PrestationsDashboardComponent implements OnInit {
             if (formData.dateDebut || formData.dateFin || formData.montant || formData.idContrat) {
               const contratData = {
                 idContrat: formData.idContrat || `CONT-${prestationData.nomPrestataire}-${Date.now()}`,
-                typeContrat: 'PRESTATION',
+                typeContrat: 'item',
                 dateDebut: formData.dateDebut,
                 dateFin: formData.dateFin,
                 nomPrestataire: prestationData.nomPrestataire,
