@@ -94,11 +94,6 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                 <h3>Gérer les Contrats</h3>
                 <p>Visualiser et gérer tous les contrats</p>
               </a>
-              <a routerLink="/" class="action-card">
-                <div class="action-icon">🔧</div>
-                <h3>Demandes d'Intervention</h3>
-                <p>Accepter ou refuser les demandes des prestataires</p>
-              </a>
               <button class="action-card" (click)="genererOrdreCommande()">
                 <div class="action-icon">📋</div>
                 <h3>Générer Ordre de Commande</h3>

@@ -9,7 +9,6 @@ import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.Prestation;
 import com.dgsi.maintenance.entity.StatutCommande;
 import com.dgsi.maintenance.repository.OrdreCommandeRepository;
-import com.dgsi.maintenance.repository.PrestationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +23,6 @@ public class OrdreCommandeService {
 
     @Autowired
     private OrdreCommandeRepository ordreCommandeRepository;
-
-    @Autowired
-    private PrestationRepository prestationRepository;
 
     /**
      * Crée automatiquement un ordre de commande pour un prestataire avec gestion robuste

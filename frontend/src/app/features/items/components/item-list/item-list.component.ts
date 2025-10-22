@@ -112,7 +112,7 @@ import { ItemFormComponent } from '../item-form/item-form.component';
                 <tr *ngFor="let item of filteredItems">
                   <td>{{ item.idItem }}</td>
                   <td class="prestation-name">{{ formatPrestationName(item.nomItem) }}</td>
-                  <td>{{ item.description || '-' }}</td>
+                  <td class="description-cell">{{ formatDescription(item.description) || '-' }}</td>
                   <td>{{ item.prix }} FCFA</td>
                   <td>{{ item.qteEquipDefini }}</td>
                   <td>{{ item.quantiteMaxTrimestre }}</td>
@@ -263,6 +263,13 @@ import { ItemFormComponent } from '../item-form/item-form.component';
       display: flex;
       flex-direction: column;
       justify-content: center;
+    }
+
+    .description-cell {
+      white-space: pre-line;
+      line-height: 1.4;
+      word-wrap: break-word;
+      max-width: 200px;
     }
 
     /* Statistics Section */
@@ -550,6 +557,21 @@ export class ItemListComponent implements OnInit {
     } else {
       // For longer names, show first 3 words, then ellipsis
       return words.slice(0, 3).join(' ') + '\n...';
+    }
+  }
+
+  formatDescription(description: string | undefined): string {
+    if (!description) return '';
+
+    const words = description.trim().split(/\s+/);
+    if (words.length <= 3) return description;
+
+    // Break after 3 or 4 words
+    if (words.length <= 7) {
+      return words.slice(0, 4).join(' ') + '\n' + words.slice(4).join(' ');
+    } else {
+      // For longer descriptions, break after 3 words and add ellipsis
+      return words.slice(0, 3).join(' ') + '\n' + words.slice(3, 6).join(' ') + '\n...';
     }
   }
 

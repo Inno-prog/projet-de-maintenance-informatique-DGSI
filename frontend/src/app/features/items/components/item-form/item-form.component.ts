@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Item } from '../../../../core/models/business.models';
@@ -293,7 +293,7 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
   `]
 })
-export class ItemFormComponent implements OnInit {
+export class ItemFormComponent implements OnInit, OnChanges {
   @Input() isVisible = false;
   @Input() isEditing = false;
   @Input() itemToEdit: Item | null = null;
@@ -318,8 +318,20 @@ export class ItemFormComponent implements OnInit {
    ) {}
 
   ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['itemToEdit'] && changes['itemToEdit'].currentValue) {
+      this.initializeForm();
+    }
+  }
+
+  private initializeForm(): void {
     if (this.itemToEdit) {
       this.formData = { ...this.itemToEdit };
+    } else {
+      this.resetForm();
     }
   }
 

@@ -105,7 +105,7 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
               <thead>
                 <tr>
                   <th>Prestataire</th>
-                  <th>Prestation</th>
+                  <th>Item</th>
                   <th>Montant</th>
                   <th>Quantité</th>
                   <th>Réalisées</th>
@@ -126,7 +126,7 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
                     <div class="prestation-info">
                       <strong class="prestation-name">{{ formatPrestationName(prestation.nomPrestation) }}</strong>
                       <div class="description" *ngIf="prestation.description">
-                        {{ prestation.description.length > 60 ? (prestation.description | slice:0:60) + '...' : prestation.description }}
+                        {{ formatDescription(prestation.description) }}
                       </div>
                     </div>
                   </td>
@@ -161,6 +161,11 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
                       <button class="btn btn-sm btn-danger" (click)="deletePrestation(prestation)" title="Supprimer">
                         🗑️
                       </button>
+                      <select *ngIf="isAdmin()" class="status-select" (change)="changeStatus(prestation, $event)" [value]="prestation.statut">
+                        <option value="en attente">En attente</option>
+                        <option value="en cours">En cours</option>
+                        <option value="terminé">Terminé</option>
+                      </select>
                     </div>
                   </td>
                 </tr>
@@ -405,6 +410,7 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
       color: #6b7280;
       font-size: 0.85rem;
       line-height: 1.4;
+      white-space: pre-line;
     }
 
     .montant-cell {
@@ -472,6 +478,16 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
     .status-badge.status-en-attente {
       background: #fef3c7;
       color: #92400e;
+    }
+
+    .status-select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      background: white;
+      cursor: pointer;
+      margin-left: 0.5rem;
     }
 
     .actions-cell {
@@ -825,6 +841,52 @@ export class PrestationListComponent implements OnInit {
     } else {
       // For longer names, show first 3 words, then ellipsis
       return words.slice(0, 3).join(' ') + '\n...';
+    }
+  }
+
+  formatDescription(description: string | undefined): string {
+    if (!description) return '';
+
+    const words = description.trim().split(/\s+/);
+    if (words.length <= 3) return description;
+
+    // Break after 3 or 4 words
+    if (words.length <= 7) {
+      return words.slice(0, 4).join(' ') + '\n' + words.slice(4).join(' ');
+    } else {
+      // For longer descriptions, break after 3 words and add ellipsis
+      return words.slice(0, 3).join(' ') + '\n' + words.slice(3, 6).join(' ') + '\n...';
+    }
+  }
+
+  isAdmin(): boolean {
+    return this.authService.getCurrentUser()?.role === 'ADMINISTRATEUR';
+  }
+
+  changeStatus(prestation: Prestation, event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const newStatus = target.value;
+    if (newStatus !== prestation.statut) {
+      const updatedPrestation = { ...prestation, statut: newStatus };
+      this.prestationService.updatePrestation(prestation.id!, updatedPrestation).subscribe({
+        next: () => {
+          prestation.statut = newStatus;
+          this.toastService.show({
+            type: 'success',
+            title: 'Statut mis à jour',
+            message: `Statut de la prestation mis à jour à ${newStatus}`
+          });
+          this.loadPrestations(); // Refresh to reflect changes
+        },
+        error: (error) => {
+          console.error('Erreur lors de la mise à jour du statut:', error);
+          this.toastService.show({
+            type: 'error',
+            title: 'Erreur',
+            message: 'Impossible de mettre à jour le statut'
+          });
+        }
+      });
     }
   }
 }

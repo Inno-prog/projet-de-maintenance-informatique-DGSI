@@ -1,6 +1,7 @@
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/MaintenanceApplication.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/config/ContratDataInitializer.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/config/DataInitializer.java
+/home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/config/ItemDataInitializer.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/config/JacksonConfig.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/config/PrestationDataInitializer.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/config/TestFicheInitializer.java

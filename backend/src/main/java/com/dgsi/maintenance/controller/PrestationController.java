@@ -1,11 +1,16 @@
 package com.dgsi.maintenance.controller;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
 import com.dgsi.maintenance.entity.Item;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.Prestation;
+import com.dgsi.maintenance.entity.StatutCommande;
 import com.dgsi.maintenance.repository.ItemRepository;
 import com.dgsi.maintenance.repository.PrestationRepository;
+import com.dgsi.maintenance.service.EvaluationService;
 import com.dgsi.maintenance.service.OrdreCommandeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +39,9 @@ public class PrestationController {
 
     @Autowired
     private OrdreCommandeService ordreCommandeService;
+
+    @Autowired
+    private EvaluationService evaluationService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
@@ -120,7 +128,24 @@ public class PrestationController {
                 prestation.setDateFin(prestationDetails.getDateFin());
                 prestation.setStatut(prestationDetails.getStatut());
                 prestation.setDescription(prestationDetails.getDescription());
-                return ResponseEntity.ok(prestationRepository.save(prestation));
+                Prestation savedPrestation = prestationRepository.save(prestation);
+
+                // If status is 'terminé', update the order status to TERMINE and create evaluation
+                if ("terminé".equals(prestationDetails.getStatut()) && savedPrestation.getOrdreCommande() != null) {
+                    ordreCommandeService.updateStatutOrdreCommande(savedPrestation.getOrdreCommande().getId(), StatutCommande.TERMINE);
+
+                    // Create a basic evaluation for the prestataire
+                    EvaluationTrimestrielle evaluation = new EvaluationTrimestrielle();
+                    evaluation.setPrestataireNom(savedPrestation.getNomPrestataire());
+                    evaluation.setTrimestre(savedPrestation.getTrimestre());
+                    evaluation.setDateEvaluation(LocalDate.now());
+                    evaluation.setStatut("en cours"); // Or appropriate status
+                    evaluation.setNoteFinale(BigDecimal.ZERO); // Default
+                    evaluation.setPenalitesCalcul(BigDecimal.ZERO);
+                    evaluationService.saveEvaluation(evaluation);
+                }
+
+                return ResponseEntity.ok(savedPrestation);
             })
             .orElse(ResponseEntity.notFound().build());
     }
