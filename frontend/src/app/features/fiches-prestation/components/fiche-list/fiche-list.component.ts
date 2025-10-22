@@ -411,7 +411,6 @@ export class FicheListComponent implements OnInit {
               this.loading = false;
               this.resetForm();
               this.loadFiches();
-              this.toastService.show({ type: 'success', title: 'Fiche modifiée', message: 'Succès' });
             },
             error: (error) => {
               console.error('Error updating fiche:', error);
@@ -425,7 +424,6 @@ export class FicheListComponent implements OnInit {
               this.loading = false;
               this.resetForm();
               this.loadFiches();
-              this.toastService.show({ type: 'success', title: 'Fiche créée', message: 'Succès' });
             },
             error: (error) => {
               console.error('Error creating fiche:', error);
@@ -466,7 +464,6 @@ export class FicheListComponent implements OnInit {
       this.ficheService.deleteFiche(fiche.id!).subscribe({
         next: () => {
           this.loadFiches();
-          this.toastService.show({ type: 'success', title: 'Supprimée', message: 'Fiche supprimée' });
         },
         error: (error) => {
           console.error('Error deleting fiche:', error);
@@ -489,7 +486,6 @@ export class FicheListComponent implements OnInit {
       this.ficheService.validerFiche(fiche.id!, commentaires || undefined).subscribe({
         next: () => {
           this.loadFiches();
-          this.toastService.show({ type: 'success', title: 'Validée', message: 'Fiche validée' });
         },
         error: (error) => {
           console.error('Error validating fiche:', error);
@@ -514,7 +510,6 @@ export class FicheListComponent implements OnInit {
         this.ficheService.rejeterFiche(fiche.id!, commentaires).subscribe({
           next: () => {
             this.loadFiches();
-            this.toastService.show({ type: 'success', title: 'Rejetée', message: 'Fiche rejetée' });
           },
           error: (error) => {
             console.error('Error rejecting fiche:', error);

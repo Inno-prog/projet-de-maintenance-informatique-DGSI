@@ -60,4 +60,18 @@ public class NotificationService {
             notificationRepository.save(notification);
         });
     }
+
+    public void envoyerNotificationLimitAtteint(String prestataire, String nomItem) {
+        // Trouver l'utilisateur par nom pour obtenir l'email
+        Optional<User> userOpt = userRepository.findByNom(prestataire);
+        if (userOpt.isPresent()) {
+            Notification notification = new Notification();
+            notification.setDestinataire(userOpt.get().getEmail());
+            notification.setTitre("Limite de prestations atteinte");
+            notification.setMessage(String.format("Le nombre limite de prestations pour l'item '%s' est atteint.", nomItem));
+            notification.setType("ERROR");
+
+            notificationRepository.save(notification);
+        }
+    }
 }

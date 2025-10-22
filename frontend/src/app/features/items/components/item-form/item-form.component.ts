@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Item } from '../../../../core/models/business.models';
 import { ItemService } from '../../../../core/services/item.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 
 @Component({
   selector: 'app-item-form',
@@ -314,7 +315,8 @@ export class ItemFormComponent implements OnInit, OnChanges {
 
    constructor(
      private itemService: ItemService,
-     private toastService: ToastService
+     private toastService: ToastService,
+     private confirmationService: ConfirmationService
    ) {}
 
   ngOnInit(): void {
@@ -357,9 +359,19 @@ export class ItemFormComponent implements OnInit, OnChanges {
     };
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.isEditing && this.itemToEdit) {
-      this.updateItem();
+      const confirmed = await this.confirmationService.show({
+        title: 'Confirmer la modification',
+        message: 'Êtes-vous sûr de vouloir modifier cet item ?',
+        type: 'warning',
+        confirmText: 'Modifier',
+        cancelText: 'Annuler'
+      });
+
+      if (confirmed) {
+        this.updateItem();
+      }
     } else {
       this.createItem();
     }
@@ -368,11 +380,6 @@ export class ItemFormComponent implements OnInit, OnChanges {
   private createItem(): void {
     this.itemService.createItem(this.formData).subscribe({
       next: (newItem: Item) => {
-        this.toastService.show({
-          type: 'success',
-          title: 'Succès',
-          message: `Item ${newItem.nomItem} créé avec succès`
-        });
         this.itemSaved.emit(newItem);
         this.closeForm();
       },
@@ -392,11 +399,6 @@ export class ItemFormComponent implements OnInit, OnChanges {
 
     this.itemService.updateItem(this.itemToEdit.id, this.formData).subscribe({
       next: (updatedItem: Item) => {
-        this.toastService.show({
-          type: 'success',
-          title: 'Succès',
-          message: `Item ${updatedItem.nomItem} modifié avec succès`
-        });
         this.itemSaved.emit(updatedItem);
         this.closeForm();
       },

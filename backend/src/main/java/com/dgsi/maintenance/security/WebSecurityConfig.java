@@ -1,16 +1,27 @@
 package com.dgsi.maintenance.security;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -19,6 +30,27 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        boolean isProduction = "production".equals(System.getProperty("spring.profiles.active"));
+
+        // If not production, insert a development authentication filter that grants admin roles
+        if (!isProduction) {
+            http.addFilterBefore(new OncePerRequestFilter() {
+                @Override
+                protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+                        throws ServletException, IOException {
+                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                        List<SimpleGrantedAuthority> authorities = Arrays.asList(
+                                new SimpleGrantedAuthority("ROLE_ADMINISTRATEUR"),
+                                new SimpleGrantedAuthority("ROLE_PRESTATAIRE"),
+                                new SimpleGrantedAuthority("ROLE_AGENT_DGSI")
+                        );
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("dev-admin", null, authorities);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
+                    filterChain.doFilter(request, response);
+                }
+            }, org.springframework.security.web.authentication.AnonymousAuthenticationFilter.class);
+        }
         http
             // Configurer CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -48,7 +80,10 @@ public class WebSecurityConfig {
                 // Autoriser l'accès à la console H2 pour le développement (supprimer en production)
                 .requestMatchers("/h2-console/**").permitAll()
 
-                // Exiger l'authentification pour toutes les autres requêtes
+                // En développement, autoriser toutes les requêtes API SANS authentification
+                .requestMatchers("/api/**").permitAll()
+
+                // Exiger l'authentification pour toutes les autres requêtes (par défaut en prod)
                 .anyRequest().authenticated()
             )
 

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByNomItemContainingIgnoreCase(String nomItem);
     boolean existsByIdItem(Integer idItem);
-    Item findByNomItem(String nomItem);
+    java.util.Optional<Item> findFirstByNomItem(String nomItem);
 }

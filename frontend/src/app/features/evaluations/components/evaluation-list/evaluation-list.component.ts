@@ -297,7 +297,6 @@ export class EvaluationListComponent implements OnInit {
           this.loading = false;
           this.resetForm();
           this.loadEvaluations();
-          this.toastService.show({ type: 'success', title: 'Évaluation modifiée', message: 'L\'évaluation a été modifiée avec succès' });
         },
         error: (error) => {
           console.error('Error updating evaluation:', error);
@@ -311,7 +310,6 @@ export class EvaluationListComponent implements OnInit {
           this.loading = false;
           this.resetForm();
           this.loadEvaluations();
-          this.toastService.show({ type: 'success', title: 'Évaluation créée', message: 'L\'évaluation a été créée avec succès' });
         },
         error: (error) => {
           console.error('Error creating evaluation:', error);
@@ -370,7 +368,6 @@ export class EvaluationListComponent implements OnInit {
       this.evaluationService.deleteEvaluation(evaluation.id!).subscribe({
         next: () => {
           this.loadEvaluations();
-          this.toastService.show({ type: 'success', title: 'Évaluation supprimée', message: 'L\'évaluation a été supprimée avec succès' });
         },
         error: (error) => {
           console.error('Error deleting evaluation:', error);

@@ -370,7 +370,6 @@ export class OrdreCommandeListComponent implements OnInit {
               this.loading = false;
               this.resetForm();
               this.loadOrdres();
-              this.toastService.show({ type: 'success', title: 'Ordre modifié', message: 'L\'ordre de commande a été modifié avec succès' });
             },
             error: (error) => {
               console.error('Error updating ordre:', error);
@@ -384,7 +383,6 @@ export class OrdreCommandeListComponent implements OnInit {
               this.loading = false;
               this.resetForm();
               this.loadOrdres();
-              this.toastService.show({ type: 'success', title: 'Ordre créé', message: 'L\'ordre de commande a été créé avec succès' });
             },
             error: (error) => {
               console.error('Error creating ordre:', error);
@@ -425,7 +423,6 @@ export class OrdreCommandeListComponent implements OnInit {
       this.ordreCommandeService.deleteOrdreCommande(ordre.id!).subscribe({
         next: () => {
           this.loadOrdres();
-          this.toastService.show({ type: 'success', title: 'Ordre supprimé', message: 'L\'ordre de commande a été supprimé avec succès' });
         },
         error: (error) => {
           console.error('Error deleting ordre:', error);
@@ -447,7 +444,6 @@ export class OrdreCommandeListComponent implements OnInit {
       this.ordreCommandeService.approuverOrdre(ordre.id!).subscribe({
         next: () => {
           this.loadOrdres();
-          this.toastService.show({ type: 'success', title: 'Ordre approuvé', message: 'L\'ordre de commande a été approuvé avec succès' });
         },
         error: (error) => {
           console.error('Error approving ordre:', error);
@@ -469,7 +465,6 @@ export class OrdreCommandeListComponent implements OnInit {
       this.ordreCommandeService.rejeterOrdre(ordre.id!).subscribe({
         next: () => {
           this.loadOrdres();
-          this.toastService.show({ type: 'success', title: 'Ordre rejeté', message: 'L\'ordre de commande a été rejeté' });
         },
         error: (error) => {
           console.error('Error rejecting ordre:', error);

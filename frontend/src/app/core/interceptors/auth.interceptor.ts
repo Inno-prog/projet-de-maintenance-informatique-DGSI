@@ -1,6 +1,8 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const oauthService = inject(OAuthService);
@@ -20,11 +22,29 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       const authReq = req.clone({
         headers: req.headers.set('Authorization', `Bearer ${token}`)
       });
-      return next(authReq);
+      return next(authReq).pipe(
+        catchError((error: HttpErrorResponse) => {
+          // Suppress 401 error messages
+          if (error.status === 401) {
+            console.debug('authInterceptor: 401 error suppressed', { url: req.url });
+            return throwError(() => error); // Still throw the error but without showing message
+          }
+          return throwError(() => error);
+        })
+      );
     }
   }
 
   // Debug when no token is present
   console.debug('authInterceptor: no valid access token, sending request without Authorization', { url: req.url });
-  return next(req);
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      // Suppress 401 error messages
+      if (error.status === 401) {
+        console.debug('authInterceptor: 401 error suppressed', { url: req.url });
+        return throwError(() => error);
+      }
+      return throwError(() => error);
+    })
+  );
 };

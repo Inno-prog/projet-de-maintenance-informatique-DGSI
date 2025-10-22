@@ -12,6 +12,7 @@ import { PrestationService, Prestation } from '../../../../core/services/prestat
 import { ItemService } from '../../../../core/services/item.service';
 import { Item } from '../../../../core/models/business.models';
 import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { UserService } from '../../../../core/services/user.service';
 import { User } from '../../../../core/models/auth.models';
 
@@ -39,6 +40,7 @@ export class PrestationFormComponent implements OnInit {
   prestataires: User[] = [];
   selectedItem: Item | null = null;
   maxQuantityForTrimestre: number = 0;
+  existingPrestationsCount: number = 0;
 
   statutOptions = [
     { value: 'en cours', label: 'En cours' },
@@ -59,6 +61,7 @@ export class PrestationFormComponent implements OnInit {
     private itemService: ItemService,
     private userService: UserService,
     private toastService: ToastService,
+    private confirmationService: ConfirmationService,
     public dialogRef: MatDialogRef<PrestationFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -110,9 +113,18 @@ export class PrestationFormComponent implements OnInit {
       if (value) {
         this.selectedItem = this.items.find(item => item.nomItem === value) || null;
         this.updateMaxQuantity();
+        this.updateExistingPrestationsCount();
       } else {
         this.selectedItem = null;
         this.maxQuantityForTrimestre = 0;
+        this.existingPrestationsCount = 0;
+      }
+    });
+
+    // Also listen to trimestre changes to update the count
+    this.prestationForm.get('trimestre')?.valueChanges.subscribe(value => {
+      if (value && this.selectedItem) {
+        this.updateExistingPrestationsCount();
       }
     });
   }
@@ -125,36 +137,82 @@ export class PrestationFormComponent implements OnInit {
     }
   }
 
-  onSubmit(): void {
+  updateExistingPrestationsCount(): void {
+    if (this.selectedItem && this.prestationForm.get('trimestre')?.value) {
+      const trimestre = this.prestationForm.get('trimestre')?.value;
+      this.prestationService.getCountByItemAndTrimestre(this.selectedItem.nomItem, trimestre).subscribe({
+        next: (count) => {
+          this.existingPrestationsCount = count;
+        },
+        error: (error) => {
+          console.error('Erreur lors de la récupération du nombre de prestations existantes:', error);
+          this.existingPrestationsCount = 0;
+        }
+      });
+    } else {
+      this.existingPrestationsCount = 0;
+    }
+  }
+
+  async onSubmit(): Promise<void> {
     if (this.prestationForm.valid) {
       const formValue = this.prestationForm.value;
+      // Helper to format date as YYYY-MM-DD (LocalDate expected by backend)
+      const formatLocalDate = (d: any) => {
+        if (!d) return null;
+        const dt = new Date(d);
+        if (isNaN(dt.getTime())) return null;
+        return dt.toISOString().slice(0, 10);
+      };
+
       const prestationData = {
         ...formValue,
         quantiteItem: 1, // Set to 1 since we're counting prestations, not summing quantities
         nbPrestRealise: 0, // Initialize to 0 on creation
-        dateDebut: new Date(formValue.dateDebut).toISOString(),
-        dateFin: new Date(formValue.dateFin).toISOString()
+        dateDebut: formatLocalDate(formValue.dateDebut),
+        dateFin: formatLocalDate(formValue.dateFin)
       };
 
       if (this.isEditMode) {
-        this.prestationService.updatePrestation(this.data.prestation.id!, prestationData).subscribe({
-          next: () => {
-            this.toastService.show({ type: 'success', title: 'Succès', message: 'Prestation mise à jour avec succès' });
-            this.dialogRef.close(true);
-          },
-          error: (error: any) => {
-            this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la mise à jour de la prestation' });
-            console.error(error);
-          }
+        const confirmed = await this.confirmationService.show({
+          title: 'Confirmer la mise à jour',
+          message: 'Êtes-vous sûr de vouloir mettre à jour cette prestation ?',
+          type: 'warning',
+          confirmText: 'Mettre à jour',
+          cancelText: 'Annuler'
         });
+
+        if (confirmed) {
+          this.prestationService.updatePrestation(this.data.prestation.id!, prestationData).subscribe({
+            next: () => {
+              this.dialogRef.close(true);
+            },
+            error: (error: any) => {
+              this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la mise à jour de la prestation' });
+              console.error(error);
+            }
+          });
+        }
       } else {
         this.prestationService.createPrestation(prestationData).subscribe({
           next: () => {
-            this.toastService.show({ type: 'success', title: 'Succès', message: 'Prestation créée avec succès' });
             this.dialogRef.close(true);
           },
           error: (error: any) => {
-            this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la création de la prestation' });
+            let errorMessage = 'Erreur lors de la création de la prestation';
+            if (error?.error && typeof error.error === 'string') {
+              errorMessage = error.error;
+            } else if (error?.message) {
+              errorMessage = error.message;
+            }
+
+            // If the backend indicates the max limit for the item is reached, show a warning popup and keep the form open
+            if (errorMessage && errorMessage.toString().toLowerCase().includes('le nombre max de prestations')) {
+              this.toastService.show({ type: 'warning', title: 'Limite atteinte', message: errorMessage.toString() });
+            } else {
+              this.toastService.show({ type: 'error', title: 'Erreur', message: errorMessage });
+            }
+
             console.error(error);
           }
         });

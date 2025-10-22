@@ -74,4 +74,8 @@ export class PrestationService {
   getTotalMontantByTrimestre(trimestre: string): Observable<number> {
     return this.http.get<number>(`${this.API_URL}/stats/montant/trimestre/${trimestre}`);
   }
+
+  getCountByItemAndTrimestre(nomPrestation: string, trimestre: string): Observable<number> {
+    return this.http.get<number>(`${this.API_URL}/count/${encodeURIComponent(nomPrestation)}/${encodeURIComponent(trimestre)}`);
+  }
 }

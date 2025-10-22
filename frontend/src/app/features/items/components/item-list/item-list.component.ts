@@ -641,11 +641,6 @@ export class ItemListComponent implements OnInit {
     if (confirmed) {
       this.itemService.deleteItem(item.id!).subscribe({
         next: () => {
-          this.toastService.show({
-            type: 'success',
-            title: 'Succès',
-            message: `Item ${item.nomItem} supprimé avec succès`
-          });
           this.loadItems();
         },
         error: (error: any) => {

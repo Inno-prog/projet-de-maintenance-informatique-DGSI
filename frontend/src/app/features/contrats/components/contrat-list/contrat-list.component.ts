@@ -377,7 +377,6 @@ export class ContratListComponent implements OnInit {
               this.loading = false;
               this.resetForm();
               this.loadContrats();
-              this.toastService.show({ type: 'success', title: 'Contrat modifié', message: 'Le contrat a été modifié avec succès' });
             },
             error: (error) => {
               console.error('Error updating contrat:', error);
@@ -391,7 +390,6 @@ export class ContratListComponent implements OnInit {
               this.loading = false;
               this.resetForm();
               this.loadContrats();
-              this.toastService.show({ type: 'success', title: 'Contrat créé', message: 'Le contrat a été créé avec succès' });
             },
             error: (error) => {
               console.error('Error creating contrat:', error);
@@ -431,7 +429,6 @@ export class ContratListComponent implements OnInit {
       this.contratService.deleteContrat(contrat.id!).subscribe({
         next: () => {
           this.loadContrats();
-          this.toastService.show({ type: 'success', title: 'Contrat supprimé', message: 'Le contrat a été supprimé avec succès' });
         },
         error: (error) => {
           console.error('Error deleting contrat:', error);

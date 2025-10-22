@@ -802,11 +802,6 @@ export class PrestationListComponent implements OnInit {
       this.prestationService.deletePrestation(prestation.id!).subscribe({
         next: () => {
           this.loadPrestations();
-          this.toastService.show({
-            type: 'success',
-            title: 'Prestation supprimée',
-            message: 'La prestation a été supprimée avec succès'
-          });
         },
         error: (error) => {
           console.error('Erreur lors de la suppression:', error);
@@ -822,11 +817,6 @@ export class PrestationListComponent implements OnInit {
 
   refreshData(): void {
     this.loadPrestations();
-    this.toastService.show({
-      type: 'success',
-      title: 'Données actualisées',
-      message: 'Les prestations ont été rechargées'
-    });
   }
 
   formatPrestationName(name: string): string {
@@ -863,30 +853,35 @@ export class PrestationListComponent implements OnInit {
     return this.authService.getCurrentUser()?.role === 'ADMINISTRATEUR';
   }
 
-  changeStatus(prestation: Prestation, event: Event): void {
+  async changeStatus(prestation: Prestation, event: Event): Promise<void> {
     const target = event.target as HTMLSelectElement;
     const newStatus = target.value;
     if (newStatus !== prestation.statut) {
-      const updatedPrestation = { ...prestation, statut: newStatus };
-      this.prestationService.updatePrestation(prestation.id!, updatedPrestation).subscribe({
-        next: () => {
-          prestation.statut = newStatus;
-          this.toastService.show({
-            type: 'success',
-            title: 'Statut mis à jour',
-            message: `Statut de la prestation mis à jour à ${newStatus}`
-          });
-          this.loadPrestations(); // Refresh to reflect changes
-        },
-        error: (error) => {
-          console.error('Erreur lors de la mise à jour du statut:', error);
-          this.toastService.show({
-            type: 'error',
-            title: 'Erreur',
-            message: 'Impossible de mettre à jour le statut'
-          });
-        }
+      const confirmed = await this.confirmationService.show({
+        title: 'Confirmer le changement de statut',
+        message: `Êtes-vous sûr de vouloir changer le statut à "${newStatus}" ?`,
+        type: 'warning',
+        confirmText: 'Changer',
+        cancelText: 'Annuler'
       });
+
+      if (confirmed) {
+        const updatedPrestation = { ...prestation, statut: newStatus };
+        this.prestationService.updatePrestation(prestation.id!, updatedPrestation).subscribe({
+          next: () => {
+            prestation.statut = newStatus;
+            this.loadPrestations(); // Refresh to reflect changes
+          },
+          error: (error) => {
+            console.error('Erreur lors de la mise à jour du statut:', error);
+            this.toastService.show({
+              type: 'error',
+              title: 'Erreur',
+              message: 'Impossible de mettre à jour le statut'
+            });
+          }
+        });
+      }
     }
   }
 }

@@ -69,7 +69,7 @@
             <span *ngIf="prestationForm.get('nomPrestation')?.errors?.['required']">L'item est requis</span>
           </div>
           <div class="info-message" *ngIf="selectedItem && maxQuantityForTrimestre > 0">
-            <small>Nombre maximum de prestations autorisées pour cet item : {{ maxQuantityForTrimestre }}</small>
+            <small>Prestations réalisées : {{ existingPrestationsCount }} / Le nombre max de prestations par trimestre : {{ maxQuantityForTrimestre }}</small>
           </div>
         </div>
       </div>

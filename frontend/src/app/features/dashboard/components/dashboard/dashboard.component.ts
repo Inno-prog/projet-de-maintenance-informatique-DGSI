@@ -1138,7 +1138,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const trimestre = this.getCurrentTrimestre();
         const filename = `ordre-commande-${trimestre}.txt`;
         this.pdfService.downloadFile(blob, filename);
-        this.toastService.show({ type: 'success', title: 'Ordre généré', message: 'L\'ordre de commande a été généré avec succès' });
       },
       error: (error) => {
         console.error('Error generating ordre commande:', error);
@@ -1161,7 +1160,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const trimestre = this.getCurrentTrimestre();
         const filename = `rapport-trimestriel-${trimestre}.pdf`;
         this.pdfService.downloadFile(blob, filename);
-        this.toastService.show({ type: 'success', title: 'Rapport généré', message: 'Le rapport trimestriel a été généré avec succès' });
       },
       error: (error) => {
         console.error('Error generating rapport trimestriel:', error);
@@ -1176,7 +1174,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       next: (blob) => {
         const filename = `rapport-annuel-${year}.pdf`;
         this.pdfService.downloadFile(blob, filename);
-        this.toastService.show({ type: 'success', title: 'Rapport généré', message: 'Le rapport annuel a été généré avec succès' });
       },
       error: (error) => {
         console.error('Error generating rapport annuel:', error);
@@ -1195,11 +1192,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   refreshStats(): void {
     if (this.authService.isAdmin()) {
       this.loadStats();
-      this.toastService.show({
-        type: 'success',
-        title: 'Statistiques actualisées',
-        message: 'Les statistiques ont été mises à jour avec succès'
-      });
     }
   }
 
@@ -1224,7 +1216,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     if (confirmed) {
       // TODO: Implement trimestre closure logic
-      this.toastService.show({ type: 'success', title: 'Trimestre clôturé', message: `Le trimestre ${trimestre} a été clôturé avec succès` });
     }
   }
 }

@@ -548,31 +548,39 @@ export class UserListComponent implements OnInit {
     };
   }
 
-  saveUser(): void {
+  async saveUser(): Promise<void> {
     if (this.isEditing && this.currentUser) {
       // Update existing user
-      this.userService.updateUser(this.currentUser.id, this.userForm).subscribe({
-        next: (updatedUser) => {
-          const index = this.users.findIndex(u => u.id === updatedUser.id);
-          if (index !== -1) {
-            this.users[index] = updatedUser;
-            this.filterUsers();
-          }
-          this.toastService.show({ type: 'success', title: 'Utilisateur modifié', message: 'L\'utilisateur a été modifié avec succès' });
-          this.closeUserModal();
-        },
-        error: (error) => {
-          console.error('Error updating user:', error);
-          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la modification de l\'utilisateur' });
-        }
+      const confirmed = await this.confirmationService.show({
+        title: 'Confirmer la modification',
+        message: 'Êtes-vous sûr de vouloir modifier cet utilisateur ?',
+        type: 'warning',
+        confirmText: 'Modifier',
+        cancelText: 'Annuler'
       });
+
+      if (confirmed) {
+        this.userService.updateUser(this.currentUser.id, this.userForm).subscribe({
+          next: (updatedUser) => {
+            const index = this.users.findIndex(u => u.id === updatedUser.id);
+            if (index !== -1) {
+              this.users[index] = updatedUser;
+              this.filterUsers();
+            }
+            this.closeUserModal();
+          },
+          error: (error) => {
+            console.error('Error updating user:', error);
+            this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la modification de l\'utilisateur' });
+          }
+        });
+      }
     } else {
       // Create new user
       this.userService.createUser(this.userForm).subscribe({
         next: (newUser) => {
           this.users.push(newUser);
           this.filterUsers();
-          this.toastService.show({ type: 'success', title: 'Utilisateur créé', message: 'L\'utilisateur a été créé avec succès' });
           this.closeUserModal();
         },
         error: (error) => {
@@ -595,7 +603,6 @@ export class UserListComponent implements OnInit {
       this.userService.deleteUser(user.id).subscribe({
         next: () => {
           this.users = this.users.filter(u => u.id !== user.id);
-          this.toastService.show({ type: 'success', title: 'Utilisateur supprimé', message: 'L\'utilisateur a été supprimé avec succès' });
         },
         error: (error) => {
           console.error('Error deleting user:', error);

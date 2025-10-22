@@ -60,4 +60,6 @@
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/NotificationService.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/OrdreCommandeService.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/PDFGenerationService.java
+/home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/PrestationLimitExceededException.java
+/home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/PrestationService.java
 /home/inno/dev/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/UserService.java
