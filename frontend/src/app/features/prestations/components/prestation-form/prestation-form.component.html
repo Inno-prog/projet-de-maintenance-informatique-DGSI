@@ -68,8 +68,17 @@
           <div class="error-message" *ngIf="prestationForm.get('nomPrestation')?.invalid && prestationForm.get('nomPrestation')?.touched">
             <span *ngIf="prestationForm.get('nomPrestation')?.errors?.['required']">L'item est requis</span>
           </div>
-          <div class="info-message" *ngIf="selectedItem && maxQuantityForTrimestre > 0">
-            <small>Prestations réalisées : {{ existingPrestationsCount }} / Le nombre max de prestations par trimestre : {{ maxQuantityForTrimestre }}</small>
+          <div *ngIf="selectedItem && prestationForm.get('trimestre')?.value" class="prestation-counter">
+            <p class="counter-info">
+              Prestations créées pour <strong>{{selectedItem.nomItem}}</strong>
+              ({{prestationForm.get('trimestre')?.value}}):
+              <span [class.limit-reached]="existingPrestationsCount >= maxQuantityForTrimestre">
+                {{existingPrestationsCount}}/{{maxQuantityForTrimestre}}
+              </span>
+            </p>
+            <p *ngIf="existingPrestationsCount >= maxQuantityForTrimestre" class="warning-message">
+              ⚠️ Le nombre maximum de prestations pour cet item est atteint pour ce trimestre
+            </p>
           </div>
         </div>
       </div>

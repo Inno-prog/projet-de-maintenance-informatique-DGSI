@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Silent Refresh</title>
+  </head>
+  <body>
+    <script>
+      // Page utilisée pour le silent refresh. Le script ci-dessous permet de
+      // transmettre le result back to the opener window when using iframe refresh.
+      try {
+        if (window === window.parent) {
+          // opened in top window — nothing to do
+        } else {
+          // Post message token response back to parent
+          window.parent.postMessage(location.hash || location.search, window.location.origin);
+        }
+      } catch (e) {
+        // ignore
+      }
+    </script>
+    <p>Silent refresh performed — close this window.</p>
+  </body>
+</html>

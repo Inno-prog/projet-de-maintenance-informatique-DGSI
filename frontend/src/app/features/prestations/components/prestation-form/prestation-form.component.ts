@@ -90,8 +90,10 @@ export class PrestationFormComponent implements OnInit {
         this.items = items;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des items:', error);
-        this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors du chargement des items' });
+        if (error.status !== 401) {
+          console.error('Erreur lors du chargement des items:', error);
+          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors du chargement des items' });
+        }
       }
     });
   }
@@ -102,8 +104,10 @@ export class PrestationFormComponent implements OnInit {
         this.prestataires = users;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des prestataires:', error);
-        this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors du chargement des prestataires' });
+        if (error.status !== 401) {
+          console.error('Erreur lors du chargement des prestataires:', error);
+          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors du chargement des prestataires' });
+        }
       }
     });
   }
@@ -121,7 +125,7 @@ export class PrestationFormComponent implements OnInit {
       }
     });
 
-    // Also listen to trimestre changes to update the count
+    // Écouter seulement le trimestre
     this.prestationForm.get('trimestre')?.valueChanges.subscribe(value => {
       if (value && this.selectedItem) {
         this.updateExistingPrestationsCount();
@@ -140,7 +144,10 @@ export class PrestationFormComponent implements OnInit {
   updateExistingPrestationsCount(): void {
     if (this.selectedItem && this.prestationForm.get('trimestre')?.value) {
       const trimestre = this.prestationForm.get('trimestre')?.value;
-      this.prestationService.getCountByItemAndTrimestre(this.selectedItem.nomItem, trimestre).subscribe({
+      const nomItem = this.selectedItem.nomItem;
+      
+      // Compter TOUTES les prestations pour cet item et ce trimestre (tous prestataires confondus)
+      this.prestationService.getCountByItemAndTrimestre(nomItem, trimestre).subscribe({
         next: (count) => {
           this.existingPrestationsCount = count;
         },
@@ -194,25 +201,40 @@ export class PrestationFormComponent implements OnInit {
           });
         }
       } else {
+        // VÉRIFICATION PRINCIPALE - Bloquer si la limite est atteinte
+        if (!this.isEditMode && this.existingPrestationsCount >= this.maxQuantityForTrimestre) {
+          this.toastService.show({
+            type: 'error',
+            title: 'Limite atteinte',
+            message: `Le nombre limite de prestations pour l'item "${this.selectedItem?.nomItem}" est atteint (${this.maxQuantityForTrimestre} prestations maximum par trimestre)`
+          });
+          return;
+        }
+
         this.prestationService.createPrestation(prestationData).subscribe({
           next: () => {
             this.dialogRef.close(true);
           },
           error: (error: any) => {
             let errorMessage = 'Erreur lors de la création de la prestation';
+            
+            // Capturer les erreurs backend supplémentaires
             if (error?.error && typeof error.error === 'string') {
               errorMessage = error.error;
             } else if (error?.message) {
               errorMessage = error.message;
             }
 
-            // If the backend indicates the max limit for the item is reached, show a warning popup and keep the form open
-            if (errorMessage && errorMessage.toString().toLowerCase().includes('le nombre max de prestations')) {
-              this.toastService.show({ type: 'warning', title: 'Limite atteinte', message: errorMessage.toString() });
+            // Si le backend renvoie aussi une erreur de limite
+            if (errorMessage.toLowerCase().includes('limite') || errorMessage.toLowerCase().includes('maximum')) {
+              this.toastService.show({
+                type: 'error',
+                title: 'Limite atteinte',
+                message: errorMessage
+              });
             } else {
               this.toastService.show({ type: 'error', title: 'Erreur', message: errorMessage });
             }
-
             console.error(error);
           }
         });

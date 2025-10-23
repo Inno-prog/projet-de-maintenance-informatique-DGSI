@@ -1,5 +1,7 @@
 package com.dgsi.maintenance.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import com.dgsi.maintenance.entity.Item;
 import com.dgsi.maintenance.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,6 +176,7 @@ public class ItemDataInitializer implements CommandLineRunner {
         };
 
         // Créer des items pour chaque nom
+        List<Item> itemList = new ArrayList<>();
         for (int i = 0; i < items.length; i++) {
             Item item = new Item();
             item.setIdItem(i + 1);
@@ -185,8 +188,9 @@ public class ItemDataInitializer implements CommandLineRunner {
             item.setQteEquipDefini(1);
             item.setQuantiteMaxTrimestre(10); // Default max per trimestre
 
-            itemRepository.save(item);
+            itemList.add(item);
         }
+        itemRepository.saveAll(itemList);
 
         System.out.println("Données d'items initialisées avec " + items.length + " items de maintenance !");
     }

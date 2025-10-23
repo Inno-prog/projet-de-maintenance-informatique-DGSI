@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -75,7 +75,15 @@ export class PrestationService {
     return this.http.get<number>(`${this.API_URL}/stats/montant/trimestre/${trimestre}`);
   }
 
-  getCountByItemAndTrimestre(nomPrestation: string, trimestre: string): Observable<number> {
-    return this.http.get<number>(`${this.API_URL}/count/${encodeURIComponent(nomPrestation)}/${encodeURIComponent(trimestre)}`);
+  getCountByItemTrimestrePrestataire(nomPrestation: string, trimestre: string, nomPrestataire: string, statut?: string): Observable<number> {
+    let url = `${this.API_URL}/count/${encodeURIComponent(nomPrestation)}/${encodeURIComponent(trimestre)}/${encodeURIComponent(nomPrestataire)}`;
+    if (statut) {
+      url += `?statut=${encodeURIComponent(statut)}`;
+    }
+    return this.http.get<number>(url);
+  }
+
+  getCountByItemAndTrimestre(nomItem: string, trimestre: string): Observable<number> {
+    return this.http.get<number>(`${this.API_URL}/count/${encodeURIComponent(nomItem)}/${encodeURIComponent(trimestre)}`);
   }
 }

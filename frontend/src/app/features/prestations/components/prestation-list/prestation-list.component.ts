@@ -8,6 +8,9 @@ import { PrestationService, Prestation } from '../../../../core/services/prestat
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { PrestationFormComponent } from '../prestation-form/prestation-form.component';
+import { ItemService } from '../../../../core/services/item.service';
+import { FichePrestationService } from '../../../../core/services/fiche-prestation.service';
+import { Item, FichePrestation, StatutFiche } from '../../../../core/models/business.models';
 
 @Component({
   selector: 'app-prestation-list',
@@ -137,7 +140,7 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
                     <span class="badge">{{ prestation.quantiteItem }}</span>
                   </td>
                   <td class="text-center">
-                    <span class="badge progress">{{ prestation.nbPrestRealise }}/{{ prestation.quantiteItem }}</span>
+                    <span class="badge progress">{{ getRealizedCount(prestation).count }}/{{ getRealizedCount(prestation).max }}</span>
                   </td>
                   <td class="text-center">
                     <span class="trimestre-badge">{{ prestation.trimestre }}</span>
@@ -683,6 +686,8 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
 export class PrestationListComponent implements OnInit {
   prestations: Prestation[] = [];
   filteredPrestations: Prestation[] = [];
+  items: Item[] = [];
+  fiches: FichePrestation[] = [];
   searchTerm = '';
   selectedStatut = '';
 
@@ -694,7 +699,9 @@ export class PrestationListComponent implements OnInit {
     private prestationService: PrestationService,
     private toastService: ToastService,
     private confirmationService: ConfirmationService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private itemService: ItemService,
+    private fichePrestationService: FichePrestationService
   ) {}
 
   ngOnInit(): void {
@@ -703,21 +710,26 @@ export class PrestationListComponent implements OnInit {
 
   loadPrestations(): void {
     this.loading = true;
-    this.prestationService.getAllPrestations().subscribe({
-      next: (data) => {
-        this.prestations = data;
-        this.filteredPrestations = [...this.prestations];
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des prestations:', error);
+    Promise.all([
+      this.prestationService.getAllPrestations().toPromise(),
+      this.itemService.getAllItems().toPromise(),
+      this.fichePrestationService.getAllFiches().toPromise()
+    ]).then(([prestations, items, fiches]) => {
+      this.prestations = prestations || [];
+      this.items = items || [];
+      this.fiches = fiches || [];
+      this.filteredPrestations = [...this.prestations];
+      this.loading = false;
+    }).catch((error) => {
+      if (error.status !== 401) {
+        console.error('Erreur lors du chargement des données:', error);
         this.toastService.show({
           type: 'error',
           title: 'Erreur',
-          message: 'Impossible de charger les prestations'
+          message: 'Impossible de charger les données'
         });
-        this.loading = false;
       }
+      this.loading = false;
     });
   }
 
@@ -752,6 +764,13 @@ export class PrestationListComponent implements OnInit {
 
   getCountByStatut(statut: string): number {
     return this.prestations.filter(p => p.statut === statut).length;
+  }
+
+  getRealizedCount(prestation: Prestation): { count: number; max: number } {
+    const item = this.items.find(i => i.nomItem === prestation.nomPrestation);
+    const max = item ? item.quantiteMaxTrimestre : 0;
+    const count = this.prestations.filter(p => p.nomPrestataire === prestation.nomPrestataire && p.nomPrestation === prestation.nomPrestation && p.statut === 'terminé').length;
+    return { count, max };
   }
 
   getRowClass(statut: string): string {

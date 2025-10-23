@@ -1,6 +1,9 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8082/api'  // URL directe du backend (correspondre au port du serveur backend)
+  apiUrl: 'http://localhost:8082/api',  // URL directe du backend (correspondre au port du serveur backend)
+  // En développement, activez ce flag pour permettre un contournement local lorsque Keycloak
+  // n'est pas disponible. Ne PAS activer en production.
+  devAuthBypass: true
 };
 
 // Configuration de l'environnement de production

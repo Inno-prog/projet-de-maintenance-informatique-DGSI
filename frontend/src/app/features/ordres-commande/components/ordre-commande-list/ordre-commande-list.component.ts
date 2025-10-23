@@ -318,8 +318,10 @@ export class OrdreCommandeListComponent implements OnInit {
         this.loadingList = false;
       },
       error: (error) => {
-        console.error('Error loading ordres:', error);
-        this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors du chargement des ordres: ' + error.message });
+        if (error.status !== 401) {
+          console.error('Error loading ordres:', error);
+          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors du chargement des ordres: ' + error.message });
+        }
         this.loadingList = false;
       }
     });

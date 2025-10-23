@@ -39,8 +39,10 @@ export class AuthService {
       requireHttps: isProduction, // Exiger HTTPS en production
       skipIssuerCheck: !isProduction, // Vérification stricte de l'émetteur en production
       strictDiscoveryDocumentValidation: isProduction, // Validation stricte en production
-      oidc: true,
-      useSilentRefresh: false,
+  oidc: true,
+  // Activer silent refresh afin de tenter un rafraîchissement silencieux des tokens
+  useSilentRefresh: true,
+  silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
       disableAtHashCheck: false, // Activer la vérification de hachage pour la sécurité
       loginUrl: isProduction
         ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI/protocol/openid-connect/auth'
@@ -99,8 +101,48 @@ export class AuthService {
 
     // Charger le document de découverte et essayer de se connecter s'il y a des tokens
     console.log('Chargement du document de découverte...');
-    this.oauthService.loadDiscoveryDocumentAndTryLogin().then(() => {
+
+    const discoveryPromise = this.oauthService.loadDiscoveryDocumentAndTryLogin();
+
+    discoveryPromise.then(() => {
       console.log('Document de découverte chargé avec succès');
+      // Hook: when discovery is loaded, setup automatic token refresh handling
+      try {
+        // certains événements peuvent être écoutés via oauthService.events
+        (this.oauthService as any).events?.subscribe((e: any) => {
+          // e.name peut être 'token_expires' ou 'session_terminated' selon la version
+          if (e && e.type === 'session_terminated') {
+            console.warn('Session terminée détectée par oauthService event');
+            this.logout();
+          }
+          if (e && e.type === 'token_expires') {
+            console.log('Token expirant détecté — tentative de silent refresh');
+            // tenter un silent refresh (retourne une promesse)
+            try {
+              this.oauthService.silentRefresh().then(() => {
+                console.log('Silent refresh réussi');
+                this.updateUserFromToken();
+              }).catch((srErr: any) => {
+                console.warn('Échec du silent refresh:', srErr);
+                // si refresh_token présent, essayer refresh via token endpoint
+                const refresh = localStorage.getItem('refresh_token');
+                if (refresh) {
+                  console.log('Tentative de refresh via refresh_token');
+                  // oauthService peut exposer refreshToken (selon version)
+                  (this.oauthService as any).refreshToken ?
+                    (this.oauthService as any).refreshToken().catch(() => this.logout()) : this.logout();
+                } else {
+                  this.logout();
+                }
+              });
+            } catch (e) {
+              console.warn('silentRefresh not available in this OAuthService version:', e);
+            }
+          }
+        });
+      } catch (e) {
+        // ignore if events not available
+      }
       if (this.oauthService.hasValidAccessToken()) {
         console.log('Token d\'accès valide trouvé, mise à jour de l\'utilisateur depuis le token');
         this.updateUserFromToken();
@@ -108,10 +150,65 @@ export class AuthService {
         console.log('Aucun token d\'accès valide trouvé');
       }
     }).catch(err => {
-      console.error('Erreur d\'initialisation OAuth:', err);
-      console.error('Détails de l\'erreur:', err.message);
+      console.error('Erreur d\'initialisation OAuth (découverte):', err);
+      console.error('Détails de l\'erreur:', err && err.message ? err.message : err);
       console.error('Vérifiez si Keycloak fonctionne sur http://localhost:8080');
+
+      // Si nous sommes en développement et que Keycloak n'est pas disponible, créer
+      // des tokens factices locaux pour continuer le développement frontal sans 400s.
+      if (!environment.production && (environment as any).devAuthBypass) {
+        console.warn('Mode devAuthBypass activé — création de tokens factices pour le développement local');
+        try {
+          this.createFakeTokensWhenDev();
+          this.updateUserFromToken();
+        } catch (e) {
+          console.error('Échec de la création de tokens factices:', e);
+        }
+      } else {
+        // Sinon, essayer un retry basique de la découverte après un délai court
+        setTimeout(() => {
+          console.log('Réessai du chargement du document de découverte OAuth...');
+          this.oauthService.loadDiscoveryDocumentAndTryLogin().then(() => {
+            console.log('Retry discovery succeed');
+            if (this.oauthService.hasValidAccessToken()) this.updateUserFromToken();
+          }).catch(err2 => {
+            console.error('Second échec du chargement du document de découverte:', err2);
+          });
+        }, 1500);
+      }
     });
+  }
+
+  private createFakeTokensWhenDev(): void {
+    // Créer un access_token et id_token JWT minimal (non signé) encodés en base64 pour
+    // que le front puisse extraire des claims. NE PAS utiliser ceci en production.
+    const header = { alg: 'none', typ: 'JWT' };
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+      iss: 'http://localhost:8080/realms/Maintenance-DGSI',
+      sub: 'dev-user',
+      preferred_username: 'dev.user',
+      name: 'Développeur Local',
+      email: 'dev.user@example.com',
+      realm_access: { roles: ['ADMINISTRATEUR'] },
+      iat: now,
+      exp: now + 60 * 60 * 24 // valable 24h
+    };
+
+    const b64 = (obj: any) => btoa(JSON.stringify(obj)).replace(/=+$/, '');
+    const fakeAccess = `${b64(header)}.${b64(payload)}.`;
+    const fakeId = `${b64(header)}.${b64(payload)}.`;
+
+    try {
+      this.oauthService.setStorage(localStorage);
+    } catch (e) {
+      // ignore
+    }
+
+    localStorage.setItem('access_token', fakeAccess);
+    localStorage.setItem('id_token', fakeId);
+    // Pas de refresh token disponible dans le fallback dev – on pourra ignorer le refresh
+    console.log('Tokens factices créés en local (dev) — expiration dans 24h');
   }
 
   login(credentials?: LoginRequest): void {

@@ -55,6 +55,7 @@ public class ContratDataInitializer implements CommandLineRunner {
             createPrestataire("TechPro Services", "techpro@gmail.com", "TechPro Services", "Services techniques professionnels")
         };
 
+        userRepository.saveAll(Arrays.asList(prestataires));
         return Arrays.asList(prestataires);
     }
 
@@ -74,8 +75,6 @@ public class ContratDataInitializer implements CommandLineRunner {
         prestataire.setDocumentContrats("Contrat_" + nom.replace(" ", "_") + ".pdf");
         prestataire.setScoreHistorique(0);
 
-        userRepository.save(prestataire);
-        logger.info("Created prestataire: " + nom);
         return prestataire;
     }
 
@@ -100,8 +99,8 @@ public class ContratDataInitializer implements CommandLineRunner {
                          prestataires.get(7), 3800000.0, "Migration et gestion cloud")
         };
 
+        contratRepository.saveAll(Arrays.asList(contrats));
         for (Contrat contrat : contrats) {
-            contratRepository.save(contrat);
             logger.info("Created contract: " + contrat.getIdContrat() + " for prestataire: " + contrat.getPrestataire().getNom());
         }
     }

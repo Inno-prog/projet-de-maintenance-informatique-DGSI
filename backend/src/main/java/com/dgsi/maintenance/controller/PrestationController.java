@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
-import com.dgsi.maintenance.entity.Item;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.Prestation;
 import com.dgsi.maintenance.entity.StatutCommande;
@@ -142,17 +141,6 @@ public class PrestationController {
                         ordreCommande.setTotalPrestationsRealisees(currentRealisees + savedPrestation.getQuantiteItem());
                         ordreCommandeService.updateStatutOrdreCommande(savedPrestation.getOrdreCommande().getId(), StatutCommande.TERMINE);
 
-                        // Decrement the max quantity for this item in the current trimestre
-                        java.util.Optional<Item> itemOptional = itemRepository.findFirstByNomItem(savedPrestation.getNomPrestation());
-                        if (itemOptional.isPresent()) {
-                            Item itemToUpdate = itemOptional.get();
-                            Integer currentMax = itemToUpdate.getQuantiteMaxTrimestre();
-                            if (currentMax != null && currentMax > 0) {
-                                itemToUpdate.setQuantiteMaxTrimestre(currentMax - savedPrestation.getQuantiteItem());
-                                itemRepository.save(itemToUpdate);
-                            }
-                        }
-
                         // Create a basic evaluation for the prestataire
                         EvaluationTrimestrielle evaluation = new EvaluationTrimestrielle();
                         evaluation.setPrestataireNom(savedPrestation.getNomPrestataire());
@@ -202,9 +190,24 @@ public class PrestationController {
     @GetMapping("/count/{nomPrestation}/{trimestre}")
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
     public Long getCountByItemAndTrimestre(@PathVariable String nomPrestation, @PathVariable String trimestre) {
-        List<Prestation> prestations = prestationRepository.findByTrimestre(trimestre);
-        return prestations.stream()
-            .filter(p -> p.getNomPrestation().equals(nomPrestation))
-            .count();
+        return prestationRepository.countByTrimestreAndNomPrestation(trimestre, nomPrestation);
+    }
+
+    @GetMapping("/count/{nomPrestation}/{trimestre}/{nomPrestataire}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
+    public Long getCountByItemTrimestrePrestataire(@PathVariable String nomPrestation, @PathVariable String trimestre, @PathVariable String nomPrestataire) {
+        return prestationRepository.countByTrimestreAndNomPrestationAndNomPrestataire(trimestre, nomPrestation, nomPrestataire);
+    }
+
+    @GetMapping("/count/{nomPrestation}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
+    public Long getCountByItem(@PathVariable String nomPrestation) {
+        return prestationRepository.countByNomPrestation(nomPrestation);
+    }
+
+    @GetMapping("/count/{nomPrestation}/{nomPrestataire}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
+    public Long getCountByItemAndPrestataire(@PathVariable String nomPrestation, @PathVariable String nomPrestataire) {
+        return prestationRepository.countByNomPrestationAndNomPrestataire(nomPrestation, nomPrestataire);
     }
 }

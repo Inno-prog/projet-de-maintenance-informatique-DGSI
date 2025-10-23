@@ -534,12 +534,14 @@ export class ItemListComponent implements OnInit {
         this.loading = false;
       },
       error: (error: any) => {
-        console.error('Error loading items:', error);
-        this.toastService.show({
-          type: 'error',
-          title: 'Erreur',
-          message: 'Erreur lors du chargement des items'
-        });
+        if (error.status !== 401) {
+          console.error('Error loading items:', error);
+          this.toastService.show({
+            type: 'error',
+            title: 'Erreur',
+            message: 'Erreur lors du chargement des items'
+          });
+        }
         this.loading = false;
       }
     });

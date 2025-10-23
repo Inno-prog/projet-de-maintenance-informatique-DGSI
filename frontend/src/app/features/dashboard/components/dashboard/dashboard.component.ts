@@ -1024,13 +1024,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.stats.totalUsers = users.length;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
-        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
-        this.toastService.show({
-          type: 'error',
-          title: 'Erreur',
-          message: `Impossible de charger les statistiques des utilisateurs : ${errMsg}`
-        });
+        if (error.status !== 401) {
+          console.error('Erreur lors du chargement des utilisateurs:', error);
+          const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+          this.toastService.show({
+            type: 'error',
+            title: 'Erreur',
+            message: `Impossible de charger les statistiques des utilisateurs : ${errMsg}`
+          });
+        }
       }
     });
 
@@ -1039,9 +1041,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.stats.totalContrats = contrats.length;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des contrats:', error);
-        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
-        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des contrats : ${errMsg}` });
+        if (error.status !== 401) {
+          console.error('Erreur lors du chargement des contrats:', error);
+          const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+          this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des contrats : ${errMsg}` });
+        }
       }
     });
 
@@ -1050,9 +1054,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.stats.totalOrdres = ordres.length;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des ordres:', error);
-        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
-        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des ordres : ${errMsg}` });
+        if (error.status !== 401) {
+          console.error('Erreur lors du chargement des ordres:', error);
+          const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+          this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des ordres : ${errMsg}` });
+        }
       }
     });
 
@@ -1061,9 +1067,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.stats.totalEvaluations = evaluations.length;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des évaluations:', error);
-        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
-        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des évaluations : ${errMsg}` });
+        if (error.status !== 401) {
+          console.error('Erreur lors du chargement des évaluations:', error);
+          const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+          this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des évaluations : ${errMsg}` });
+        }
       }
     });
 
@@ -1072,9 +1080,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.stats.totalPrestations = prestations.length;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des prestations:', error);
-        const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
-        this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des prestations : ${errMsg}` });
+        if (error.status !== 401) {
+          console.error('Erreur lors du chargement des prestations:', error);
+          const errMsg = error?.message || error?.statusText || JSON.stringify(error) || 'Erreur inconnue';
+          this.toastService.show({ type: 'error', title: 'Erreur', message: `Impossible de charger les statistiques des prestations : ${errMsg}` });
+        }
       }
     });
   }

@@ -14,6 +14,7 @@ com/dgsi/maintenance/security/WebSecurityConfig.class
 com/dgsi/maintenance/repository/UserRepository.class
 com/dgsi/maintenance/entity/StatutFiche.class
 com/dgsi/maintenance/security/UserPrincipal.class
+com/dgsi/maintenance/service/PrestationService.class
 com/dgsi/maintenance/entity/StatutCommande.class
 com/dgsi/maintenance/entity/Administrator.class
 com/dgsi/maintenance/entity/Prestataire.class
@@ -56,6 +57,7 @@ com/dgsi/maintenance/security/KeycloakJwtAuthenticationConverter.class
 com/dgsi/maintenance/config/PrestationDataInitializer.class
 com/dgsi/maintenance/controller/FileUploadController.class
 com/dgsi/maintenance/security/CustomUserDetailsService.class
+com/dgsi/maintenance/service/PrestationLimitExceededException.class
 com/dgsi/maintenance/controller/AuthController$UserInfo.class
 com/dgsi/maintenance/service/FileUploadService.class
 com/dgsi/maintenance/service/EvaluationService.class

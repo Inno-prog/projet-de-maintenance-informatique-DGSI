@@ -24,4 +24,18 @@ public interface PrestationRepository extends JpaRepository<Prestation, Long> {
 
     @Query("SELECT SUM(p.montantPrest) FROM Prestation p WHERE p.trimestre = :trimestre")
     Long sumMontantByTrimestre(@Param("trimestre") String trimestre);
+
+    List<Prestation> findByTrimestreAndNomPrestationAndNomPrestataire(String trimestre, String nomPrestation, String nomPrestataire);
+
+    @Query("SELECT COUNT(p) FROM Prestation p WHERE p.trimestre = :trimestre AND p.nomPrestation = :nomPrestation AND p.nomPrestataire = :nomPrestataire")
+    Long countByTrimestreAndNomPrestationAndNomPrestataire(@Param("trimestre") String trimestre, @Param("nomPrestation") String nomPrestation, @Param("nomPrestataire") String nomPrestataire);
+
+    @Query("SELECT COUNT(p) FROM Prestation p WHERE p.trimestre = :trimestre AND p.nomPrestation = :nomPrestation")
+    Long countByTrimestreAndNomPrestation(@Param("trimestre") String trimestre, @Param("nomPrestation") String nomPrestation);
+
+    @Query("SELECT COUNT(p) FROM Prestation p WHERE p.nomPrestation = :nomPrestation")
+    Long countByNomPrestation(@Param("nomPrestation") String nomPrestation);
+
+    @Query("SELECT COUNT(p) FROM Prestation p WHERE p.nomPrestation = :nomPrestation AND p.nomPrestataire = :nomPrestataire")
+    Long countByNomPrestationAndNomPrestataire(@Param("nomPrestation") String nomPrestation, @Param("nomPrestataire") String nomPrestataire);
 }

@@ -930,7 +930,9 @@ export class LayoutComponent implements AfterViewInit, OnDestroy {
           this.notifications = notifications;
         },
         error: (error) => {
-          console.error('Erreur lors du chargement des notifications:', error);
+          if (error.status !== 401) {
+            console.error('Erreur lors du chargement des notifications:', error);
+          }
         }
       });
     }

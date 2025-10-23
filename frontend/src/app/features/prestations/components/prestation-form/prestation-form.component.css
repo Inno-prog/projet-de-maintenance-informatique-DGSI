@@ -359,3 +359,29 @@
     font-size: 1rem;
   }
 }
+
+/* Prestation Counter Styles */
+.prestation-counter {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+}
+
+.counter-info {
+  margin: 0;
+  font-size: 14px;
+}
+
+.limit-reached {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.warning-message {
+  margin: 5px 0 0 0;
+  color: #dc3545;
+  font-size: 13px;
+  font-weight: bold;
+}

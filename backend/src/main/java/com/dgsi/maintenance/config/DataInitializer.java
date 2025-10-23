@@ -224,6 +224,7 @@ public class DataInitializer {
             new TypeItem(null, "6.5", "Scanner", 10, 18, 2000, "Maintenance préventive", 0)
         );
 
+        // Batch save for better performance
         typeItemRepository.saveAll(items);
     }
 
