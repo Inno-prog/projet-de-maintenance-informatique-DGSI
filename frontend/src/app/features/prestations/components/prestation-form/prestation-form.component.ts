@@ -117,7 +117,7 @@ export class PrestationFormComponent implements OnInit {
       if (value) {
         this.selectedItem = this.items.find(item => item.nomItem === value) || null;
         this.updateMaxQuantity();
-        this.updateExistingPrestationsCount();
+        this.updateExistingPrestationsCount(); // Mettre à jour le compteur
       } else {
         this.selectedItem = null;
         this.maxQuantityForTrimestre = 0;
@@ -125,12 +125,7 @@ export class PrestationFormComponent implements OnInit {
       }
     });
 
-    // Écouter seulement le trimestre
-    this.prestationForm.get('trimestre')?.valueChanges.subscribe(value => {
-      if (value && this.selectedItem) {
-        this.updateExistingPrestationsCount();
-      }
-    });
+    // Supprimer l'écouteur de trimestre car on ne s'en sert plus
   }
 
   updateMaxQuantity(): void {
@@ -142,106 +137,80 @@ export class PrestationFormComponent implements OnInit {
   }
 
   updateExistingPrestationsCount(): void {
-    if (this.selectedItem && this.prestationForm.get('trimestre')?.value) {
-      const trimestre = this.prestationForm.get('trimestre')?.value;
+    if (this.selectedItem) {
       const nomItem = this.selectedItem.nomItem;
+      console.log(`🔍 Mise à jour compteur pour: ${nomItem}`);
       
-      // Compter TOUTES les prestations pour cet item et ce trimestre (tous prestataires confondus)
-      this.prestationService.getCountByItemAndTrimestre(nomItem, trimestre).subscribe({
+      this.prestationService.getCountByItem(nomItem).subscribe({
         next: (count) => {
           this.existingPrestationsCount = count;
+          this.maxQuantityForTrimestre = this.selectedItem?.quantiteMaxTrimestre || 0;
+          console.log(`✅ Compteur mis à jour: ${count}/${this.maxQuantityForTrimestre}`);
         },
         error: (error) => {
-          console.error('Erreur lors de la récupération du nombre de prestations existantes:', error);
+          console.error('❌ Erreur compteur:', error);
+          // Mettre à jour avec des valeurs par défaut
           this.existingPrestationsCount = 0;
+          this.maxQuantityForTrimestre = this.selectedItem?.quantiteMaxTrimestre || 0;
         }
       });
     } else {
       this.existingPrestationsCount = 0;
+      this.maxQuantityForTrimestre = 0;
     }
   }
 
   async onSubmit(): Promise<void> {
     if (this.prestationForm.valid) {
-      const formValue = this.prestationForm.value;
-      // Helper to format date as YYYY-MM-DD (LocalDate expected by backend)
-      const formatLocalDate = (d: any) => {
-        if (!d) return null;
-        const dt = new Date(d);
-        if (isNaN(dt.getTime())) return null;
-        return dt.toISOString().slice(0, 10);
-      };
-
-      const prestationData = {
-        ...formValue,
-        quantiteItem: 1, // Set to 1 since we're counting prestations, not summing quantities
-        nbPrestRealise: 0, // Initialize to 0 on creation
-        dateDebut: formatLocalDate(formValue.dateDebut),
-        dateFin: formatLocalDate(formValue.dateFin)
-      };
-
-      if (this.isEditMode) {
-        const confirmed = await this.confirmationService.show({
-          title: 'Confirmer la mise à jour',
-          message: 'Êtes-vous sûr de vouloir mettre à jour cette prestation ?',
-          type: 'warning',
-          confirmText: 'Mettre à jour',
-          cancelText: 'Annuler'
+      console.log('🔄 Soumission du formulaire...');
+      
+      // Vérification frontend de la limite
+      if (!this.isEditMode && this.existingPrestationsCount >= this.maxQuantityForTrimestre) {
+        const message = `Limite atteinte: ${this.existingPrestationsCount}/${this.maxQuantityForTrimestre} prestations`;
+        console.warn('🚫 ' + message);
+        this.toastService.show({
+          type: 'error',
+          title: 'Limite atteinte',
+          message
         });
+        return;
+      }
 
-        if (confirmed) {
-          this.prestationService.updatePrestation(this.data.prestation.id!, prestationData).subscribe({
-            next: () => {
-              this.dialogRef.close(true);
-            },
-            error: (error: any) => {
-              this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la mise à jour de la prestation' });
-              console.error(error);
-            }
-          });
-        }
-      } else {
-        // VÉRIFICATION PRINCIPALE - Bloquer si la limite est atteinte
-        if (!this.isEditMode && this.existingPrestationsCount >= this.maxQuantityForTrimestre) {
-          this.toastService.show({
-            type: 'error',
-            title: 'Limite atteinte',
-            message: `Le nombre limite de prestations pour l'item "${this.selectedItem?.nomItem}" est atteint (${this.maxQuantityForTrimestre} prestations maximum par trimestre)`
-          });
-          return;
-        }
-
-        this.prestationService.createPrestation(prestationData).subscribe({
-          next: () => {
-            this.dialogRef.close(true);
-          },
-          error: (error: any) => {
-            let errorMessage = 'Erreur lors de la création de la prestation';
-            
-            // Capturer les erreurs backend supplémentaires
-            if (error?.error && typeof error.error === 'string') {
-              errorMessage = error.error;
-            } else if (error?.message) {
-              errorMessage = error.message;
-            }
-
-            // Si le backend renvoie aussi une erreur de limite
-            if (errorMessage.toLowerCase().includes('limite') || errorMessage.toLowerCase().includes('maximum')) {
-              this.toastService.show({
-                type: 'error',
-                title: 'Limite atteinte',
-                message: errorMessage
-              });
-            } else {
-              this.toastService.show({ type: 'error', title: 'Erreur', message: errorMessage });
-            }
-            console.error(error);
-          }
+      try {
+        const result = await this.prestationService.createPrestation(
+          this.preparePrestationData()
+        ).toPromise();
+        
+        console.log('✅ Succès:', result);
+        this.dialogRef.close(true);
+        
+      } catch (error: any) {
+        console.error('❌ Erreur soumission:', error);
+        this.toastService.show({
+          type: 'error',
+          title: 'Erreur',
+          message: error.message || 'Erreur lors de la création'
         });
       }
-    } else {
-      this.toastService.show({ type: 'error', title: 'Erreur', message: 'Veuillez remplir tous les champs requis' });
     }
+  }
+
+  private preparePrestationData(): any {
+    const formValue = this.prestationForm.value;
+    
+    const formatDate = (date: any) => {
+      if (!date) return null;
+      const d = new Date(date);
+      return d.toISOString().split('T')[0]; // YYYY-MM-DD
+    };
+
+    return {
+      ...formValue,
+      quantiteItem: 1,
+      nbPrestRealise: 0,
+      dateDebut: formatDate(formValue.dateDebut),
+      dateFin: formatDate(formValue.dateFin)
+    };
   }
 
   onCancel(): void {

@@ -1,21 +1,11 @@
 package com.dgsi.maintenance.controller;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
-import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
-import com.dgsi.maintenance.entity.OrdreCommande;
+import java.util.Optional;
 import com.dgsi.maintenance.entity.Prestation;
-import com.dgsi.maintenance.entity.StatutCommande;
-import com.dgsi.maintenance.repository.ItemRepository;
-import com.dgsi.maintenance.repository.PrestationRepository;
-import com.dgsi.maintenance.service.EvaluationService;
-import com.dgsi.maintenance.service.OrdreCommandeService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.dgsi.maintenance.service.PrestationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,189 +15,143 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/prestations")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@Slf4j
 public class PrestationController {
 
-    @Autowired
-    private PrestationRepository prestationRepository;
+    private final PrestationService prestationService;
 
     @Autowired
-    private ItemRepository itemRepository;
-
-    @Autowired
-    private OrdreCommandeService ordreCommandeService;
-
-    @Autowired
-    private com.dgsi.maintenance.service.PrestationService prestationService;
-
-    @Autowired
-    private EvaluationService evaluationService;
-    
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    public PrestationController(PrestationService prestationService) {
+        this.prestationService = prestationService;
+    }
 
     @PostMapping
-    // @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')") // Disabled for development
-    public ResponseEntity<?> createPrestation(@RequestBody Prestation prestation) {
+    public ResponseEntity<?> createPrestation(@Valid @RequestBody Prestation prestation) {
+        log.info("📥 Requête POST pour créer une prestation: {}", prestation.getNomPrestation());
+
         try {
-            Prestation saved = prestationService.createPrestationTransactional(prestation);
-            return ResponseEntity.ok().body(saved);
-        } catch (com.dgsi.maintenance.service.PrestationLimitExceededException ple) {
-            // Specific message to indicate the limit is reached
-            return ResponseEntity.badRequest().body(ple.getMessage());
-        } catch (IllegalArgumentException iae) {
-            return ResponseEntity.badRequest().body(iae.getMessage());
+            Prestation createdPrestation = prestationService.createPrestation(prestation);
+            log.info("✅ Prestation créée avec succès ID: {}", createdPrestation.getId());
+
+            return ResponseEntity.ok(createdPrestation);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ Erreur de validation: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(
+                new ErrorResponse("VALIDATION_ERROR", e.getMessage())
+            );
+        } catch (RuntimeException e) {
+            log.error("❌ Erreur technique lors de la création: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(
+                new ErrorResponse("CREATION_ERROR", e.getMessage())
+            );
         } catch (Exception e) {
-            System.err.println("Erreur lors de la création de la prestation: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Erreur lors de la création de la prestation: " + e.getMessage());
+            log.error("❌ Erreur inattendue lors de la création", e);
+            return ResponseEntity.internalServerError().body(
+                new ErrorResponse("UNEXPECTED_ERROR", "Erreur inattendue lors de la création")
+            );
         }
     }
 
-    // Debug endpoint to try mapping raw JSON to Prestation and return any mapping error messages
-    @PostMapping("/debug")
-    public ResponseEntity<?> debugMapPrestation(@RequestBody String raw) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePrestation(@PathVariable Long id, @Valid @RequestBody Prestation prestationDetails) {
+        log.info("📥 Requête PUT pour mettre à jour prestation ID: {}", id);
+
         try {
-            Prestation p = objectMapper.readValue(raw, Prestation.class);
-            return ResponseEntity.ok(p);
+            Prestation updatedPrestation = prestationService.updatePrestation(id, prestationDetails);
+            return ResponseEntity.ok(updatedPrestation);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                new ErrorResponse("NOT_FOUND", e.getMessage())
+            );
         } catch (Exception e) {
-            // Return the exception message to help debug deserialization issues
-            return ResponseEntity.badRequest().body("Deserialization error: " + e.getMessage());
+            log.error("❌ Erreur lors de la mise à jour de la prestation ID: {}", id, e);
+            return ResponseEntity.internalServerError().body(
+                new ErrorResponse("UPDATE_ERROR", "Erreur lors de la mise à jour")
+            );
         }
     }
 
     @GetMapping
-    // @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')") // Disabled for development
-    public List<Prestation> getAllPrestations() {
-        return prestationRepository.findAll();
+    public ResponseEntity<?> getAllPrestations() {
+        try {
+            List<Prestation> prestations = prestationService.getAllPrestations();
+            return ResponseEntity.ok(prestations);
+        } catch (Exception e) {
+            log.error("❌ Erreur lors de la récupération des prestations", e);
+            return ResponseEntity.internalServerError().body(
+                new ErrorResponse("FETCH_ERROR", "Erreur lors de la récupération des prestations")
+            );
+        }
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
-    public ResponseEntity<Prestation> getPrestationById(@PathVariable Long id) {
-        return prestationRepository.findById(id)
-            .map(prestation -> ResponseEntity.ok().body(prestation))
-            .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getPrestationById(@PathVariable Long id) {
+        try {
+            Optional<Prestation> prestation = prestationService.getPrestationById(id);
+            return prestation.map(ResponseEntity::ok)
+                           .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("❌ Erreur lors de la récupération de la prestation ID: {}", id, e);
+            return ResponseEntity.internalServerError().body(
+                new ErrorResponse("FETCH_ERROR", "Erreur lors de la récupération de la prestation")
+            );
+        }
     }
 
-    @GetMapping("/prestataire/{nomPrestataire}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
-    public List<Prestation> getPrestationsByPrestataire(@PathVariable String nomPrestataire) {
-        return prestationRepository.findByNomPrestataire(nomPrestataire);
-    }
+    @GetMapping("/count-by-item")
+    public ResponseEntity<Long> countByItem(@RequestParam String nomItem) {
+        log.info("📊 Comptage des prestations pour l'item: {}", nomItem);
 
-    @GetMapping("/statut/{statut}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
-    public List<Prestation> getPrestationsByStatut(@PathVariable String statut) {
-        return prestationRepository.findByStatut(statut);
-    }
-
-    @GetMapping("/trimestre/{trimestre}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
-    public List<Prestation> getPrestationsByTrimestre(@PathVariable String trimestre) {
-        return prestationRepository.findByTrimestre(trimestre);
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
-    public ResponseEntity<Prestation> updatePrestation(@PathVariable Long id, @RequestBody Prestation prestationDetails) {
-        return prestationRepository.findById(id)
-            .map(prestation -> {
-                prestation.setNomPrestataire(prestationDetails.getNomPrestataire());
-                prestation.setNomPrestation(prestationDetails.getNomPrestation());
-                prestation.setMontantPrest(prestationDetails.getMontantPrest());
-                prestation.setQuantiteItem(prestationDetails.getQuantiteItem());
-                prestation.setNbPrestRealise(prestationDetails.getNbPrestRealise());
-                prestation.setTrimestre(prestationDetails.getTrimestre());
-                prestation.setDateDebut(prestationDetails.getDateDebut());
-                prestation.setDateFin(prestationDetails.getDateFin());
-                prestation.setStatut(prestationDetails.getStatut());
-                prestation.setDescription(prestationDetails.getDescription());
-                Prestation savedPrestation = prestationRepository.save(prestation);
-
-                // If status is 'terminé', update the order status to TERMINE, set nbPrestRealise to quantiteItem, update totalPrestationsRealisees, and create evaluation
-                if ("terminé".equals(prestationDetails.getStatut())) {
-                    // Set nbPrestRealise to quantiteItem when prestation is completed
-                    savedPrestation.setNbPrestRealise(savedPrestation.getQuantiteItem());
-
-                    if (savedPrestation.getOrdreCommande() != null) {
-                        // Update totalPrestationsRealisees in OrdreCommande
-                        OrdreCommande ordreCommande = savedPrestation.getOrdreCommande();
-                        Integer currentRealisees = ordreCommande.getTotalPrestationsRealisees() != null ? ordreCommande.getTotalPrestationsRealisees() : 0;
-                        ordreCommande.setTotalPrestationsRealisees(currentRealisees + savedPrestation.getQuantiteItem());
-                        ordreCommandeService.updateStatutOrdreCommande(savedPrestation.getOrdreCommande().getId(), StatutCommande.TERMINE);
-
-                        // Create a basic evaluation for the prestataire
-                        EvaluationTrimestrielle evaluation = new EvaluationTrimestrielle();
-                        evaluation.setPrestataireNom(savedPrestation.getNomPrestataire());
-                        evaluation.setTrimestre(savedPrestation.getTrimestre());
-                        evaluation.setDateEvaluation(LocalDate.now());
-                        evaluation.setStatut("en cours"); // Or appropriate status
-                        evaluation.setNoteFinale(BigDecimal.ZERO); // Default
-                        evaluation.setPenalitesCalcul(BigDecimal.ZERO);
-                        evaluationService.saveEvaluation(evaluation);
-                    }
-                }
-
-                return ResponseEntity.ok(savedPrestation);
-            })
-            .orElse(ResponseEntity.notFound().build());
+        try {
+            Long count = prestationService.countByNomPrestation(nomItem);
+            log.info("✅ Nombre de prestations pour '{}': {}", nomItem, count);
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            log.error("❌ Erreur lors du comptage pour l'item: {}", nomItem, e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<?> deletePrestation(@PathVariable Long id) {
-        return prestationRepository.findById(id)
-            .map(prestation -> {
-                prestationRepository.delete(prestation);
+        log.info("📥 Requête DELETE pour prestation ID: {}", id);
+
+        try {
+            boolean deleted = prestationService.deletePrestation(id);
+            if (deleted) {
                 return ResponseEntity.ok().build();
-            })
-            .orElse(ResponseEntity.notFound().build());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            log.error("❌ Erreur lors de la suppression de la prestation ID: {}", id, e);
+            return ResponseEntity.internalServerError().body(
+                new ErrorResponse("DELETE_ERROR", "Erreur lors de la suppression")
+            );
+        }
     }
 
-    @GetMapping("/search")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
-    public List<Prestation> searchPrestations(@RequestParam String keyword) {
-        return prestationRepository.searchByKeyword(keyword);
-    }
+    // Classe pour les réponses d'erreur standardisées
+    public static class ErrorResponse {
+        private String code;
+        private String message;
 
-    @GetMapping("/stats/statut/{statut}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
-    public Long getCountByStatut(@PathVariable String statut) {
-        return prestationRepository.countByStatut(statut);
-    }
+        public ErrorResponse(String code, String message) {
+            this.code = code;
+            this.message = message;
+        }
 
-    @GetMapping("/stats/montant/trimestre/{trimestre}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
-    public Long getTotalMontantByTrimestre(@PathVariable String trimestre) {
-        return prestationRepository.sumMontantByTrimestre(trimestre);
-    }
-
-    @GetMapping("/count/{nomPrestation}/{trimestre}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
-    public Long getCountByItemAndTrimestre(@PathVariable String nomPrestation, @PathVariable String trimestre) {
-        return prestationRepository.countByTrimestreAndNomPrestation(trimestre, nomPrestation);
-    }
-
-    @GetMapping("/count/{nomPrestation}/{trimestre}/{nomPrestataire}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
-    public Long getCountByItemTrimestrePrestataire(@PathVariable String nomPrestation, @PathVariable String trimestre, @PathVariable String nomPrestataire) {
-        return prestationRepository.countByTrimestreAndNomPrestationAndNomPrestataire(trimestre, nomPrestation, nomPrestataire);
-    }
-
-    @GetMapping("/count/{nomPrestation}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
-    public Long getCountByItem(@PathVariable String nomPrestation) {
-        return prestationRepository.countByNomPrestation(nomPrestation);
-    }
-
-    @GetMapping("/count/{nomPrestation}/{nomPrestataire}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI') or hasRole('PRESTATAIRE')")
-    public Long getCountByItemAndPrestataire(@PathVariable String nomPrestation, @PathVariable String nomPrestataire) {
-        return prestationRepository.countByNomPrestationAndNomPrestataire(nomPrestation, nomPrestataire);
+        // Getters et setters
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
     }
 }

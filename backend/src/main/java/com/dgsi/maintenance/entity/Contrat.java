@@ -3,10 +3,13 @@ package com.dgsi.maintenance.entity;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,7 +23,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "contrats")
-@JsonIgnoreProperties({"ordresCommande", "hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"ordresCommande", "prestataire", "hibernateLazyInitializer", "handler"})
 public class Contrat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,6 +53,11 @@ public class Contrat {
     @Column(name = "montant")
     private Double montant;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statut")
+    private StatutContrat statut = StatutContrat.ACTIF;
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prestataire_id")
     private Prestataire prestataire;
@@ -84,4 +92,7 @@ public class Contrat {
 
     public List<OrdreCommande> getOrdresCommande() { return ordresCommande; }
     public void setOrdresCommande(List<OrdreCommande> ordresCommande) { this.ordresCommande = ordresCommande; }
+
+    public StatutContrat getStatut() { return statut; }
+    public void setStatut(StatutContrat statut) { this.statut = statut; }
 }

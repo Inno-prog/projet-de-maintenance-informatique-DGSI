@@ -6,7 +6,15 @@ export interface Contrat {
   dateFin: string;
   nomPrestataire: string;
   montant: number;
+  statut: StatutContrat;
   prestataireId?: number;
+}
+
+export enum StatutContrat {
+  ACTIF = 'ACTIF',
+  SUSPENDU = 'SUSPENDU',
+  TERMINE = 'TERMINE',
+  EXPIRE = 'EXPIRE'
 }
 
 export interface OrdreCommande {

@@ -2,6 +2,7 @@ package com.dgsi.maintenance.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -62,6 +63,7 @@ public class Prestation {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordre_commande_id")
     private OrdreCommande ordreCommande;

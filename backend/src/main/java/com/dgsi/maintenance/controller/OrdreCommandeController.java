@@ -4,6 +4,7 @@ import java.util.List;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.StatutCommande;
 import com.dgsi.maintenance.repository.OrdreCommandeRepository;
+import com.dgsi.maintenance.service.OrdreCommandeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,17 +26,20 @@ public class OrdreCommandeController {
     @Autowired
     private OrdreCommandeRepository ordreCommandeRepository;
 
+    @Autowired
+    private OrdreCommandeService ordreCommandeService;
+
     @GetMapping
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE')")
     public List<OrdreCommande> getAllOrdresCommande() {
-        return ordreCommandeRepository.findAll();
+        return ordreCommandeService.getAllOrdresCommande();
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE')")
     public ResponseEntity<OrdreCommande> getOrdreCommandeById(@PathVariable Long id) {
-        return ordreCommandeRepository.findById(id)
-            .map(ordre -> ResponseEntity.ok().body(ordre))
+        return ordreCommandeService.getOrdreCommandeDetail(id)
+            .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 

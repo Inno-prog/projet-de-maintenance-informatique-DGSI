@@ -10,4 +10,5 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByNomItemContainingIgnoreCase(String nomItem);
     boolean existsByIdItem(Integer idItem);
     java.util.Optional<Item> findFirstByNomItem(String nomItem);
+    boolean existsByNomItem(String nomItem);
 }

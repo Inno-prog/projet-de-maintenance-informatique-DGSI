@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContratService } from '../../../../core/services/contrat.service';
-import { Contrat } from '../../../../core/models/business.models';
+import { Contrat, StatutContrat } from '../../../../core/models/business.models';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -113,6 +113,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                   <th>Date Fin</th>
                   <th>Montant</th>
                   <th>Statut</th>
+                  <th>Changer Statut</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -128,6 +129,11 @@ import { ToastService } from '../../../../core/services/toast.service';
                     <span class="badge" [class]="getStatusBadgeClass(contrat)">
                       {{ getStatusLabel(contrat) }}
                     </span>
+                  </td>
+                  <td>
+                    <select class="status-select" [value]="contrat.statut" (change)="changeStatut(contrat, $event)" *ngIf="authService.isAdmin()">
+                      <option *ngFor="let statut of statutOptions" [value]="statut">{{ getStatutLabel(statut) }}</option>
+                    </select>
                   </td>
                   <td>
                     <div class="action-buttons">
@@ -295,6 +301,21 @@ import { ToastService } from '../../../../core/services/toast.service';
       color: #6b7280;
       pointer-events: none;
     }
+
+    .status-select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      background: white;
+      min-width: 120px;
+    }
+
+    .status-select:focus {
+      outline: none;
+      border-color: #f97316;
+      box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.1);
+    }
   `]
 })
 export class ContratListComponent implements OnInit {
@@ -307,6 +328,7 @@ export class ContratListComponent implements OnInit {
   editingId: number | null = null;
   loading = false;
   loadingList = false;
+  statutOptions = Object.values(StatutContrat);
 
   constructor(
     private contratService: ContratService,
@@ -467,15 +489,56 @@ export class ContratListComponent implements OnInit {
   }
 
   getStatusLabel(contrat: Contrat): string {
+    if (contrat.statut) {
+      return this.getStatutLabel(contrat.statut);
+    }
+    // Fallback to date-based status if no statut field
     const today = new Date();
     const endDate = new Date(contrat.dateFin);
-    
+
     if (endDate < today) {
       return 'Expiré';
     } else if (endDate.getTime() - today.getTime() < 30 * 24 * 60 * 60 * 1000) {
       return 'Expire bientôt';
     } else {
       return 'Actif';
+    }
+  }
+
+  getStatutLabel(statut: StatutContrat): string {
+    switch (statut) {
+      case StatutContrat.ACTIF: return 'Actif';
+      case StatutContrat.SUSPENDU: return 'Suspendu';
+      case StatutContrat.TERMINE: return 'Terminé';
+      case StatutContrat.EXPIRE: return 'Expiré';
+      default: return statut;
+    }
+  }
+
+  async changeStatut(contrat: Contrat, event: any): Promise<void> {
+    const newStatut = event.target.value as StatutContrat;
+
+    const confirmed = await this.confirmationService.show({
+      title: 'Changer le statut',
+      message: `Voulez-vous vraiment changer le statut du contrat ${contrat.idContrat} à "${this.getStatutLabel(newStatut)}" ?`,
+      confirmText: 'Confirmer',
+      cancelText: 'Annuler'
+    });
+
+    if (confirmed) {
+      this.contratService.updateContratStatut(contrat.id!, newStatut).subscribe({
+        next: (updatedContrat) => {
+          contrat.statut = updatedContrat.statut;
+          this.toastService.show({ type: 'success', title: 'Succès', message: 'Statut mis à jour avec succès' });
+        },
+        error: (error) => {
+          console.error('Error updating statut:', error);
+          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la mise à jour du statut' });
+        }
+      });
+    } else {
+      // Reset the select to the original value
+      event.target.value = contrat.statut;
     }
   }
 }

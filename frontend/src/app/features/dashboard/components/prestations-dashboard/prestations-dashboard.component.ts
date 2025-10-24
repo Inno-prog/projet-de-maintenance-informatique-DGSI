@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router } from '@angular/router';
 import { FichePrestationService } from '../../../../core/services/fiche-prestation.service';
 import { ContratService } from '../../../../core/services/contrat.service';
-import { FichePrestation, Contrat, StatutFiche } from '../../../../core/models/business.models';
+import { FichePrestation, Contrat, StatutFiche, StatutContrat } from '../../../../core/models/business.models';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { PdfExportService } from '../../../../core/services/pdf-export.service';
@@ -930,7 +930,7 @@ export class PrestationsDashboardComponent implements OnInit {
               
               if (this.editingPrestation!.contrat?.id) {
                 // Mettre à jour le contrat existant
-                this.contratService.updateContrat(this.editingPrestation!.contrat.id, contratData).subscribe({
+                this.contratService.updateContrat(this.editingPrestation!.contrat.id, { ...contratData, statut: this.editingPrestation!.contrat.statut }).subscribe({
                   next: () => {
                     this.finaliserModification();
                   },
@@ -941,7 +941,7 @@ export class PrestationsDashboardComponent implements OnInit {
                 });
               } else {
                 // Créer un nouveau contrat
-                this.contratService.createContrat(contratData).subscribe({
+                this.contratService.createContrat({ ...contratData, statut: StatutContrat.ACTIF }).subscribe({
                   next: () => {
                     this.finaliserModification();
                   },

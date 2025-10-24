@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { Contrat } from '../models/business.models';
+import { Contrat, StatutContrat } from '../models/business.models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -35,5 +35,9 @@ export class ContratService {
 
   getContratsByPrestataire(prestataireId: number): Observable<Contrat[]> {
     return this.http.get<Contrat[]>(`${this.API_URL}/prestataire/${prestataireId}`);
+  }
+
+  updateContratStatut(id: number, statut: StatutContrat): Observable<Contrat> {
+    return this.http.put<Contrat>(`${this.API_URL}/${id}/statut`, statut);
   }
 }

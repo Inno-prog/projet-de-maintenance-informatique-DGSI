@@ -5,10 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import com.dgsi.maintenance.entity.Item;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.Prestation;
 import com.dgsi.maintenance.entity.StatutCommande;
+import com.dgsi.maintenance.repository.ItemRepository;
 import com.dgsi.maintenance.repository.OrdreCommandeRepository;
+import com.dgsi.maintenance.repository.PrestationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +27,16 @@ public class OrdreCommandeService {
     @Autowired
     private OrdreCommandeRepository ordreCommandeRepository;
 
+    @Autowired
+    private ItemRepository itemRepository;
+
+    @Autowired
+    private PrestationRepository prestationRepository;
+
     /**
-     * Crée automatiquement un ordre de commande pour un prestataire avec gestion robuste
+     * Crée automatiquement un ordre de commande avec gestion transactionnelle
      */
+    @Transactional
     public OrdreCommande creerOuObtenirOrdreCommandePourPrestation(Prestation prestation) {
         log.info("🔄 Création automatique OC pour prestation: {} - Prestataire: {} - Trimestre: {}",
                 prestation.getNomPrestation(), prestation.getNomPrestataire(), prestation.getTrimestre());
@@ -51,6 +61,7 @@ public class OrdreCommandeService {
 
         } catch (Exception e) {
             log.error("❌ Erreur création OC pour prestation {}: {}", prestation.getNomPrestation(), e.getMessage());
+            // Ne pas relancer l'exception pour éviter le rollback de la prestation
             throw new RuntimeException("Erreur lors de la création de l'ordre de commande: " + e.getMessage(), e);
         }
     }
@@ -132,16 +143,8 @@ public class OrdreCommandeService {
         ordreCommande.setPrestataireItem(prestation.getNomPrestataire());
         ordreCommande.setTrimestre(prestation.getTrimestre());
 
-        // Configuration des limites
-        ordreCommande.setMin_prestations(1);
-        ordreCommande.setMax_prestations(50); // Limite plus réaliste
         ordreCommande.setPrixUnitPrest(prestation.getMontantPrest() != null ?
             prestation.getMontantPrest().floatValue() : 0.0f);
-
-        // Initialisation de la liste des prestations
-        ordreCommande.setPrestations(new ArrayList<>());
-        ordreCommande.getPrestations().add(prestation);
-        prestation.setOrdreCommande(ordreCommande);
 
         // Calcul des montants initiaux
         initialiserMontantsOrdreCommande(ordreCommande, prestation);
@@ -151,7 +154,14 @@ public class OrdreCommandeService {
         ordreCommande.setDateCreation(LocalDateTime.now());
         ordreCommande.setDateModification(LocalDateTime.now());
 
+        // Save ordre first without prestations to ensure it's inserted
         OrdreCommande savedOrdre = ordreCommandeRepository.save(ordreCommande);
+        ordreCommandeRepository.flush(); // Ensure the ordre is inserted before setting relationships
+
+        // Now set the relationship on the prestation and save it to update the foreign key
+        prestation.setOrdreCommande(savedOrdre);
+        prestationRepository.save(prestation);
+
         log.info("✅ Nouvel OC créé avec ID: {} - Numéro: {}", savedOrdre.getId(), numeroOC);
 
         return savedOrdre;
@@ -170,6 +180,9 @@ public class OrdreCommandeService {
         // Statistiques initiales
         ordre.setTotalPrestationsRealisees(1);
         ordre.setPourcentageAvancement(0.0f); // À calculer selon la logique métier
+
+        // Mettre à jour min et max basé sur la formule
+        updateMinMaxPrestations(ordre);
     }
 
     /**
@@ -188,6 +201,9 @@ public class OrdreCommandeService {
         ordre.setTotalPrestationsRealisees(nombrePrestations);
         ordre.setDateModification(LocalDateTime.now());
 
+        // Mettre à jour min et max basé sur la formule
+        updateMinMaxPrestations(ordre);
+
         // Recalcul du pourcentage d'avancement (exemple)
         if (ordre.getMax_prestations() > 0) {
             float pourcentage = (nombrePrestations * 100.0f) / ordre.getMax_prestations();
@@ -202,6 +218,34 @@ public class OrdreCommandeService {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String sequence = String.format("%04d", numeroSequence.getAndIncrement() % 10000);
         return "OC-" + timestamp.substring(7) + "-" + sequence;
+    }
+
+    /**
+     * Calcule et met à jour les valeurs Min et Max pour un OrdreCommande
+     * Min = nombre total de prestations créées pour cet item (tous trimestres)
+     * Max = Quantité Max Trimestre de l'item (valeur fixe)
+     */
+    private void updateMinMaxPrestations(OrdreCommande ordre) {
+        String item = ordre.getNomItem();
+
+        if (item == null) {
+            log.warn("Impossible de calculer Min/Max : nom d'item manquant pour OC ID {}", ordre.getId());
+            return;
+        }
+
+        // Compter le nombre total de prestations pour cet item (TOUS LES TRIMESTRES)
+        Long totalPrestations = prestationRepository.countByNomPrestation(item);
+
+        // Trouver l'Item pour obtenir quantiteMaxTrimestre
+        Item itemEntity = itemRepository.findFirstByNomItem(item).orElse(null);
+        Integer quantiteMax = (itemEntity != null) ? itemEntity.getQuantiteMaxTrimestre() : 0;
+
+        // CORRECTION : Max = quantiteMaxTrimestre (valeur fixe de l'item)
+        ordre.setMin_prestations(totalPrestations.intValue());
+        ordre.setMax_prestations(quantiteMax); // ← Valeur fixe de l'item
+
+        log.info("Min/Max calculés pour OC ID {} - Item: {} : Min={}, Max={} (Quantité Max Item: {})",
+            ordre.getId(), item, ordre.getMin_prestations(), ordre.getMax_prestations(), quantiteMax);
     }
 
     // === MÉTHODES DE GESTION SUPPLÉMENTAIRES ===

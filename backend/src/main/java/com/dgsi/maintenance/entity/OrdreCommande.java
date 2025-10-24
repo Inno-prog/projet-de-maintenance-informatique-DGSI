@@ -3,7 +3,9 @@ package com.dgsi.maintenance.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,7 +25,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "ordres_commande")
-@JsonIgnoreProperties({"contrat", "items", "prestations", "hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"contrat", "items", "hibernateLazyInitializer", "handler"})
 public class OrdreCommande {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -93,14 +95,17 @@ public class OrdreCommande {
     @Enumerated(EnumType.STRING)
     private StatutCommande statut = StatutCommande.EN_ATTENTE;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contrat_id")
     private Contrat contrat;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "ordreCommande", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Item> items = new ArrayList<>();
 
-    @OneToMany(mappedBy = "ordreCommande", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @OneToMany(mappedBy = "ordreCommande", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private List<Prestation> prestations = new ArrayList<>();
 
     @PrePersist

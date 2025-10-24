@@ -8,6 +8,7 @@ com/dgsi/maintenance/repository/PrestationRepository.class
 com/dgsi/maintenance/service/UserService.class
 com/dgsi/maintenance/entity/FichePrestation.class
 com/dgsi/maintenance/MaintenanceApplication.class
+com/dgsi/maintenance/entity/StatutContrat.class
 com/dgsi/maintenance/entity/TypeItem.class
 com/dgsi/maintenance/entity/User.class
 com/dgsi/maintenance/security/WebSecurityConfig.class
@@ -32,10 +33,12 @@ com/dgsi/maintenance/controller/EvaluationTrimestrielleController.class
 com/dgsi/maintenance/security/AuthEntryPointJwt.class
 com/dgsi/maintenance/entity/EvaluationTrimestrielle.class
 com/dgsi/maintenance/entity/Trimestre.class
+com/dgsi/maintenance/controller/PrestationController$ErrorResponse.class
 com/dgsi/maintenance/controller/PrestationController.class
 com/dgsi/maintenance/controller/TestController.class
 com/dgsi/maintenance/controller/ContratController.class
 com/dgsi/maintenance/controller/FichePrestationController.class
+com/dgsi/maintenance/config/TransactionConfig.class
 com/dgsi/maintenance/service/KeycloakService.class
 com/dgsi/maintenance/config/DataInitializer.class
 com/dgsi/maintenance/config/ItemDataInitializer.class
