@@ -1,11 +1,17 @@
 package com.dgsi.maintenance.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -28,7 +34,7 @@ public class User {
     @Size(max = 100)
     private String password;
 
-    private Long contact;
+    private String contact;
 
     @Size(max = 200)
     private String adresse;
@@ -71,8 +77,8 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public Long getContact() { return contact; }
-    public void setContact(Long contact) { this.contact = contact; }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
 
     public String getAdresse() { return adresse; }
     public void setAdresse(String adresse) { this.adresse = adresse; }

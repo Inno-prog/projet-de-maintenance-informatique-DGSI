@@ -214,8 +214,8 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 
     .form-control:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: #1e293b;
+      box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
     }
 
     .form-control.textarea {
@@ -261,7 +261,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 
     .btn-save {
       padding: 0.75rem 1.5rem;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      background: linear-gradient(135deg, #1e293b, #334155);
       color: white;
       border: none;
       border-radius: 8px;
@@ -269,11 +269,13 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       font-weight: 600;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
     }
 
     .btn-save:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
+      background: linear-gradient(135deg, #334155, #475569);
     }
 
     .btn-save:disabled {

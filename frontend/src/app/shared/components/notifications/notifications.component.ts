@@ -117,7 +117,7 @@ import { AuthService } from '../../../core/services/auth.service';
     .unread-dot {
       width: 8px;
       height: 8px;
-      background: #3b82f6;
+      background: #1e293b;
       border-radius: 50%;
     }
 

@@ -3,8 +3,8 @@ package com.dgsi.maintenance.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import com.dgsi.maintenance.entity.Prestation;
-import com.dgsi.maintenance.repository.PrestationRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,9 +17,6 @@ class PrestationServiceTest {
     @Autowired
     private PrestationService prestationService;
 
-    @Autowired
-    private PrestationRepository prestationRepository;
-
     @Test
     void testCreatePrestationSuccess() {
         Prestation prestation = new Prestation();
@@ -27,7 +24,7 @@ class PrestationServiceTest {
         prestation.setNomPrestataire("Test Prestataire");
         prestation.setTrimestre("trimestre 1");
         prestation.setMontantPrest(BigDecimal.valueOf(1000.0));
-        prestation.setQuantiteItem(1);
+        prestation.setEquipementsUtilises(new HashSet<>());
         prestation.setNbPrestRealise(1);
         prestation.setDateDebut(java.time.LocalDate.now());
         prestation.setDateFin(java.time.LocalDate.now().plusDays(30));

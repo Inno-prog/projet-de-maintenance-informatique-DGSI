@@ -36,7 +36,7 @@ import { ToastService } from '../../../../core/services/toast.service';
                     <label for="ordreCommandeId">Ordre de Commande</label>
                     <select id="ordreCommandeId" formControlName="ordreCommandeId">
                       <option value="">Sélectionnez un ordre de commande</option>
-                      <option *ngFor="let ordre of ordres" [value]="ordre.id">{{ ordre.idOC }} - {{ ordre.numeroOC || ordre.numeroCommande }}</option>
+                      <option *ngFor="let ordre of ordres" [value]="ordre.id">{{ ordre.idOC }} - {{ ordre.numeroOc || ordre.numeroCommande }}</option>
                     </select>
                   </div>
 
@@ -116,7 +116,7 @@ import { ToastService } from '../../../../core/services/toast.service';
               <tbody>
                 <tr *ngFor="let rapport of rapports">
                   <td>{{ rapport.dateRapport | date:'dd/MM/yyyy' }}</td>
-                  <td>{{ rapport.ordreCommande?.idOC }} - {{ rapport.ordreCommande?.numeroOC || rapport.ordreCommande?.numeroCommande }}</td>
+                  <td>{{ rapport.ordreCommande?.idOC }} - {{ rapport.ordreCommande?.numeroOc || rapport.ordreCommande?.numeroCommande }}</td>
                   <td>{{ rapport.trimestre }}</td>
                   <td>{{ rapport.prestataire }}</td>
                   <td>{{ rapport.prestationsRealisees }}</td>

@@ -69,7 +69,7 @@ public class ContratDataInitializer implements CommandLineRunner {
         prestataire.setNom(nom);
         prestataire.setEmail(email);
         prestataire.setPassword("prestataire123"); // Mot de passe par défaut
-        prestataire.setContact(22600000000L + (long)(Math.random() * 99999999)); // Numéro aléatoire
+        prestataire.setContact(String.valueOf(22600000000L + (long)(Math.random() * 99999999))); // Numéro aléatoire
         prestataire.setAdresse("Ouagadougou, Burkina Faso");
         prestataire.setQualification(specialite);
         prestataire.setDocumentContrats("Contrat_" + nom.replace(" ", "_") + ".pdf");
@@ -81,22 +81,22 @@ public class ContratDataInitializer implements CommandLineRunner {
     private void createSampleContrats(List<Prestataire> prestataires) {
         // Contrats d'exemple
         Contrat[] contrats = {
-            createContrat("CT-001-2025", "Maintenance Préventive", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
-                         prestataires.get(0), 2500000.0, "Contrat de maintenance préventive annuel"),
-            createContrat("CT-002-2025", "Support Technique", LocalDate.of(2025, 2, 1), LocalDate.of(2025, 7, 31),
-                         prestataires.get(1), 1800000.0, "Support technique et assistance utilisateurs"),
-            createContrat("CT-003-2025", "Installation Réseau", LocalDate.of(2025, 3, 1), LocalDate.of(2025, 8, 31),
-                         prestataires.get(2), 3200000.0, "Installation et configuration réseau"),
-            createContrat("CT-004-2025", "Développement Logiciel", LocalDate.of(2025, 4, 1), LocalDate.of(2025, 9, 30),
-                         prestataires.get(3), 4500000.0, "Développement d'applications métier"),
-            createContrat("CT-005-2025", "Sécurité Informatique", LocalDate.of(2025, 5, 1), LocalDate.of(2025, 10, 31),
-                         prestataires.get(6), 2800000.0, "Audit et sécurisation des systèmes"),
-            createContrat("CT-006-2025", "Formation Utilisateurs", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 11, 30),
-                         prestataires.get(4), 1500000.0, "Formation du personnel informatique"),
-            createContrat("CT-007-2025", "Maintenance Matériel", LocalDate.of(2025, 7, 1), LocalDate.of(2025, 12, 31),
-                         prestataires.get(5), 2200000.0, "Maintenance préventive du matériel"),
-            createContrat("CT-008-2025", "Cloud Computing", LocalDate.of(2025, 8, 1), LocalDate.of(2026, 1, 31),
-                         prestataires.get(7), 3800000.0, "Migration et gestion cloud")
+            createContrat("CT-001-2025", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31),
+                          prestataires.get(0), 2500000.0, "Contrat de maintenance préventive annuel"),
+            createContrat("CT-002-2025", LocalDate.of(2025, 2, 1), LocalDate.of(2025, 7, 31),
+                          prestataires.get(1), 1800000.0, "Support technique et assistance utilisateurs"),
+            createContrat("CT-003-2025", LocalDate.of(2025, 3, 1), LocalDate.of(2025, 8, 31),
+                          prestataires.get(2), 3200000.0, "Installation et configuration réseau"),
+            createContrat("CT-004-2025", LocalDate.of(2025, 4, 1), LocalDate.of(2025, 9, 30),
+                          prestataires.get(3), 4500000.0, "Développement d'applications métier"),
+            createContrat("CT-005-2025", LocalDate.of(2025, 5, 1), LocalDate.of(2025, 10, 31),
+                          prestataires.get(6), 2800000.0, "Audit et sécurisation des systèmes"),
+            createContrat("CT-006-2025", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 11, 30),
+                          prestataires.get(4), 1500000.0, "Formation du personnel informatique"),
+            createContrat("CT-007-2025", LocalDate.of(2025, 7, 1), LocalDate.of(2025, 12, 31),
+                          prestataires.get(5), 2200000.0, "Maintenance préventive du matériel"),
+            createContrat("CT-008-2025", LocalDate.of(2025, 8, 1), LocalDate.of(2026, 1, 31),
+                          prestataires.get(7), 3800000.0, "Migration et gestion cloud")
         };
 
         contratRepository.saveAll(Arrays.asList(contrats));
@@ -105,11 +105,10 @@ public class ContratDataInitializer implements CommandLineRunner {
         }
     }
 
-    private Contrat createContrat(String idContrat, String typeContrat, LocalDate dateDebut, LocalDate dateFin,
-                                 Prestataire prestataire, Double montant, String observations) {
+    private Contrat createContrat(String idContrat, LocalDate dateDebut, LocalDate dateFin,
+                                  Prestataire prestataire, Double montant, String observations) {
         Contrat contrat = new Contrat();
         contrat.setIdContrat(idContrat);
-        contrat.setTypeContrat(typeContrat);
         contrat.setDateDebut(dateDebut);
         contrat.setDateFin(dateFin);
         contrat.setNomPrestataire(prestataire.getNom());

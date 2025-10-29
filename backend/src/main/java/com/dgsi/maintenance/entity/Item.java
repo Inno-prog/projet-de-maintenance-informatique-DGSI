@@ -1,5 +1,8 @@
 package com.dgsi.maintenance.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -7,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -45,6 +49,10 @@ public class Item {
     @JoinColumn(name = "ordre_commande_id")
     private OrdreCommande ordreCommande;
 
+    @JsonBackReference
+    @ManyToMany(mappedBy = "itemsUtilises", fetch = FetchType.LAZY)
+    private Set<Prestation> prestations = new HashSet<>();
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -69,4 +77,7 @@ public class Item {
 
     public OrdreCommande getOrdreCommande() { return ordreCommande; }
     public void setOrdreCommande(OrdreCommande ordreCommande) { this.ordreCommande = ordreCommande; }
+
+    public Set<Prestation> getPrestations() { return prestations; }
+    public void setPrestations(Set<Prestation> prestations) { this.prestations = prestations; }
 }

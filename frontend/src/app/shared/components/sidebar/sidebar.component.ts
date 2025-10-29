@@ -77,6 +77,7 @@ import { AuthService } from '../../../core/services/auth.service';
             <span class="nav-text">Items</span>
           </a>
 
+    
           <a routerLink="/evaluations" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">⭐</span>
             <span class="nav-text">Evaluations</span>
@@ -98,6 +99,14 @@ import { AuthService } from '../../../core/services/auth.service';
           <a routerLink="/rapports-trimestriels" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">📈</span>
             <span class="nav-text">Rapports Trimestriels</span>
+          </a>
+        </div>
+
+        <div class="nav-section" *ngIf="authService.isAdmin()">
+          <h4 class="section-title">Équipements</h4>
+          <a routerLink="/équipements" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">🔧</span>
+            <span class="nav-text">Tableau de Bord Équipements</span>
           </a>
         </div>
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { OrdreCommandeService } from '../../../../core/services/ordre-commande.service';
@@ -21,6 +21,11 @@ import { ToastService } from '../../../../core/services/toast.service';
             <p>Gérez et suivez les ordres de commande de vos prestataires</p>
           </div>
           <div class="header-actions">
+            <!-- NOUVEAU : Boutons de vue -->
+            <div class="view-toggle">
+              <button class="btn btn-outline" [class.active]="viewMode === 'all'" (click)="switchView('all')">Tous les ordres</button>
+              <button class="btn btn-outline" [class.active]="viewMode === 'by-prestataire'" (click)="switchView('by-prestataire')">Par prestataire</button>
+            </div>
             <div *ngIf="authService.isAdmin()">
               <button class="btn btn-primary" (click)="showCreateForm = !showCreateForm">
                 {{ showCreateForm ? 'Annuler' : (isEditing ? 'Modifier' : 'Nouvel Ordre') }}
@@ -57,7 +62,16 @@ import { ToastService } from '../../../../core/services/toast.service';
 
         <!-- Orders Table -->
         <div class="table-container">
-          <div class="table-header"><h3>Liste des Ordres de Commande</h3></div>
+          <div class="table-header">
+            <h3>Liste des Ordres de Commande</h3>
+            <!-- NOUVEAU : Affichage des groupes par prestataire -->
+            <div *ngIf="viewMode === 'by-prestataire' && ordresParPrestataire" class="prestataire-groups">
+              <div *ngFor="let prestataire of getPrestatairesKeys()" class="prestataire-group">
+                <h4>{{ prestataire }}</h4>
+                <span class="badge">{{ (ordresParPrestataire[prestataire] ? ordresParPrestataire[prestataire].length : 0) }} ordres</span>
+              </div>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="prestation-table" *ngIf="ordres.length > 0; else noData">
               <thead>
@@ -75,16 +89,16 @@ import { ToastService } from '../../../../core/services/toast.service';
               </thead>
               <tbody>
                 <tr *ngFor="let ordre of ordres" [ngClass]="getRowClass(ordre.statut)" (click)="openDetails(ordre)" tabindex="0">
-                  <td data-label="Num OC">{{ ordre.numeroOC || ordre.numeroCommande || '-' }}</td>
-                  <td data-label="Item"><strong>{{ ordre.item?.nomItem || ordre.nomItem || '-' }}</strong></td>
-                  <td data-label="Prestataire">{{ ordre.prestataireItem || (ordre.fichePrestations && ordre.fichePrestations.length ? ordre.fichePrestations[0].nomPrestataire : null) || '-' }}</td>
-                  <td data-label="Min/Max">{{ ordre.min_prestations ?? ordre.minArticles ?? 0 }} / {{ ordre.max_prestations ?? ordre.maxArticles ?? 0 }}</td>
-                  <td data-label="Prix unitaire">{{ (ordre.prixUnitPrest || ordre.item?.prix || ordre.montant || 0) | number:'1.0-0' }} FCFA</td>
-                  <td data-label="Montant OC" class="montant-cell">{{ (ordre.montantOC ?? ordre.montant ?? calcul_montantTotal(ordre)) | number:'1.0-0' }} FCFA</td>
-                  <td data-label="Observations">{{ ordre.observations || ordre.description || '-' }}</td>
+                  <td data-label="Num OC">{{ ordre.numeroOc || ordre.numeroCommande || '-' }}</td>
+                  <td data-label="Item" [title]="getItemsNamesTooltip(ordre) || ordre.item?.nomItem || ordre.nomItem"><strong>{{ getItemsNamesTruncated(ordre) || ordre.item?.nomItem || ordre.nomItem || '-' }}</strong></td>
+                  <td data-label="Prestataire">{{ ordre.prestataireItem || (ordre.prestations && ordre.prestations.length ? ordre.prestations[0].nomPrestataire : null) || '-' }}</td>
+                  <td data-label="Min / Max">{{ getMinPrestations(ordre) }} / {{ getMaxPrestations(ordre) }}</td>
+                  <td data-label="Prix unitaire">{{ getPrixUnitaireDisplay(ordre) }}</td>
+                  <td data-label="Montant OC" class="montant-cell">{{ getMontantTotalDisplay(ordre) }}</td>
+                  <td data-label="Observations">{{ getObservationsDisplay(ordre) }}</td>
                   <td data-label="Statut" class="text-center">
-                    <div>{{ getStatusLabel(ordre.statut) }}</div>
-                    <div class="penalite" *ngIf="ordre.penalites">Pénalités: {{ ordre.penalites | number:'1.0-0' }} FCFA</div>
+                    <div>{{ getStatusLabel(getStatutFromPrestations(ordre)) }}</div>
+                    <div class="penalite" *ngIf="getPenalites(ordre) > 0">Pénalités: {{ getPenalites(ordre) | number:'1.0-0' }} FCFA</div>
                   </td>
                   <td class="actions-cell">
                       <div class="action-buttons">
@@ -111,8 +125,9 @@ import { ToastService } from '../../../../core/services/toast.service';
           <div class="details-modal" (click)="$event.stopPropagation()">
             <ng-container *ngIf="selectedOrdre as so">
               <div class="details-header">
-                <h2>Détails - Ordre {{ so.numeroOC || so.numeroCommande || so.idOC }}</h2>
+                <h2>Détails - Ordre {{ so.numeroOc || so.numeroCommande || so.idOC }}</h2>
                 <div class="details-actions">
+                  <button class="btn btn-primary" (click)="exportPdf()">📄 Exporter PDF</button>
                   <button class="btn btn-outline" (click)="closeDetails()">Fermer</button>
                 </div>
               </div>
@@ -121,39 +136,95 @@ import { ToastService } from '../../../../core/services/toast.service';
                 <div class="details-left">
                   <section class="card">
                     <h3>Informations générales</h3>
-                    <p><strong>Numéro OC:</strong> {{ so.numeroOC || so.numeroCommande || so.idOC }}</p>
-                    <p><strong>Item:</strong> {{ so.item?.nomItem || so.nomItem || '-' }}</p>
+                    <p><strong>Numéro OC:</strong> {{ so.numeroOc || so.numeroCommande || so.idOC }}</p>
+                    <p><strong>Item:</strong> {{ getItemsNames(so) || so.item?.nomItem || so.nomItem || '-' }}</p>
                     <p><strong>Prestataire:</strong> {{ so.prestataireItem || '-' }}</p>
-                    <p><strong>Statut:</strong> {{ getStatusLabel(so.statut) }}</p>
-                    <p><strong>Observations:</strong> {{ so.observations || so.description || '-' }}</p>
+                    <p><strong>Statut:</strong> {{ getStatusLabel(getStatutFromPrestations(so)) }}</p>
+                    <p><strong>Observations:</strong> {{ getObservationsDisplay(so) }}</p>
                   </section>
 
                   <section class="card">
                     <h3>Quantités & Prix</h3>
-                    <p><strong>Min prestations:</strong> {{ so.min_prestations || so.minArticles || 0 }}</p>
-                    <p><strong>Max prestations:</strong> {{ so.max_prestations || so.maxArticles || 0 }}</p>
-                    <p><strong>Prix unitaire:</strong> {{ (so.prixUnitPrest || so.item?.prix || so.montant || 0) | number:'1.0-0' }} FCFA</p>
-                    <p><strong>Montant total:</strong> {{ calcul_montantTotal(so) | number:'1.0-0' }} FCFA</p>
-                    <p><strong>Écart:</strong> {{ calculer_ecart_item(so) }}</p>
-                    <p><strong>Pénalités:</strong> {{ calcul_penalite(so) | number:'1.0-0' }} FCFA</p>
+                    <p><strong>Min prestations:</strong> {{ getMinPrestations(so) }}</p>
+                    <p><strong>Max prestations:</strong> {{ getMaxPrestations(so) }}</p>
+                    <p><strong>Prix unitaire:</strong> {{ getPrixUnitaireDisplay(so) }}</p>
+                    <p><strong>Montant total:</strong> {{ getMontantTotalDisplay(so) }}</p>
+                    <p><strong>Écart:</strong> {{ getEcart(so) }}</p>
+                    <p><strong>Pénalités:</strong> {{ getPenalites(so) | number:'1.0-0' }} FCFA</p>
                   </section>
                 </div>
 
                 <div class="details-right">
                   <section class="card big">
-                    <h3>Prestations associées</h3>
-                    <div *ngIf="so.fichePrestations?.length; else noFiches">
-                      <div *ngFor="let fiche of so.fichePrestations" class="fiche-item">
-                        <div class="fiche-head">
-                          <strong>{{ fiche.nomItem || fiche.nomPrestataire }}</strong>
-                          <span class="badge">{{ fiche.statut }}</span>
+                    <h3>Prestations associées ({{ so.prestations?.length || 0 }})</h3>
+                    <div *ngIf="so.prestations?.length; else noFiches">
+                      <div class="prestations-summary">
+                        <div class="summary-stats">
+                          <div class="stat-item">
+                            <span class="stat-label">Total prestations:</span>
+                            <span class="stat-value">{{ so.prestations!.length }}</span>
+                          </div>
+                          <div class="stat-item">
+                            <span class="stat-label">Montant total:</span>
+                            <span class="stat-value">{{ getTotalPrestationsAmount(so) | number:'1.0-0' }} FCFA</span>
+                          </div>
+                          <div class="stat-item">
+                            <span class="stat-label">Trimestre:</span>
+                            <span class="stat-value">{{ so.trimestre || so.prestations![0].trimestre || '-' }}</span>
+                          </div>
                         </div>
-                        <div class="fiche-meta">Date: {{ fiche.dateRealisation || '-' }} — Quantité: {{ fiche.quantite }}</div>
-                        <div class="fiche-comment">{{ fiche.commentaire || '' }}</div>
+                      </div>
+
+                      <div class="prestations-list">
+                        <div *ngFor="let prestation of so.prestations; let i = index" class="prestation-detail-card">
+                          <div class="prestation-header">
+                            <div class="prestation-title">
+                              <span class="prestation-number">#{{ i + 1 }}</span>
+                              <strong>{{ prestation.nomPrestation || 'Prestation ' + (i + 1) }}</strong>
+                            </div>
+                            <div class="prestation-status">
+                              <span class="badge" [ngClass]="getPrestationStatusClass(prestation.statut)">
+                                {{ getPrestationStatusLabel(prestation.statut) }}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div class="prestation-info">
+                            <div class="info-row">
+                              <span class="info-label">Prestataire:</span>
+                              <span class="info-value">{{ prestation.nomPrestataire }}</span>
+                            </div>
+                            <div class="info-row">
+                              <span class="info-label">Quantité réalisée:</span>
+                              <span class="info-value">{{ prestation.nbPrestRealise }}/{{ prestation.equipementsUtilises || prestation.quantiteItem }}</span>
+                            </div>
+                            <div class="info-row">
+                              <span class="info-label">Montant:</span>
+                              <span class="info-value montant">{{ (prestation.montantPrest | number:'1.0-0') || 0 }} FCFA</span>
+                            </div>
+                            <div class="info-row">
+                              <span class="info-label">Période:</span>
+                              <span class="info-value">{{ prestation.dateDebut | date:'dd/MM/yyyy' }} - {{ prestation.dateFin | date:'dd/MM/yyyy' }}</span>
+                            </div>
+                            <div class="info-row" *ngIf="prestation.trimestre">
+                              <span class="info-label">Trimestre:</span>
+                              <span class="info-value">{{ prestation.trimestre }}</span>
+                            </div>
+                          </div>
+
+                          <div class="prestation-description" *ngIf="prestation.description">
+                            <span class="info-label">Description:</span>
+                            <p class="description-text">{{ prestation.description }}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <ng-template #noFiches>
-                      <div class="muted">Aucune fiche de prestation associée</div>
+                      <div class="empty-prestations">
+                        <div class="empty-icon">📋</div>
+                        <p class="empty-message">Aucune prestation associée à cet ordre de commande</p>
+                        <p class="empty-hint">Les prestations seront automatiquement regroupées ici lorsqu'elles seront créées pour ce prestataire et trimestre.</p>
+                      </div>
                     </ng-template>
                   </section>
                 </div>
@@ -179,6 +250,9 @@ import { ToastService } from '../../../../core/services/toast.service';
 
     .header-actions { display:flex; gap:1rem; align-items:center; }
 
+    .view-toggle { display:flex; gap:0.5rem; }
+    .view-toggle .btn.active { background:#F97316; color:white; border-color:#F97316; }
+
     .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; margin-bottom:1.5rem; }
     .stat-card { background:white; padding:1.25rem; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.06); display:flex; gap:1rem; align-items:center; border:1px solid #f1f5f9 }
     .stat-icon { font-size:2.25rem; opacity:0.85 }
@@ -188,6 +262,11 @@ import { ToastService } from '../../../../core/services/toast.service';
     .table-container { background:white; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.06); overflow:hidden; border:1px solid #f1f5f9 }
     .table-header { padding:1.25rem; border-bottom:1px solid #f1f5f9 }
     .table-header h3 { margin:0 }
+
+    .prestataire-groups { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem; }
+    .prestataire-group { display:flex; align-items:center; gap:0.5rem; background:#f8fafc; padding:0.5rem 1rem; border-radius:8px; border:1px solid #e2e8f0; }
+    .prestataire-group h4 { margin:0; font-size:0.9rem; font-weight:600; }
+    .prestataire-group .badge { background:#F97316; color:white; padding:0.25rem 0.5rem; border-radius:12px; font-size:0.75rem; }
     .table-responsive { overflow-x:auto }
     .prestation-table { width:100%; border-collapse:collapse }
     .prestation-table {
@@ -222,9 +301,41 @@ import { ToastService } from '../../../../core/services/toast.service';
     .details-right { flex:1; overflow:auto }
     .card { background:#fbfbfd; border:1px solid #eef2ff; padding:1rem; border-radius:8px }
     .card.big { min-height:400px }
-    .fiche-item { padding:0.75rem; border-bottom:1px dashed #eef2ff }
-    .fiche-head { display:flex; justify-content:space-between; align-items:center }
-    .badge { background:#f1f5f9; padding:0.25rem 0.5rem; border-radius:6px }
+
+    /* Enhanced prestations display styles */
+    .prestations-summary { background:#f8fafc; padding:1rem; border-radius:8px; margin-bottom:1.5rem; border:1px solid #e2e8f0; }
+    .summary-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; }
+    .stat-item { display:flex; justify-content:space-between; align-items:center; }
+    .stat-label { font-weight:600; color:#374151; }
+    .stat-value { font-weight:700; color:#1f2937; }
+
+    .prestations-list { display:flex; flex-direction:column; gap:1rem; }
+    .prestation-detail-card { background:white; border:1px solid #e5e7eb; border-radius:8px; padding:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+    .prestation-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; }
+    .prestation-title { display:flex; align-items:center; gap:0.5rem; }
+    .prestation-number { background:#f97316; color:white; padding:0.25rem 0.5rem; border-radius:12px; font-size:0.75rem; font-weight:600; }
+    .prestation-status { flex-shrink:0; }
+
+    .prestation-info { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; margin-bottom:0.75rem; }
+    .info-row { display:flex; justify-content:space-between; align-items:center; }
+    .info-label { font-weight:600; color:#6b7280; font-size:0.875rem; }
+    .info-value { font-weight:500; color:#1f2937; text-align:right; }
+    .info-value.montant { color:#059669; font-weight:700; }
+
+    .prestation-description { border-top:1px solid #f3f4f6; padding-top:0.75rem; }
+    .description-text { margin:0.25rem 0 0 0; color:#4b5563; font-style:italic; }
+
+    .empty-prestations { text-align:center; padding:2rem; color:#6b7280; }
+    .empty-icon { font-size:3rem; margin-bottom:1rem; opacity:0.5; }
+    .empty-message { font-weight:600; margin-bottom:0.5rem; }
+    .empty-hint { font-size:0.875rem; opacity:0.8; }
+
+    .badge { background:#f1f5f9; padding:0.25rem 0.5rem; border-radius:6px; font-size:0.75rem; font-weight:600; }
+    .badge-success { background:#dcfce7; color:#166534; }
+    .badge-warning { background:#fef3c7; color:#92400e; }
+    .badge-info { background:#dbeafe; color:#1e40af; }
+    .badge-error { background:#fecaca; color:#dc2626; }
+    .badge-secondary { background:#f3f4f6; color:#6b7280; }
 
     .montant-cell { color:#059669; font-weight:600 }
     .description { color:#6b7280; font-size:0.9rem }
@@ -246,7 +357,8 @@ import { ToastService } from '../../../../core/services/toast.service';
   `]
 })
 export class OrdreCommandeListComponent implements OnInit {
-  ordres: OrdreCommande[] = [];
+  @Input() ordres: OrdreCommande[] = [];
+  ordresParPrestataire: { [key: string]: OrdreCommande[] } = {};
   selectedOrdre: OrdreCommande | null = null;
   showDetails = false;
   contrats: Contrat[] = [];
@@ -256,6 +368,7 @@ export class OrdreCommandeListComponent implements OnInit {
   editingId: number | null = null;
   loading = false;
   loadingList = false;
+  viewMode: 'all' | 'by-prestataire' = 'all'; // NOUVEAU : Mode de vue
 
   constructor(
     private ordreCommandeService: OrdreCommandeService,
@@ -277,27 +390,39 @@ export class OrdreCommandeListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // If the user is not authenticated, trigger the OAuth login flow so they
-    // are redirected to Keycloak instead of seeing an error when the API
-    // request is made without a token.
-    if (!this.authService.isAuthenticated()) {
-      // Keep the create form hidden and start the login redirect.
-      this.showCreateForm = false;
-      this.authService.login();
-      return;
-    }
+    // If ordres is not provided via @Input, load them
+    if (!this.ordres || this.ordres.length === 0) {
+      // If the user is not authenticated, trigger the OAuth login flow so they
+      // are redirected to Keycloak instead of seeing an error when the API
+      // request is made without a token.
+      if (!this.authService.isAuthenticated()) {
+        // Keep the create form hidden and start the login redirect.
+        this.showCreateForm = false;
+        this.authService.login();
+        return;
+      }
 
-    // Only load orders once the user is authenticated. Admins also get the
-    // contrats list.
-    this.loadOrdres();
-    if (this.authService.isAdmin()) {
-      this.loadContrats();
+      // Only load orders once the user is authenticated. Admins also get the
+      // contrats list.
+      this.loadOrdres();
+      if (this.authService.isAdmin()) {
+        this.loadContrats();
+      }
     }
   }
 
   loadOrdres(): void {
     this.loadingList = true;
     console.log('Loading orders...');
+
+    if (this.viewMode === 'by-prestataire') {
+      this.loadOrdresParPrestataire();
+    } else {
+      this.loadOrdresTous();
+    }
+  }
+
+  private loadOrdresTous(): void {
     this.ordreCommandeService.getAllOrdresCommande().subscribe({
       next: (ordres) => {
         console.log('Orders loaded successfully:', ordres);
@@ -327,12 +452,39 @@ export class OrdreCommandeListComponent implements OnInit {
     });
   }
 
+  private loadOrdresParPrestataire(): void {
+    this.ordreCommandeService.getOrdresCommandeGroupesParPrestataire().subscribe({
+      next: (ordresParPrestataire) => {
+        console.log('Orders by prestataire loaded:', ordresParPrestataire);
+        this.ordresParPrestataire = ordresParPrestataire;
+
+        // Convertir en liste plate pour la vue actuelle
+        this.ordres = Object.values(ordresParPrestataire).flat();
+
+        // Filtrage par rôle utilisateur
+        if (this.authService.isPrestataire()) {
+          const currentUser = this.authService.getCurrentUser();
+          this.ordres = this.ordres.filter(ordre =>
+            ordre.prestataireItem && currentUser &&
+            ordre.prestataireItem.toLowerCase().includes(currentUser.nom.toLowerCase())
+          );
+        }
+
+        console.log('Filtered orders by prestataire:', this.ordres.length);
+        this.loadingList = false;
+      },
+      error: (error) => {
+        if (error.status !== 401) {
+          console.error('Error loading ordres by prestataire:', error);
+          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors du chargement des ordres par prestataire: ' + error.message });
+        }
+        this.loadingList = false;
+      }
+    });
+  }
+
   openDetails(ordre: OrdreCommande): void {
     this.selectedOrdre = ordre;
-    // compute penalites if not present
-    if (typeof ordre.penalites !== 'number') {
-      ordre.penalites = this.calcul_penalite(ordre);
-    }
     this.showDetails = true;
   }
 
@@ -548,5 +700,160 @@ export class OrdreCommandeListComponent implements OnInit {
   getRowClass(statut?: any): string {
     if (!statut) return '';
     return statut.toString().toLowerCase().replace('_', '-') as string;
+  }
+
+  // Helper methods for dynamic display based on prestations
+  getItemsNames(ordre: OrdreCommande): string {
+    if (ordre.prestations && ordre.prestations.length > 0) {
+      return ordre.prestations.map(p => p.nomPrestation).filter(n => n).join(', ');
+    }
+    return ordre.nomItem || '';
+  }
+
+  // Helper method to get truncated item names for display
+  getItemsNamesTruncated(ordre: OrdreCommande): string {
+    const fullName = this.getItemsNames(ordre);
+    if (fullName.length > 25) {
+      return fullName.substring(0, 25) + '...';
+    }
+    return fullName;
+  }
+
+  // Helper method to get full item names for tooltip
+  getItemsNamesTooltip(ordre: OrdreCommande): string {
+    return this.getItemsNames(ordre);
+  }
+
+  getMinPrestations(ordre: OrdreCommande): number {
+    return ordre.min_prestations || ordre.minArticles || (ordre.prestations ? ordre.prestations.length : 0);
+  }
+
+  getMaxPrestations(ordre: OrdreCommande): number {
+    if (ordre.items && ordre.items.length > 0) {
+      return Math.max(...ordre.items.map(item => item.quantiteMaxTrimestre || 0));
+    }
+    return ordre.max_prestations || ordre.maxArticles || (ordre.prestations ? ordre.prestations.length : 0);
+  }
+
+  getPrixUnitaireDisplay(ordre: OrdreCommande): string {
+    if (ordre.prestations && ordre.prestations.length > 0) {
+      const total = ordre.prestations.reduce((sum, p) => sum + (p.montantPrest || 0), 0);
+      const avg = total / ordre.prestations.length;
+      return (avg || 0).toFixed(0) + ' FCFA';
+    }
+    return ((ordre.prixUnitPrest || ordre.montant || 0)).toFixed(0) + ' FCFA';
+  }
+
+  getMontantTotalDisplay(ordre: OrdreCommande): string {
+    if (ordre.prestations && ordre.prestations.length > 0) {
+      const total = ordre.prestations.reduce((sum, p) => sum + (p.montantPrest || 0), 0);
+      return total.toFixed(0) + ' FCFA';
+    }
+    return ((ordre.montantOC || ordre.montant || 0)).toFixed(0) + ' FCFA';
+  }
+
+  getObservationsDisplay(ordre: OrdreCommande): string {
+    if (ordre.prestations && ordre.prestations.length > 0) {
+      const descriptions = ordre.prestations.map(p => p.description).filter(d => d && d.trim());
+      if (descriptions.length > 0) {
+        return descriptions.join('; ');
+      }
+    }
+    return ordre.observations || ordre.description || '-';
+  }
+
+  getStatutFromPrestations(ordre: OrdreCommande): StatutCommande {
+    if (ordre.prestations && ordre.prestations.length > 0) {
+      const allTerminee = ordre.prestations.every(p => p.statut === 'TERMINEE');
+      if (allTerminee) return StatutCommande.TERMINE;
+      const anyEnCours = ordre.prestations.some(p => p.statut === 'EN_COURS');
+      if (anyEnCours) return StatutCommande.EN_COURS;
+      return StatutCommande.EN_ATTENTE;
+    }
+    return ordre.statut;
+  }
+
+  getEcart(ordre: OrdreCommande): number {
+    const realized = ordre.prestations ? ordre.prestations.length : 0;
+    const max = this.getMaxPrestations(ordre);
+    return Math.max(0, max - realized);
+  }
+
+  getPenalites(ordre: OrdreCommande): number {
+    if (ordre.prestations && ordre.prestations.length > 0) {
+      const realizedAmount = ordre.prestations.reduce((sum, p) => sum + (p.montantPrest || 0), 0);
+      const maxAmount = ordre.items && ordre.items.length > 0 ?
+        ordre.items.reduce((sum, item) => sum + ((item.quantiteMaxTrimestre || 0) * (item.prix || 0)), 0) : 0;
+      return Math.max(0, maxAmount - realizedAmount);
+    }
+    const ecart = this.getEcart(ordre);
+    return ecart * (ordre.prixUnitPrest || 0);
+  }
+
+  // NOUVEAU : Méthode pour changer de vue
+  switchView(mode: 'all' | 'by-prestataire'): void {
+    this.viewMode = mode;
+    this.loadOrdres();
+  }
+
+  // NOUVEAU : Méthode pour obtenir les clés des prestataires
+  getPrestatairesKeys(): string[] {
+    return Object.keys(this.ordresParPrestataire || {});
+  }
+
+  // Helper methods for enhanced prestation display
+  getTotalPrestationsAmount(ordre: OrdreCommande): number {
+    if (!ordre.prestations || ordre.prestations.length === 0) return 0;
+    return ordre.prestations.reduce((total, prestation) => {
+      const montant = typeof prestation.montantPrest === 'number' ? prestation.montantPrest : 0;
+      return total + montant;
+    }, 0);
+  }
+
+  exportPdf(): void {
+    if (this.selectedOrdre) {
+      this.ordreCommandeService.exportOrdreCommandePdf(this.selectedOrdre.id!).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const fileName = 'ordre-commande-' + (this.selectedOrdre!.numeroOc || this.selectedOrdre!.idOC || 'unknown') + '.pdf';
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          this.toastService.show({ type: 'success', title: 'Export PDF', message: 'PDF exporté avec succès' });
+        },
+        error: (error) => {
+          console.error('Error exporting PDF:', error);
+          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de l\'export PDF' });
+        }
+      });
+    }
+  }
+
+  getPrestationStatusClass(statut?: string): string {
+    if (!statut) return 'badge-secondary';
+    const statusMap: { [key: string]: string } = {
+      'TERMINEE': 'badge-success',
+      'EN_COURS': 'badge-warning',
+      'EN_ATTENTE': 'badge-info',
+      'VALIDER': 'badge-success',
+      'REJETER': 'badge-error'
+    };
+    return statusMap[statut.toUpperCase()] || 'badge-secondary';
+  }
+
+  getPrestationStatusLabel(statut?: string): string {
+    if (!statut) return 'Non défini';
+    const statusLabels: { [key: string]: string } = {
+      'TERMINEE': 'Terminée',
+      'EN_COURS': 'En Cours',
+      'EN_ATTENTE': 'En Attente',
+      'VALIDER': 'Validée',
+      'REJETER': 'Rejetée'
+    };
+    return statusLabels[statut.toUpperCase()] || statut;
   }
 }

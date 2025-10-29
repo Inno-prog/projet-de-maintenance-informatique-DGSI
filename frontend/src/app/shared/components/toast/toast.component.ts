@@ -88,7 +88,7 @@ export interface Toast {
     }
 
     .toast-info {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
       color: white;
     }
 

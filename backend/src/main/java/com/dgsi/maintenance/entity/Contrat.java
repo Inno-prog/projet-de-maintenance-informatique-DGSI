@@ -33,9 +33,6 @@ public class Contrat {
     @Column(name = "id_contrat", unique = true)
     private String idContrat;
 
-    @NotBlank
-    @Column(name = "type_contrat")
-    private String typeContrat;
 
     @NotNull
     @Column(name = "date_debut")
@@ -72,8 +69,6 @@ public class Contrat {
     public String getIdContrat() { return idContrat; }
     public void setIdContrat(String idContrat) { this.idContrat = idContrat; }
 
-    public String getTypeContrat() { return typeContrat; }
-    public void setTypeContrat(String typeContrat) { this.typeContrat = typeContrat; }
 
     public LocalDate getDateDebut() { return dateDebut; }
     public void setDateDebut(LocalDate dateDebut) { this.dateDebut = dateDebut; }

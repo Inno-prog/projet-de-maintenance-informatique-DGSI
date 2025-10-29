@@ -51,14 +51,14 @@ public class PrestationService {
         // Transaction
         return transactionTemplate.execute(status -> {
             try {
-                // Création ordre de commande (optionnel)
+                // CORRECTION : Gestion ordre de commande (regroupement par prestataire/trimestre)
                 try {
-                    log.info("📦 Création ordre de commande...");
-                    OrdreCommande ordre = ordreCommandeService.creerOuObtenirOrdreCommandePourPrestation(prestation);
+                    log.info("📦 Gestion ordre de commande...");
+                    OrdreCommande ordre = ordreCommandeService.gererOrdreCommandePourPrestation(prestation);
                     prestation.setOrdreCommande(ordre);
-                    log.info("✅ Ordre de commande créé");
+                    log.info("✅ Ordre de commande géré - ID: {}", ordre.getId());
                 } catch (Exception e) {
-                    log.warn("⚠️ Ordre de commande échoué, mais prestation sauvegardée. ID: {}", prestation.getId(), e);
+                    log.warn("⚠️ Gestion ordre de commande échouée, mais prestation sauvegardée. ID: {}", prestation.getId(), e);
                     // Continuer même si l'ordre de commande échoue
                 }
 

@@ -1,0 +1,74 @@
+<div class="equipement-dashboard">
+  <div class="dashboard-header">
+    <h1>Tableau de Bord Équipements</h1>
+    <p class="subtitle">Gestion et suivi des équipements utilisés dans les prestations</p>
+  </div>
+
+  <div class="dashboard-content">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Équipements Actifs</h3>
+          <p class="stat-number" *ngIf="!loading">{{ stats.equipementsActifs }}</p>
+          <p class="stat-number loading" *ngIf="loading">...</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>En Maintenance</h3>
+          <p class="stat-number" *ngIf="!loading">{{ stats.equipementsEnMaintenance }}</p>
+          <p class="stat-number loading" *ngIf="loading">...</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <h3>Utilisations Totales</h3>
+          <p class="stat-number" *ngIf="!loading">{{ stats.utilisationsTotales }}</p>
+          <p class="stat-number loading" *ngIf="loading">...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-section">
+      <div class="action-card">
+        <h3>Liste des Équipements</h3>
+        <p>Consultez et gérez tous les équipements disponibles dans le système.</p>
+        <a routerLink="/equipements/list" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Voir la Liste
+        </a>
+      </div>
+
+      <div class="action-card">
+        <h3>Ajouter un Équipement</h3>
+        <p>Ajoutez de nouveaux équipements au système pour les prestations.</p>
+        <button (click)="creerNouvelEquipement()" class="btn btn-outline">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Nouveau Équipement
+        </button>
+      </div>
+    </div>
+
+
+   

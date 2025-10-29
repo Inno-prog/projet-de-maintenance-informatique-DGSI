@@ -94,11 +94,11 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                 <h3>Gérer les Contrats</h3>
                 <p>Visualiser et gérer tous les contrats</p>
               </a>
-              <button class="action-card" (click)="genererOrdreCommande()">
-                <div class="action-icon">📋</div>
-                <h3>Générer Ordre de Commande</h3>
-                <p>Générer le PDF de l'ordre de commande trimestriel</p>
-              </button>
+              <a routerLink="/équipements" class="action-card">
+                <div class="action-icon">🛠️</div>
+                <h3>Équipements</h3>
+                <p>Gestion complète des équipements informatiques</p>
+              </a>
             </ng-container>
 
             <!-- Prestataire actions -->
@@ -182,12 +182,12 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                 <p>Générer le rapport annuel de maintenance</p>
               </button>
 
-              <!-- Génération d'ordres -->
-              <button class="action-card" (click)="genererOrdreCommande()">
-                <div class="action-icon">📋</div>
-                <h3>Ordre de Commande</h3>
-                <p>Générer l'ordre de commande trimestriel</p>
-              </button>
+              <!-- Gestion des équipements -->
+              <a routerLink="/équipements" class="action-card">
+                <div class="action-icon">🛠️</div>
+                <h3>Équipements</h3>
+                <p>Gestion complète des équipements informatiques</p>
+              </a>
 
               <!-- Statistiques -->
               <a routerLink="/statistiques" class="action-card">

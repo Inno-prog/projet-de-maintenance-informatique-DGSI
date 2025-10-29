@@ -1,16 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ItemService } from '../../../../core/services/item.service';
 import { Item } from '../../../../core/models/business.models';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
-import { ItemFormComponent } from '../item-form/item-form.component';
 
 @Component({
   selector: 'app-item-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ItemFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <div class="container">
         <div class="header-section">
@@ -104,7 +103,7 @@ import { ItemFormComponent } from '../item-form/item-form.component';
                   <th>Description</th>
                   <th>Prix</th>
                   <th>Qté Equip Défini</th>
-                  <th>Quantité Max Trimestre</th>
+                  <th>Quantité Max par item</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -130,7 +129,6 @@ import { ItemFormComponent } from '../item-form/item-form.component';
               </tbody>
             </table>
           </div>
-
           <ng-template #noData>
             <div class="no-data">
               <p>Aucun item trouvé</p>
@@ -140,15 +138,105 @@ import { ItemFormComponent } from '../item-form/item-form.component';
         </div>
 
         <!-- Item Form Modal -->
-        <app-item-form
-          [isVisible]="showForm"
-          [isEditing]="isEditing"
-          [itemToEdit]="itemToEdit"
-          (formClosed)="onFormClosed()"
-          (itemSaved)="onItemSaved()">
-        </app-item-form>
-      </div>
-    `,
+        <div class="modal-overlay" *ngIf="showForm" (click)="cancelEdit()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="item-form">
+                <h2 class="form-title">{{ isEditing ? 'Modifier' : 'Créer' }} un Item</h2>
+
+                <div class="form-group">
+                  <label for="nomItem">Nom Item</label>
+                  <input
+                    type="text"
+                    id="nomItem"
+                    formControlName="nomItem"
+                    placeholder="Ex: Clavier sans fil"
+                    class="line-input"
+                    [class.error]="itemForm.get('nomItem')?.invalid && itemForm.get('nomItem')?.touched"
+                  />
+                  <div class="input-line" [class.error]="itemForm.get('nomItem')?.invalid && itemForm.get('nomItem')?.touched"></div>
+                  <div class="error-message" *ngIf="itemForm.get('nomItem')?.invalid && itemForm.get('nomItem')?.touched">
+                    Le nom de l'item est requis
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="prix">Prix (FCFA)</label>
+                  <input
+                    type="number"
+                    id="prix"
+                    formControlName="prix"
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                    class="line-input"
+                    [class.error]="itemForm.get('prix')?.invalid && itemForm.get('prix')?.touched"
+                  />
+                  <div class="input-line" [class.error]="itemForm.get('prix')?.invalid && itemForm.get('prix')?.touched"></div>
+                  <div class="error-message" *ngIf="itemForm.get('prix')?.invalid && itemForm.get('prix')?.touched">
+                    Le prix est requis et doit être positif
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="qteEquipDefini">Qté Equipement Défini</label>
+                  <input
+                    type="number"
+                    id="qteEquipDefini"
+                    formControlName="qteEquipDefini"
+                    min="0"
+                    placeholder="0"
+                    class="line-input"
+                    [class.error]="itemForm.get('qteEquipDefini')?.invalid && itemForm.get('qteEquipDefini')?.touched"
+                  />
+                  <div class="input-line" [class.error]="itemForm.get('qteEquipDefini')?.invalid && itemForm.get('qteEquipDefini')?.touched"></div>
+                  <div class="error-message" *ngIf="itemForm.get('qteEquipDefini')?.invalid && itemForm.get('qteEquipDefini')?.touched">
+                    La quantité est requise et doit être positive
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="quantiteMaxTrimestre">Nombre Max Prestations Trimestre</label>
+                  <input
+                    type="number"
+                    id="quantiteMaxTrimestre"
+                    formControlName="quantiteMaxTrimestre"
+                    min="1"
+                    placeholder="100"
+                    class="line-input"
+                    [class.error]="itemForm.get('quantiteMaxTrimestre')?.invalid && itemForm.get('quantiteMaxTrimestre')?.touched"
+                  />
+                  <div class="input-line" [class.error]="itemForm.get('quantiteMaxTrimestre')?.invalid && itemForm.get('quantiteMaxTrimestre')?.touched"></div>
+                  <div class="error-message" *ngIf="itemForm.get('quantiteMaxTrimestre')?.invalid && itemForm.get('quantiteMaxTrimestre')?.touched">
+                    La quantité maximale est requise et doit être au moins 1
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="description">Description</label>
+                  <textarea
+                    id="description"
+                    formControlName="description"
+                    rows="4"
+                    placeholder="Décrivez l'item..."
+                    class="line-input"
+                  ></textarea>
+                  <div class="input-line"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                  <button type="button" class="btn btn-outline" (click)="cancelEdit()">
+                    Annuler
+                  </button>
+                  <button type="submit" class="btn btn-primary" [disabled]="itemForm.invalid || loading">
+                    {{ loading ? 'Enregistrement...' : (isEditing ? 'Modifier' : 'Créer') }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+    </div>
+  `,
   styles: [`
     .container {
       max-width: 100vw;
@@ -388,7 +476,7 @@ import { ItemFormComponent } from '../item-form/item-form.component';
     }
 
     .btn-add {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      background: linear-gradient(135deg, #1e293b, #334155);
       color: white;
       border: none;
       padding: 0.75rem 1.5rem;
@@ -400,11 +488,13 @@ import { ItemFormComponent } from '../item-form/item-form.component';
       align-items: center;
       gap: 0.5rem;
       transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
     }
 
     .btn-add:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
+      background: linear-gradient(135deg, #334155, #475569);
     }
 
     .icon-add {
@@ -498,6 +588,158 @@ import { ItemFormComponent } from '../item-form/item-form.component';
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .item-form {
+      padding: 30px;
+    }
+
+    .form-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .line-input {
+      width: 100%;
+      padding: 12px 0;
+      border: none;
+      border-radius: 0;
+      font-size: 16px;
+      background: transparent;
+      outline: none;
+      color: #333;
+    }
+
+    .line-input::placeholder {
+      color: #999;
+    }
+
+    .input-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #ddd;
+      transition: all 0.3s ease;
+    }
+
+    .line-input:focus + .input-line {
+      background: #1e293b;
+      height: 2px;
+    }
+
+    .line-input.error + .input-line,
+    .input-line.error {
+      background: #ff4444;
+    }
+
+    .error-message {
+      color: #ff4444;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    textarea.line-input {
+      resize: vertical;
+      min-height: 80px;
+      padding-top: 12px;
+    }
+
+    /* Boutons EXACTEMENT comme l'image */
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: white;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #334155, #475569);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #666;
+      border: 1px solid #ddd;
+    }
+
+    .btn-outline:hover {
+      background: #f5f5f5;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column-reverse;
+      }
+    }
   `]
 })
 export class ItemListComponent implements OnInit {
@@ -511,6 +753,7 @@ export class ItemListComponent implements OnInit {
   showForm = false;
   isEditing = false;
   itemToEdit: Item | null = null;
+  itemForm: FormGroup;
 
   // Loading state
   loading = false;
@@ -518,8 +761,17 @@ export class ItemListComponent implements OnInit {
   constructor(
     private itemService: ItemService,
     private toastService: ToastService,
-    private confirmationService: ConfirmationService
-  ) {}
+    private confirmationService: ConfirmationService,
+    private formBuilder: FormBuilder
+  ) {
+    this.itemForm = this.formBuilder.group({
+      nomItem: ['', Validators.required],
+      description: [''],
+      prix: [0, [Validators.required, Validators.min(0)]],
+      qteEquipDefini: [0, [Validators.required, Validators.min(0)]],
+      quantiteMaxTrimestre: [1, [Validators.required, Validators.min(1)]]
+    });
+  }
 
   ngOnInit(): void {
     this.loadItems();
@@ -629,6 +881,13 @@ export class ItemListComponent implements OnInit {
     this.isEditing = true;
     this.itemToEdit = item;
     this.showForm = true;
+    this.itemForm.patchValue({
+      nomItem: item.nomItem,
+      description: item.description,
+      prix: item.prix,
+      qteEquipDefini: item.qteEquipDefini,
+      quantiteMaxTrimestre: item.quantiteMaxTrimestre
+    });
   }
 
   async onDelete(item: Item): Promise<void> {
@@ -661,19 +920,73 @@ export class ItemListComponent implements OnInit {
     this.isEditing = false;
     this.itemToEdit = null;
     this.showForm = true;
+    this.itemForm.reset({
+      nomItem: '',
+      description: '',
+      prix: 0,
+      qteEquipDefini: 0,
+      quantiteMaxTrimestre: 1
+    });
   }
 
-  onFormClosed(): void {
+  cancelEdit(): void {
     this.showForm = false;
     this.isEditing = false;
     this.itemToEdit = null;
+    this.itemForm.reset({
+      nomItem: '',
+      description: '',
+      prix: 0,
+      qteEquipDefini: 0,
+      quantiteMaxTrimestre: 1
+    });
   }
 
-  onItemSaved(): void {
-    this.loadItems(); // Refresh the list
-    this.showForm = false;
-    this.isEditing = false;
-    this.itemToEdit = null;
+  async onSubmit(): Promise<void> {
+    if (this.itemForm.valid) {
+      const action = this.isEditing ? 'modifier' : 'créer';
+      const confirmed = await this.confirmationService.show({
+        title: 'Confirmation',
+        message: `Voulez-vous vraiment ${action} cet item ?`,
+        confirmText: 'Confirmer',
+        cancelText: 'Annuler'
+      });
+
+      if (confirmed) {
+        this.loading = true;
+        const itemData = this.itemForm.value;
+
+        if (this.isEditing && this.itemToEdit?.id) {
+          this.itemService.updateItem(this.itemToEdit.id, itemData).subscribe({
+            next: () => {
+              this.loading = false;
+              this.cancelEdit();
+              this.loadItems();
+              this.toastService.show({ type: 'success', title: 'Item modifié', message: 'L\'item a été modifié avec succès' });
+            },
+            error: (error) => {
+              console.error('Error updating item:', error);
+              this.loading = false;
+              this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la modification' });
+            }
+          });
+        } else {
+          this.itemService.createItem(itemData).subscribe({
+            next: () => {
+              this.loading = false;
+              this.cancelEdit();
+              this.loadItems();
+              this.toastService.show({ type: 'success', title: 'Item créé', message: 'L\'item a été créé avec succès' });
+            },
+            error: (error) => {
+              console.error('Error creating item:', error);
+              this.loading = false;
+              this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la création' });
+            }
+          });
+        }
+      }
+    }
   }
 
 }

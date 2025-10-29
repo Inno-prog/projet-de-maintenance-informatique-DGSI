@@ -156,8 +156,8 @@ import { AuthService } from '../../../core/services/auth.service';
 
     .form-control:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: #1e293b;
+      box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
     }
 
     .upload-section {
@@ -175,7 +175,7 @@ import { AuthService } from '../../../core/services/auth.service';
     }
 
     .file-input:hover {
-      border-color: #3b82f6;
+      border-color: #1e293b;
     }
 
     .file-info {
@@ -232,12 +232,14 @@ import { AuthService } from '../../../core/services/auth.service';
     }
 
     .btn-primary {
-      background: #3b82f6;
+      background: linear-gradient(135deg, #1e293b, #334155);
       color: white;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
     }
 
     .btn-primary:hover {
-      background: #2563eb;
+      background: linear-gradient(135deg, #334155, #475569);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
     }
 
     .btn-primary:disabled {

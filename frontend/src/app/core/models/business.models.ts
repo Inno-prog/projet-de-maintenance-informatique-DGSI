@@ -20,7 +20,7 @@ export enum StatutContrat {
 export interface OrdreCommande {
   // Required attributes (as requested)
   idOC: string;
-  numeroOC?: string;
+  numeroOc?: string;
   max_prestations?: number;
   min_prestations?: number;
   prixUnitPrest?: number;
@@ -29,8 +29,9 @@ export interface OrdreCommande {
   observations?: string;
 
   // Relations
-  fichePrestations?: FichePrestation[];
+  prestations?: Prestation[];
   item?: Item;
+  items?: Item[];
 
   // Optional helpers and legacy fields (kept for compatibility)
   id?: number;
@@ -51,12 +52,22 @@ export interface OrdreCommande {
 
 // Shared business helper functions for OrdreCommande
 export function calculer_ecart_item(ordre: OrdreCommande): number {
+  if (ordre.prestations && ordre.prestations.length > 0) {
+    const realized = ordre.prestations.length;
+    const max = ordre.items && ordre.items.length > 0 ?
+      Math.max(...ordre.items.map(item => item.quantiteMaxTrimestre || 0)) :
+      ordre.max_prestations ?? ordre.maxArticles ?? realized;
+    return Math.max(0, max - realized);
+  }
   const max = ordre.max_prestations ?? ordre.maxArticles ?? 0;
   const used = ordre.nombreArticlesUtilise ?? 0;
   return Math.max(0, max - used);
 }
 
 export function calcul_montantTotal(ordre: OrdreCommande): number {
+  if (ordre.prestations && ordre.prestations.length > 0) {
+    return ordre.prestations.reduce((sum, p) => sum + (p.montantPrest || 0), 0);
+  }
   if (typeof ordre.montantOC === 'number') return ordre.montantOC;
   const qty = ordre.max_prestations ?? ordre.maxArticles ?? 0;
   const prix = ordre.prixUnitPrest ?? ordre.montant ?? 0;
@@ -64,6 +75,12 @@ export function calcul_montantTotal(ordre: OrdreCommande): number {
 }
 
 export function calcul_penalite(ordre: OrdreCommande): number {
+  if (ordre.prestations && ordre.prestations.length > 0) {
+    const realizedAmount = ordre.prestations.reduce((sum, p) => sum + (p.montantPrest || 0), 0);
+    const maxAmount = ordre.items && ordre.items.length > 0 ?
+      ordre.items.reduce((sum, item) => sum + ((item.quantiteMaxTrimestre || 0) * (item.prix || 0)), 0) : 0;
+    return Math.max(0, maxAmount - realizedAmount);
+  }
   const ecart = calculer_ecart_item(ordre);
   const prix = ordre.prixUnitPrest ?? ordre.montant ?? 0;
   // Default penalty rule: 10% of unit price per missing prestation
@@ -177,6 +194,17 @@ export interface Item {
     quantiteMaxTrimestre: number;
   }
 
+export interface Equipement {
+  id?: number;
+  nomEquipement: string;
+  description?: string;
+  typeEquipement: string;
+  prixUnitaire: number;
+  quantiteDisponible: number;
+  statut: string;
+  prestations?: Prestation[];
+}
+
 export interface TypeItem {
   id?: number;
   numero: string;
@@ -185,6 +213,22 @@ export interface TypeItem {
   maxArticles: number;
   prixUnitaire: number;
   oc1Quantity?: number;
+}
+
+export interface Prestation {
+  id?: number;
+  nomPrestataire: string;
+  nomPrestation: string;
+  montantPrest: number;
+  equipementsUtilises: Equipement[];
+  quantiteItem?: number; // Kept for backward compatibility
+  nbPrestRealise: number;
+  trimestre: string;
+  dateDebut: string;
+  dateFin: string;
+  statut: string;
+  description?: string;
+  ordreCommande?: OrdreCommande;
 }
 
 export interface RapportSuivi {

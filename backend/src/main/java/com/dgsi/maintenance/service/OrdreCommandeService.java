@@ -2,9 +2,13 @@ package com.dgsi.maintenance.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import com.dgsi.maintenance.entity.Item;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.Prestation;
@@ -34,35 +38,37 @@ public class OrdreCommandeService {
     private PrestationRepository prestationRepository;
 
     /**
-     * Crée automatiquement un ordre de commande avec gestion transactionnelle
+     * CORRECTION : Méthode principale pour gérer l'ordre de commande
+     * S'assure que les prestations d'un même prestataire/trimestre sont groupées
      */
     @Transactional
-    public OrdreCommande creerOuObtenirOrdreCommandePourPrestation(Prestation prestation) {
-        log.info("🔄 Création automatique OC pour prestation: {} - Prestataire: {} - Trimestre: {}",
+    public OrdreCommande gererOrdreCommandePourPrestation(Prestation prestation) {
+        log.info("🔄 Gestion OC pour prestation: {} - Prestataire: {} - Trimestre: {}",
                 prestation.getNomPrestation(), prestation.getNomPrestataire(), prestation.getTrimestre());
 
         try {
-            // Validation des données obligatoires
             validerPrestation(prestation);
 
-            // Recherche d'un OC existant actif pour ce prestataire/trimestre
-            Optional<OrdreCommande> ordreExistant = trouverOrdreCommandeActif(
+            // CORRECTION : Recherche TOUS les OC existants pour ce prestataire/trimestre
+            // (pas seulement les actifs, pour éviter la duplication)
+            Optional<OrdreCommande> ordreExistant = trouverOrdreCommandeParPrestataireEtTrimestre(
                 prestation.getNomPrestataire(),
                 prestation.getTrimestre()
             );
 
             if (ordreExistant.isPresent()) {
-                log.info("📦 Utilisation OC existant ID: {}", ordreExistant.get().getId());
+                log.info("📦 Ajout à OC existant ID: {} - Prestataire: {} - Trimestre: {}",
+                        ordreExistant.get().getId(), prestation.getNomPrestataire(), prestation.getTrimestre());
                 return ajouterPrestationAOrdreExistant(ordreExistant.get(), prestation);
             } else {
-                log.info("🆕 Création nouvel OC pour prestataire: {}", prestation.getNomPrestataire());
+                log.info("🆕 Création nouvel OC - Prestataire: {} - Trimestre: {}",
+                        prestation.getNomPrestataire(), prestation.getTrimestre());
                 return creerNouvelOrdreCommandeAvecPrestation(prestation);
             }
 
         } catch (Exception e) {
-            log.error("❌ Erreur création OC pour prestation {}: {}", prestation.getNomPrestation(), e.getMessage());
-            // Ne pas relancer l'exception pour éviter le rollback de la prestation
-            throw new RuntimeException("Erreur lors de la création de l'ordre de commande: " + e.getMessage(), e);
+            log.error("❌ Erreur gestion OC pour prestation {}: {}", prestation.getNomPrestation(), e.getMessage());
+            throw new RuntimeException("Erreur lors de la gestion de l'ordre de commande: " + e.getMessage(), e);
         }
     }
 
@@ -85,41 +91,52 @@ public class OrdreCommandeService {
     }
 
     /**
-     * Recherche d'un ordre de commande actif
+     * CORRECTION : Recherche par prestataire ET trimestre (tous statuts)
      */
-    private Optional<OrdreCommande> trouverOrdreCommandeActif(String prestataire, String trimestre) {
-        return ordreCommandeRepository
-            .findByPrestataireItemAndTrimestreAndStatutIn(
-                prestataire,
-                trimestre,
-                List.of(StatutCommande.EN_ATTENTE, StatutCommande.EN_COURS)
-            )
-            .stream()
-            .findFirst();
+    private Optional<OrdreCommande> trouverOrdreCommandeParPrestataireEtTrimestre(String prestataire, String trimestre) {
+        List<OrdreCommande> ordres = ordreCommandeRepository.findByPrestataireItemAndTrimestre(prestataire, trimestre);
+
+        // Priorité aux ordres actifs, sinon prendre le premier disponible
+        return ordres.stream()
+            .filter(oc -> oc.getStatut() == StatutCommande.EN_ATTENTE || oc.getStatut() == StatutCommande.EN_COURS)
+            .findFirst()
+            .or(() -> ordres.stream().findFirst());
     }
 
     /**
-     * Ajoute une prestation à un ordre de commande existant
+     * CORRECTION : Ajout sécurisé d'une prestation avec gestion des doublons
      */
-    private OrdreCommande ajouterPrestationAOrdreExistant(OrdreCommande ordre, Prestation prestation) {
+    private OrdreCommande ajouterPrestationAOrdreExistant(OrdreCommande ordre, Prestation nouvellePrestation) {
         // Initialiser la liste si nécessaire
         if (ordre.getPrestations() == null) {
             ordre.setPrestations(new ArrayList<>());
         }
 
-        // Vérifier si la prestation n'existe pas déjà
+        // Vérification de doublon plus robuste
         boolean prestationExiste = ordre.getPrestations().stream()
-            .anyMatch(p -> p.getId() != null && p.getId().equals(prestation.getId()));
+            .anyMatch(p -> p.getId() != null && p.getId().equals(nouvellePrestation.getId()) ||
+                          (p.getNomPrestation().equals(nouvellePrestation.getNomPrestation()) &&
+                           p.getDateDebut().isEqual(nouvellePrestation.getDateDebut())));
 
         if (!prestationExiste) {
-            ordre.getPrestations().add(prestation);
-            prestation.setOrdreCommande(ordre);
+            // CORRECTION : Sauvegarder d'abord la prestation avec la référence à l'ordre
+            nouvellePrestation.setOrdreCommande(ordre);
+            Prestation prestationSauvegardee = prestationRepository.save(nouvellePrestation);
 
-            // Mettre à jour les montants et statistiques
-            mettreAJourOrdreCommandeAvecPrestation(ordre, prestation);
+            // Puis ajouter à la liste
+            ordre.getPrestations().add(prestationSauvegardee);
 
-            log.info("✅ Prestation ajoutée à l'OC ID: {}", ordre.getId());
-            return ordreCommandeRepository.save(ordre);
+            // Mise à jour des statistiques
+            mettreAJourOrdreCommandeAvecPrestation(ordre, nouvellePrestation);
+
+            // Mise à jour du statut basé sur les prestations
+            ordre.setStatut(ordre.getStatutFromPrestations());
+
+            OrdreCommande ordreMisAJour = ordreCommandeRepository.save(ordre);
+            log.info("✅ Prestation ajoutée à l'OC ID: {} - Total prestations: {}",
+                    ordre.getId(), ordre.getPrestations().size());
+
+            return ordreMisAJour;
         } else {
             log.warn("⚠️ Prestation déjà présente dans l'OC ID: {}", ordre.getId());
             return ordre;
@@ -127,26 +144,27 @@ public class OrdreCommandeService {
     }
 
     /**
-     * Crée un nouvel ordre de commande avec la prestation
+     * CORRECTION : Création avec gestion améliorée des relations
      */
     private OrdreCommande creerNouvelOrdreCommandeAvecPrestation(Prestation prestation) {
         OrdreCommande ordreCommande = new OrdreCommande();
 
-        // Génération des identifiants uniques
+        // Génération des identifiants
         String numeroOC = genererNumeroOrdreCommandeUnique();
-        ordreCommande.setNumeroOc(numeroOC.hashCode()); // Conversion to Integer
+        ordreCommande.setNumeroOc(numeroOC.hashCode());
         ordreCommande.setIdOC(numeroOC);
         ordreCommande.setNumeroCommande(numeroOC);
 
-        // Informations de base
-        ordreCommande.setNomItem(prestation.getNomPrestation());
+        // Informations de base (PRESTATAIRE + TRIMESTRE comme clé de regroupement)
+        ordreCommande.setNomItem("Commande multiple - " + prestation.getNomPrestataire()); // Nom générique
         ordreCommande.setPrestataireItem(prestation.getNomPrestataire());
         ordreCommande.setTrimestre(prestation.getTrimestre());
 
+        // Prix unitaire moyen (à ajuster selon la logique métier)
         ordreCommande.setPrixUnitPrest(prestation.getMontantPrest() != null ?
             prestation.getMontantPrest().floatValue() : 0.0f);
 
-        // Calcul des montants initiaux
+        // Initialisation avec la première prestation
         initialiserMontantsOrdreCommande(ordreCommande, prestation);
 
         // Statut et dates
@@ -154,17 +172,21 @@ public class OrdreCommandeService {
         ordreCommande.setDateCreation(LocalDateTime.now());
         ordreCommande.setDateModification(LocalDateTime.now());
 
-        // Save ordre first without prestations to ensure it's inserted
+        // CORRECTION : Créer l'ordre d'abord
         OrdreCommande savedOrdre = ordreCommandeRepository.save(ordreCommande);
-        ordreCommandeRepository.flush(); // Ensure the ordre is inserted before setting relationships
 
-        // Now set the relationship on the prestation and save it to update the foreign key
+        // Puis associer la prestation
         prestation.setOrdreCommande(savedOrdre);
         prestationRepository.save(prestation);
 
-        log.info("✅ Nouvel OC créé avec ID: {} - Numéro: {}", savedOrdre.getId(), numeroOC);
+        // Initialiser la liste des prestations
+        savedOrdre.setPrestations(new ArrayList<>());
+        savedOrdre.getPrestations().add(prestation);
 
-        return savedOrdre;
+        log.info("✅ Nouvel OC créé - ID: {} - Numéro: {} - Prestataire: {} - Trimestre: {}",
+                savedOrdre.getId(), numeroOC, prestation.getNomPrestataire(), prestation.getTrimestre());
+
+        return ordreCommandeRepository.save(savedOrdre);
     }
 
     /**
@@ -209,6 +231,9 @@ public class OrdreCommandeService {
             float pourcentage = (nombrePrestations * 100.0f) / ordre.getMax_prestations();
             ordre.setPourcentageAvancement(Math.min(pourcentage, 100.0f));
         }
+
+        // Mise à jour du statut basé sur les prestations
+        ordre.setStatut(ordre.getStatutFromPrestations());
     }
 
     /**
@@ -249,6 +274,44 @@ public class OrdreCommandeService {
     }
 
     // === MÉTHODES DE GESTION SUPPLÉMENTAIRES ===
+
+    /**
+     * NOUVEAU : Récupère tous les ordres groupés par prestataire
+     */
+    @Transactional(readOnly = true)
+    public Map<String, List<OrdreCommande>> getOrdresCommandeGroupesParPrestataire() {
+        List<OrdreCommande> tousLesOrdres = ordreCommandeRepository.findAllWithPrestations();
+
+        return tousLesOrdres.stream()
+            .collect(Collectors.groupingBy(
+                OrdreCommande::getPrestataireItem,
+                Collectors.toList()
+            ));
+    }
+
+    /**
+     * NOUVEAU : Récupère les statistiques par prestataire
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getStatistiquesParPrestataire(String prestataire) {
+        List<OrdreCommande> ordresPrestataire = ordreCommandeRepository.findByPrestataireItem(prestataire);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("prestataire", prestataire);
+        stats.put("totalOrdres", ordresPrestataire.size());
+        stats.put("totalPrestations", ordresPrestataire.stream()
+            .mapToInt(oc -> oc.getPrestations() != null ? oc.getPrestations().size() : 0)
+            .sum());
+        stats.put("montantTotal", ordresPrestataire.stream()
+            .mapToDouble(oc -> oc.getMontant() != null ? oc.getMontant() : 0.0)
+            .sum());
+        stats.put("ordreRecent", ordresPrestataire.stream()
+            .max(Comparator.comparing(OrdreCommande::getDateCreation))
+            .map(OrdreCommande::getNumeroCommande)
+            .orElse("Aucun"));
+
+        return stats;
+    }
 
     /**
      * Récupère tous les ordres de commande avec leurs prestations

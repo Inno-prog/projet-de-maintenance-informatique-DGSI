@@ -3,6 +3,7 @@ package com.dgsi.maintenance.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -27,7 +28,7 @@ import jakarta.validation.constraints.NotNull;
 @Table(name = "ordres_commande")
 @JsonIgnoreProperties({"contrat", "items", "hibernateLazyInitializer", "handler"})
 public class OrdreCommande {
-    @Id
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -200,22 +201,61 @@ public class OrdreCommande {
     public void setPrestations(List<Prestation> prestations) { this.prestations = prestations; }
     
     public int calculer_ecart_item() {
-        if (max_prestations != null && min_prestations != null) {
-            return max_prestations - min_prestations;
-        }
-        return 0;
+        if (prestations == null || prestations.isEmpty()) return 0;
+        int realized = prestations.size();
+        // Use max from items' quantiteMaxTrimestre
+        int max = items != null && !items.isEmpty() ?
+            items.stream()
+                .mapToInt(item -> item.getQuantiteMaxTrimestre() != null ? item.getQuantiteMaxTrimestre() : 0)
+                .max().orElse(0) : 0;
+        return Math.max(0, max - realized);
     }
 
     public Float calcul_montantTotal() {
-        return montantOc;
+        if (prestations == null || prestations.isEmpty()) return 0.0f;
+        return (float) prestations.stream()
+            .mapToDouble(p -> p.getMontantPrest() != null ? p.getMontantPrest().doubleValue() : 0.0)
+            .sum();
     }
 
     public Float calcul_penalite() {
-        int ecart = calculer_ecart_item();
-        if (ecart < 0) {
-            return Math.abs(ecart) * 10.0f;
-        }
-        return 0.0f;
+        if (prestations == null || prestations.isEmpty()) return 0.0f;
+        double realizedAmount = prestations.stream()
+            .mapToDouble(p -> p.getMontantPrest() != null ? p.getMontantPrest().doubleValue() : 0.0)
+            .sum();
+        // Max amount based on items' quantiteMaxTrimestre * prix
+        double maxAmount = items != null && !items.isEmpty() ?
+            items.stream()
+                .mapToDouble(item -> (item.getQuantiteMaxTrimestre() != null ? item.getQuantiteMaxTrimestre() : 0) *
+                                    (item.getPrix() != null ? item.getPrix() : 0.0))
+                .sum() : 0.0;
+        return (float) Math.max(0, maxAmount - realizedAmount);
+    }
+
+    public String getItemsNames() {
+        if (prestations == null || prestations.isEmpty()) return "";
+        return prestations.stream()
+            .filter(p -> p.getNomPrestation() != null)
+            .map(p -> p.getNomPrestation())
+            .distinct()
+            .collect(Collectors.joining(", "));
+    }
+
+    public String getObservationsFromPrestations() {
+        if (prestations == null || prestations.isEmpty()) return "";
+        return prestations.stream()
+            .filter(p -> p.getDescription() != null && !p.getDescription().trim().isEmpty())
+            .map(p -> p.getDescription())
+            .collect(Collectors.joining("; "));
+    }
+
+    public StatutCommande getStatutFromPrestations() {
+        if (prestations == null || prestations.isEmpty()) return statut;
+        boolean allTerminee = prestations.stream().allMatch(p -> "TERMINEE".equals(p.getStatut()));
+        if (allTerminee) return StatutCommande.TERMINE;
+        boolean anyEnCours = prestations.stream().anyMatch(p -> "EN_COURS".equals(p.getStatut()));
+        if (anyEnCours) return StatutCommande.EN_COURS;
+        return StatutCommande.EN_ATTENTE;
     }
 
     public int getEcartArticles() {

@@ -60,6 +60,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'ordres-commande-prestataire',
+    loadComponent: () => import('./features/ordres-commande/components/ordre-commande-prestataire/ordre-commande-prestataire.component').then(m => m.OrdreCommandePrestataireComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'evaluations',
     loadComponent: () => import('./features/evaluations/components/evaluation-list/evaluation-list.component').then(m => m.EvaluationListComponent),
     canActivate: [AuthGuard]
@@ -92,6 +97,31 @@ export const routes: Routes = [
   {
     path: 'prestations',
     loadComponent: () => import('./features/prestations/components/prestation-list/prestation-list.component').then(m => m.PrestationListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'équipements',
+    loadComponent: () => import('./features/equipements/components/equipement-dashboard/equipement-dashboard.component').then(m => m.EquipementDashboardComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'equipements/list',
+    loadComponent: () => import('./features/equipements/components/equipement-list/equipement-list.component').then(m => m.EquipementListComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'equipements/new',
+    loadComponent: () => import('./features/equipements/components/equipement-form/equipement-form.component').then(m => m.EquipementFormComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'equipements/:id',
+    loadComponent: () => import('./features/equipements/components/equipement-form/equipement-form.component').then(m => m.EquipementFormComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'equipements/:id/edit',
+    loadComponent: () => import('./features/equipements/components/equipement-form/equipement-form.component').then(m => m.EquipementFormComponent),
     canActivate: [AuthGuard]
   },
 

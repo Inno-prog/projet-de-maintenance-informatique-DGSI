@@ -8,6 +8,7 @@
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/config/TransactionConfig.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/AuthController.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/ContratController.java
+/home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/EquipementController.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/EvaluationFileController.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/EvaluationTrimestrielleController.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/FichePrestationController.java
@@ -27,6 +28,7 @@
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/Administrator.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/AgentDGSI.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/Contrat.java
+/home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/Equipement.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/EvaluationTrimestrielle.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/FichePrestation.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/Item.java
@@ -42,6 +44,7 @@
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/TypeItem.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/User.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/ContratRepository.java
+/home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/EquipementRepository.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/EvaluationTrimestrielleRepository.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/FichePrestationRepository.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/ItemRepository.java
@@ -56,6 +59,7 @@
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/security/KeycloakJwtAuthenticationConverter.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/security/UserPrincipal.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/security/WebSecurityConfig.java
+/home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/EquipementService.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/EvaluationService.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/FileUploadService.java
 /home/inno/sout/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/KeycloakService.java

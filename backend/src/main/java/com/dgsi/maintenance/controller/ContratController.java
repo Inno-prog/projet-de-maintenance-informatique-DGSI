@@ -64,7 +64,6 @@ public class ContratController {
     public ResponseEntity<Contrat> updateContrat(@PathVariable Long id, @Valid @RequestBody Contrat contratDetails) {
         return contratRepository.findById(id)
             .map(contrat -> {
-                contrat.setTypeContrat(contratDetails.getTypeContrat());
                 contrat.setDateDebut(contratDetails.getDateDebut());
                 contrat.setDateFin(contratDetails.getDateFin());
                 contrat.setNomPrestataire(contratDetails.getNomPrestataire());

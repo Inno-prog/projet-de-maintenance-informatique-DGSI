@@ -6,6 +6,7 @@ import com.dgsi.maintenance.entity.Prestation;
 import com.dgsi.maintenance.service.PrestationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -79,6 +80,7 @@ public class PrestationController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getAllPrestations() {
         try {
             List<Prestation> prestations = prestationService.getAllPrestations();
@@ -92,6 +94,7 @@ public class PrestationController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getPrestationById(@PathVariable Long id) {
         try {
             Optional<Prestation> prestation = prestationService.getPrestationById(id);
@@ -106,6 +109,7 @@ public class PrestationController {
     }
 
     @GetMapping("/count-by-item")
+    @Transactional(readOnly = true)
     public ResponseEntity<Long> countByItem(@RequestParam String nomItem) {
         log.info("📊 Comptage des prestations pour l'item: {}", nomItem);
 

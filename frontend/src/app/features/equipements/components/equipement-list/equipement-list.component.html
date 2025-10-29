@@ -1,0 +1,154 @@
+<div class="equipement-list">
+  <div class="header-section">
+    <div class="header-content">
+      <h1>Liste des Équipements</h1>
+      <p class="subtitle">Gestion complète des équipements de maintenance</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="creerNouvelEquipement()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Nouveau Équipement
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-section" *ngIf="!loading">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Total Équipements</h3>
+        <p class="stat-number">{{ filteredEquipements.length }}</p>
+      </div>
+    </div>
+
+
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Valeur Totale</h3>
+        <p class="stat-number">{{ getTotalValue() }} FCFA</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="search">Rechercher</label>
+        <input
+          type="text"
+          id="search"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Nom, description, numéro de série..."
+          class="form-control">
+      </div>
+
+      <div class="filter-group">
+        <label for="type">Type d'équipement</label>
+        <select
+          id="type"
+          [(ngModel)]="selectedType"
+          (change)="onTypeChange()"
+          class="form-control">
+          <option value="">Tous les types</option>
+          <option *ngFor="let type of types" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+
+
+
+      <div class="filter-actions">
+        <button class="btn btn-outline" (click)="clearFilters()" [disabled]="!searchTerm && !selectedType">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Effacer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des équipements...</p>
+  </div>
+
+  <!-- Equipements Table -->
+  <div class="table-container" *ngIf="!loading">
+    <div class="table-responsive">
+      <table class="equipement-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Type</th>
+            <th>Prix Unitaire</th>
+            <th>Quantité</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let equipement of filteredEquipements" class="equipement-row">
+            <td>
+              <div class="equipement-info">
+                <div class="equipement-name">{{ equipement.nomEquipement }}</div>
+                <div class="equipement-description" *ngIf="equipement.description">{{ equipement.description }}</div>
+              </div>
+            </td>
+            <td>{{ equipement.typeEquipement }}</td>
+            <td>{{ equipement.prixUnitaire | currency:'FCFA' }}</td>
+            <td>{{ equipement.quantiteDisponible }}</td>
+            <td>{{ (equipement.prixUnitaire * equipement.quantiteDisponible) | currency:'EUR':'FCFA' }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-outline" routerLink="/equipements/{{ equipement.id }}" title="Voir détails">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="btn btn-sm btn-primary" routerLink="/equipements/{{ equipement.id }}/edit" title="Modifier">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="deleteEquipement(equipement)" title="Supprimer">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredEquipements.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>Aucun équipement trouvé</h3>
+      <p *ngIf="equipements.length > 0 && filteredEquipements.length === 0">Aucun équipement ne correspond à vos critères de recherche.</p>
+    
+    </div>
+  </div>
+</div>

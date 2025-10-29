@@ -9,167 +9,289 @@
     <!-- Create Evaluation Form Modal -->
     <div class="modal-overlay" *ngIf="showCreateForm && (authService.isAdmin() || authService.isAgentDGSI())" (click)="cancelEdit()">
       <div class="modal-content form-modal" (click)="$event.stopPropagation()">
-        <div class="card">
-          <div class="card-header">
-            <h2>{{ isEditing ? 'Modifier' : 'Créer' }} une Évaluation</h2>
-          </div>
-      
-      <form [formGroup]="evaluationForm" (ngSubmit)="onSubmit()">
-        <div class="form-grid">
+        <form [formGroup]="evaluationForm" (ngSubmit)="onSubmit()" class="evaluation-form">
+          <h2 class="form-title">{{ isEditing ? 'Modifier' : 'Créer' }} une Évaluation</h2>
+
           <div class="form-group">
             <label for="lot">Lot</label>
-            <input type="text" id="lot" formControlName="lot">
+            <input
+              type="text"
+              id="lot"
+              formControlName="lot"
+              placeholder="Ex: Lot A"
+              class="line-input"
+              [class.error]="evaluationForm.get('lot')?.invalid && evaluationForm.get('lot')?.touched"
+            />
+            <div class="input-line" [class.error]="evaluationForm.get('lot')?.invalid && evaluationForm.get('lot')?.touched"></div>
+            <div class="error-message" *ngIf="evaluationForm.get('lot')?.invalid && evaluationForm.get('lot')?.touched">
+              Le lot est requis
+            </div>
           </div>
 
           <div class="form-group">
             <label for="trimestre">Trimestre</label>
-            <select id="trimestre" formControlName="trimestre">
+            <select
+              id="trimestre"
+              formControlName="trimestre"
+              class="line-input"
+              [class.error]="evaluationForm.get('trimestre')?.invalid && evaluationForm.get('trimestre')?.touched"
+            >
               <option value="">Sélectionnez un trimestre</option>
               <option value="T1">T1</option>
               <option value="T2">T2</option>
               <option value="T3">T3</option>
               <option value="T4">T4</option>
             </select>
+            <div class="input-line" [class.error]="evaluationForm.get('trimestre')?.invalid && evaluationForm.get('trimestre')?.touched"></div>
+            <div class="error-message" *ngIf="evaluationForm.get('trimestre')?.invalid && evaluationForm.get('trimestre')?.touched">
+              Le trimestre est requis
+            </div>
           </div>
 
           <div class="form-group">
             <label for="dateEvaluation">Date d'Évaluation</label>
-            <input type="date" id="dateEvaluation" formControlName="dateEvaluation">
+            <input
+              type="date"
+              id="dateEvaluation"
+              formControlName="dateEvaluation"
+              class="line-input"
+              [class.error]="evaluationForm.get('dateEvaluation')?.invalid && evaluationForm.get('dateEvaluation')?.touched"
+            />
+            <div class="input-line" [class.error]="evaluationForm.get('dateEvaluation')?.invalid && evaluationForm.get('dateEvaluation')?.touched"></div>
+            <div class="error-message" *ngIf="evaluationForm.get('dateEvaluation')?.invalid && evaluationForm.get('dateEvaluation')?.touched">
+              La date d'évaluation est requise
+            </div>
           </div>
 
           <div class="form-group">
             <label for="prestataireNom">Nom du Prestataire</label>
-            <input type="text" id="prestataireNom" formControlName="prestataireNom">
+            <input
+              type="text"
+              id="prestataireNom"
+              formControlName="prestataireNom"
+              placeholder="Nom du prestataire"
+              class="line-input"
+              [class.error]="evaluationForm.get('prestataireNom')?.invalid && evaluationForm.get('prestataireNom')?.touched"
+            />
+            <div class="input-line" [class.error]="evaluationForm.get('prestataireNom')?.invalid && evaluationForm.get('prestataireNom')?.touched"></div>
+            <div class="error-message" *ngIf="evaluationForm.get('prestataireNom')?.invalid && evaluationForm.get('prestataireNom')?.touched">
+              Le nom du prestataire est requis
+            </div>
           </div>
 
           <div class="form-group">
             <label for="evaluateurNom">Nom de l'Évaluateur</label>
-            <input type="text" id="evaluateurNom" formControlName="evaluateurNom">
+            <input
+              type="text"
+              id="evaluateurNom"
+              formControlName="evaluateurNom"
+              placeholder="Nom de l'évaluateur"
+              class="line-input"
+              [class.error]="evaluationForm.get('evaluateurNom')?.invalid && evaluationForm.get('evaluateurNom')?.touched"
+            />
+            <div class="input-line" [class.error]="evaluationForm.get('evaluateurNom')?.invalid && evaluationForm.get('evaluateurNom')?.touched"></div>
+            <div class="error-message" *ngIf="evaluationForm.get('evaluateurNom')?.invalid && evaluationForm.get('evaluateurNom')?.touched">
+              Le nom de l'évaluateur est requis
+            </div>
           </div>
 
           <div class="form-group">
             <label for="correspondantId">Correspondant ID</label>
-            <input type="number" id="correspondantId" formControlName="correspondantId">
+            <input
+              type="number"
+              id="correspondantId"
+              formControlName="correspondantId"
+              placeholder="ID du correspondant"
+              class="line-input"
+              [class.error]="evaluationForm.get('correspondantId')?.invalid && evaluationForm.get('correspondantId')?.touched"
+            />
+            <div class="input-line" [class.error]="evaluationForm.get('correspondantId')?.invalid && evaluationForm.get('correspondantId')?.touched"></div>
+            <div class="error-message" *ngIf="evaluationForm.get('correspondantId')?.invalid && evaluationForm.get('correspondantId')?.touched">
+              L'ID du correspondant est requis
+            </div>
           </div>
 
-          <div class="form-group form-group-full">
+          <div class="form-group">
             <label for="techniciensListe">Liste des Techniciens (JSON)</label>
-            <textarea id="techniciensListe" formControlName="techniciensListe" rows="3" placeholder='[{"nom": "Technicien", "certificat": "Niveau 1"}]'></textarea>
+            <textarea
+              id="techniciensListe"
+              formControlName="techniciensListe"
+              rows="3"
+              placeholder='[{"nom": "Technicien", "certificat": "Niveau 1"}]'
+              class="line-input"
+            ></textarea>
+            <div class="input-line"></div>
           </div>
 
           <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="rapportInterventionTransmis" formControlName="rapportInterventionTransmis">
-              <label for="rapportInterventionTransmis">Rapport d'intervention transmis</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="registreRempli" formControlName="registreRempli">
-              <label for="registreRempli">Registre rempli</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="horairesRespectes" formControlName="horairesRespectes">
-              <label for="horairesRespectes">Horaires respectés</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="delaiReactionRespecte" formControlName="delaiReactionRespecte">
-              <label for="delaiReactionRespecte">Délai de réaction respecté</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="delaiInterventionRespecte" formControlName="delaiInterventionRespecte">
-              <label for="delaiInterventionRespecte">Délai d'intervention respecté</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="vehiculeDisponible" formControlName="vehiculeDisponible">
-              <label for="vehiculeDisponible">Véhicule disponible</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="tenueDisponible" formControlName="tenueDisponible">
-              <label for="tenueDisponible">Tenue disponible</label>
-            </div>
-          </div>
-
-          <div class="form-group form-group-full">
             <label for="prestationsVerifiees">Prestations Vérifiées (JSON)</label>
-            <textarea id="prestationsVerifiees" formControlName="prestationsVerifiees" rows="3" placeholder='[{"type": "préventive", "date": "2024-01-15"}]'></textarea>
+            <textarea
+              id="prestationsVerifiees"
+              formControlName="prestationsVerifiees"
+              rows="3"
+              placeholder='[{"type": "préventive", "date": "2024-01-15"}]'
+              class="line-input"
+            ></textarea>
+            <div class="input-line"></div>
           </div>
 
-          <div class="form-group form-group-full">
+          <div class="form-group">
             <label for="instancesNonResolues">Instances Non Résolues (JSON)</label>
-            <textarea id="instancesNonResolues" formControlName="instancesNonResolues" rows="3" placeholder='[{"description": "Incident", "date_debut": "2024-01-01", "nombre_jours": 5}]'></textarea>
+            <textarea
+              id="instancesNonResolues"
+              formControlName="instancesNonResolues"
+              rows="3"
+              placeholder='[{"description": "Incident", "date_debut": "2024-01-01", "nombre_jours": 5}]'
+              class="line-input"
+            ></textarea>
+            <div class="input-line"></div>
           </div>
 
-          <div class="form-group form-group-full">
+          <div class="form-group">
             <label for="observationsGenerales">Observations générales</label>
-            <textarea id="observationsGenerales" formControlName="observationsGenerales" rows="4"></textarea>
+            <textarea
+              id="observationsGenerales"
+              formControlName="observationsGenerales"
+              rows="4"
+              placeholder="Observations générales..."
+              class="line-input"
+            ></textarea>
+            <div class="input-line"></div>
           </div>
 
-          <div class="form-group form-group-full">
+          <div class="form-group">
             <label for="appreciationRepresentant">Appréciation du Représentant</label>
-            <textarea id="appreciationRepresentant" formControlName="appreciationRepresentant" rows="3"></textarea>
+            <textarea
+              id="appreciationRepresentant"
+              formControlName="appreciationRepresentant"
+              rows="3"
+              placeholder="Appréciation du représentant..."
+              class="line-input"
+            ></textarea>
+            <div class="input-line"></div>
           </div>
 
           <div class="form-group">
             <label for="signatureRepresentant">Signature du Représentant</label>
-            <input type="text" id="signatureRepresentant" formControlName="signatureRepresentant" placeholder="Chemin/token de signature">
+            <input
+              type="text"
+              id="signatureRepresentant"
+              formControlName="signatureRepresentant"
+              placeholder="Chemin/token de signature"
+              class="line-input"
+            />
+            <div class="input-line"></div>
           </div>
 
           <div class="form-group">
             <label for="signatureEvaluateur">Signature de l'Évaluateur</label>
-            <input type="text" id="signatureEvaluateur" formControlName="signatureEvaluateur" placeholder="Chemin/token de signature">
+            <input
+              type="text"
+              id="signatureEvaluateur"
+              formControlName="signatureEvaluateur"
+              placeholder="Chemin/token de signature"
+              class="line-input"
+            />
+            <div class="input-line"></div>
           </div>
 
-          <div class="form-group form-group-full">
+          <div class="form-group">
             <label for="preuves">Preuves (JSON)</label>
-            <textarea id="preuves" formControlName="preuves" rows="2" placeholder='[{"nom_fichier": "photo1.jpg", "type": "photo"}]'></textarea>
+            <textarea
+              id="preuves"
+              formControlName="preuves"
+              rows="2"
+              placeholder='[{"nom_fichier": "photo1.jpg", "type": "photo"}]'
+              class="line-input"
+            ></textarea>
+            <div class="input-line"></div>
           </div>
 
           <div class="form-group">
             <label for="statut">Statut</label>
-            <select id="statut" formControlName="statut">
+            <select
+              id="statut"
+              formControlName="statut"
+              class="line-input"
+            >
               <option value="Brouillon">Brouillon</option>
               <option value="Validé">Validé</option>
               <option value="Transmis">Transmis</option>
             </select>
+            <div class="input-line"></div>
           </div>
 
           <div class="form-group">
             <label for="penalitesCalcul">Pénalités Calculées (FCFA)</label>
-            <input type="number" id="penalitesCalcul" formControlName="penalitesCalcul" step="1" readonly>
+            <input
+              type="number"
+              id="penalitesCalcul"
+              formControlName="penalitesCalcul"
+              step="1"
+              readonly
+              class="line-input"
+            />
+            <div class="input-line"></div>
           </div>
 
-          <div class="form-group form-group-full">
+          <div class="form-group">
             <label for="fichierPdf">Fichier PDF</label>
-            <input type="file" id="fichierPdf" accept=".pdf" (change)="onFileSelected($event)">
+            <input type="file" id="fichierPdf" accept=".pdf" (change)="onFileSelected($event)" class="line-input">
+            <div class="input-line"></div>
             <small *ngIf="selectedFileName">Fichier sélectionné: {{ selectedFileName }}</small>
           </div>
-        </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn btn-outline" (click)="cancelEdit()">Annuler</button>
-          <button type="submit" class="btn btn-primary" [disabled]="evaluationForm.invalid || loading">
-            {{ loading ? 'Enregistrement...' : (isEditing ? 'Modifier' : 'Créer') }}
-          </button>
-        </div>
-      </form>
-        </div>
+          <!-- Checkboxes Section -->
+          <div class="checkboxes-section">
+            <h3>Critères d'évaluation</h3>
+            <div class="checkbox-grid">
+              <div class="checkbox-group">
+                <input type="checkbox" id="rapportInterventionTransmis" formControlName="rapportInterventionTransmis">
+                <label for="rapportInterventionTransmis">Rapport d'intervention transmis</label>
+              </div>
+
+              <div class="checkbox-group">
+                <input type="checkbox" id="registreRempli" formControlName="registreRempli">
+                <label for="registreRempli">Registre rempli</label>
+              </div>
+
+              <div class="checkbox-group">
+                <input type="checkbox" id="horairesRespectes" formControlName="horairesRespectes">
+                <label for="horairesRespectes">Horaires respectés</label>
+              </div>
+
+              <div class="checkbox-group">
+                <input type="checkbox" id="delaiReactionRespecte" formControlName="delaiReactionRespecte">
+                <label for="delaiReactionRespecte">Délai de réaction respecté</label>
+              </div>
+
+              <div class="checkbox-group">
+                <input type="checkbox" id="delaiInterventionRespecte" formControlName="delaiInterventionRespecte">
+                <label for="delaiInterventionRespecte">Délai d'intervention respecté</label>
+              </div>
+
+              <div class="checkbox-group">
+                <input type="checkbox" id="vehiculeDisponible" formControlName="vehiculeDisponible">
+                <label for="vehiculeDisponible">Véhicule disponible</label>
+              </div>
+
+              <div class="checkbox-group">
+                <input type="checkbox" id="tenueDisponible" formControlName="tenueDisponible">
+                <label for="tenueDisponible">Tenue disponible</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" (click)="cancelEdit()">
+              Annuler
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="evaluationForm.invalid || loading">
+              {{ loading ? 'Enregistrement...' : (isEditing ? 'Modifier' : 'Créer') }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

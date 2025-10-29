@@ -289,7 +289,7 @@ interface PrestationDashboard {
     .stat-icon.success { background: #10b981; }
     .stat-icon.warning { background: #f59e0b; }
     .stat-icon.danger { background: #ef4444; }
-    .stat-icon.info { background: #3b82f6; }
+    .stat-icon.info { background: #1e293b; }
     .stat-icon.primary { background: #8b5cf6; }
 
     .stat-content h3 {
@@ -444,11 +444,13 @@ interface PrestationDashboard {
     }
 
     .btn-primary {
-      background-color: #007bff;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
     }
 
     .btn-primary:hover {
-      background-color: #0056b3;
+      background: linear-gradient(135deg, #334155, #475569);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
     }
 
     .btn-success {
@@ -587,8 +589,8 @@ interface PrestationDashboard {
 
     .form-control:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: #1e293b;
+      box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
     }
 
     .modal-footer {

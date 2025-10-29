@@ -19,7 +19,7 @@ public class RegisterRequest {
     @Size(min = 6, max = 100)
     private String password;
 
-    private Long contact;
+    private String contact;
 
     @Size(max = 200)
     private String adresse;
@@ -43,8 +43,8 @@ public class RegisterRequest {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public Long getContact() { return contact; }
-    public void setContact(Long contact) { this.contact = contact; }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
 
     public String getAdresse() { return adresse; }
     public void setAdresse(String adresse) { this.adresse = adresse; }

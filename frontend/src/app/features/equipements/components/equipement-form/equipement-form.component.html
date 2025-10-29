@@ -1,0 +1,140 @@
+<div class="equipement-form">
+  <div class="form-header">
+    <div class="header-content">
+      <h1>{{ isEditMode ? 'Modifier l\'Équipement' : 'Nouvel Équipement' }}</h1>
+      <p class="subtitle">{{ isEditMode ? 'Modifiez les informations de l\'équipement' : 'Ajoutez un nouvel équipement à votre inventaire' }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="onCancel()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Annuler
+      </button>
+    </div>
+  </div>
+
+  <div class="form-container" *ngIf="!loading">
+    <form [formGroup]="equipementForm" (ngSubmit)="onSubmit()" class="equipement-form-grid">
+
+      <!-- Basic Information Section -->
+      <div class="form-section">
+        <h3>Informations de base</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nomEquipement" class="required">Nom de l'équipement *</label>
+            <input
+              type="text"
+              id="nomEquipement"
+              formControlName="nomEquipement"
+              class="form-control"
+              [class.error]="equipementForm.get('nomEquipement')?.invalid && equipementForm.get('nomEquipement')?.touched"
+              placeholder="Ex: Multimètre numérique">
+            <div class="error-message" *ngIf="equipementForm.get('nomEquipement')?.invalid && equipementForm.get('nomEquipement')?.touched">
+              {{ getErrorMessage('nomEquipement') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="typeEquipement" class="required">Type d'équipement *</label>
+            <select
+              id="typeEquipement"
+              formControlName="typeEquipement"
+              class="form-control"
+              [class.error]="equipementForm.get('typeEquipement')?.invalid && equipementForm.get('typeEquipement')?.touched">
+              <option value="">Sélectionnez un type</option>
+              <option value="OUTIL_MANUEL">Outil Manuel</option>
+              <option value="OUTIL_ELECTRIQUE">Outil Électrique</option>
+              <option value="MATERIEL_MESURE">Matériel de Mesure</option>
+              <option value="EQUIPEMENT_PROTECTION">Équipement de Protection</option>
+              <option value="MATERIEL_CONSOMMABLE">Matériel Consommable</option>
+              <option value="AUTRE">Autre</option>
+            </select>
+            <div class="error-message" *ngIf="equipementForm.get('typeEquipement')?.invalid && equipementForm.get('typeEquipement')?.touched">
+              {{ getErrorMessage('typeEquipement') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="form-control"
+            rows="3"
+            [class.error]="equipementForm.get('description')?.invalid && equipementForm.get('description')?.touched"
+            placeholder="Description détaillée de l'équipement...">
+          </textarea>
+          <div class="error-message" *ngIf="equipementForm.get('description')?.invalid && equipementForm.get('description')?.touched">
+            {{ getErrorMessage('description') }}
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Inventory Information Section -->
+      <div class="form-section">
+        <h3>Informations d'inventaire</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prixUnitaire" class="required">Prix unitaire (€) *</label>
+            <input
+              type="number"
+              id="prixUnitaire"
+              formControlName="prixUnitaire"
+              class="form-control"
+              step="0.01"
+              min="0"
+              [class.error]="equipementForm.get('prixUnitaire')?.invalid && equipementForm.get('prixUnitaire')?.touched"
+              placeholder="0.00">
+            <div class="error-message" *ngIf="equipementForm.get('prixUnitaire')?.invalid && equipementForm.get('prixUnitaire')?.touched">
+              {{ getErrorMessage('prixUnitaire') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="quantiteDisponible" class="required">Quantité disponible *</label>
+            <input
+              type="number"
+              id="quantiteDisponible"
+              formControlName="quantiteDisponible"
+              class="form-control"
+              min="1"
+              [class.error]="equipementForm.get('quantiteDisponible')?.invalid && equipementForm.get('quantiteDisponible')?.touched"
+              placeholder="1">
+            <div class="error-message" *ngIf="equipementForm.get('quantiteDisponible')?.invalid && equipementForm.get('quantiteDisponible')?.touched">
+              {{ getErrorMessage('quantiteDisponible') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Value Display -->
+        <div class="total-value" *ngIf="equipementForm.get('prixUnitaire')?.value && equipementForm.get('quantiteDisponible')?.value">
+          <div class="value-display">
+            <span class="value-label">Valeur totale:</span>
+            <span class="value-amount">{{ (equipementForm.get('prixUnitaire')?.value * equipementForm.get('quantiteDisponible')?.value) | currency:'EUR':'symbol':'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" (click)="onCancel()" [disabled]="submitting">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="equipementForm.invalid || submitting">
+          <span *ngIf="submitting" class="spinner"></span>
+          {{ submitting ? 'Enregistrement...' : (isEditMode ? 'Modifier' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement de l'équipement...</p>
+  </div>
+</div>

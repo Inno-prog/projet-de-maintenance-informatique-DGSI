@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../../../core/services/user.service';
 import { User } from '../../../../core/models/auth.models';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
@@ -9,23 +9,23 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <div class="container">
         <div class="page-header">
           <h1>Gestion des Utilisateurs</h1>
-          <p>Gérez les utilisateurs du système DGSI Maintenance</p>
+          <button class="btn btn-primary" (click)="openCreateUserModal()">
+            {{ showUserModal ? 'Annuler' : '+ Nouvel Utilisateur' }}
+          </button>
         </div>
 
         <div class="table-container">
           <div class="table-header">
             <h2>Liste des Utilisateurs</h2>
-            <div class="table-actions">
-              <div class="search-bar">
-                <input type="text" placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="filterUsers()" class="search-input">
-                <span class="search-icon">🔍</span>
-              </div>
-              <button class="btn btn-primary btn-sm" (click)="openCreateUserModal()">+ Nouvel Utilisateur</button>
+            <div class="search-bar">
+              <input type="text" placeholder="Rechercher par nom, email, contact, rôle, qualification..." [(ngModel)]="searchTerm" (input)="filterUsers()" class="search-input">
+              <span class="search-icon">🔍</span>
+              <button *ngIf="searchTerm" class="clear-btn" (click)="clearSearch()" title="Effacer la recherche">✕</button>
             </div>
           </div>
           
@@ -55,10 +55,20 @@ import { ToastService } from '../../../../core/services/toast.service';
                   <td>{{ user.qualification || '-' }}</td>
                   <td>{{ formatDate(user.createdAt) }}</td>
                   <td>
-                    <div class="action-buttons">
-                      <button class="btn btn-secondary btn-sm" (click)="editUser(user)">Modifier</button>
-                      <button class="btn btn-danger btn-sm" (click)="deleteUser(user)" [disabled]="user.id === currentUserId">Supprimer</button>
-                    </div>
+                    <button class="edit-btn" (click)="editUser(user)" title="Modifier l'utilisateur">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                    <button class="delete-btn" (click)="deleteUser(user)" [disabled]="user.id === currentUserId" title="Supprimer l'utilisateur">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -79,57 +89,105 @@ import { ToastService } from '../../../../core/services/toast.service';
 
       <!-- User Modal -->
       <div class="modal-overlay" *ngIf="showUserModal" (click)="closeUserModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>{{ isEditing ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h3>
-            <button class="modal-close" (click)="closeUserModal()">&times;</button>
-          </div>
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <form [formGroup]="userForm" (ngSubmit)="saveUser()" class="user-form">
+            <h2 class="form-title">{{ isEditing ? 'Modifier' : 'Créer' }} un Utilisateur</h2>
 
-          <form class="modal-body" (ngSubmit)="saveUser()">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="nom">Nom *</label>
-                <input type="text" id="nom" [(ngModel)]="userForm.nom" required class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="email">Email *</label>
-                <input type="email" id="email" [(ngModel)]="userForm.email" required class="form-control">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="contact">Contact</label>
-                <input type="text" id="contact" [(ngModel)]="userForm.contact" class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="role">Rôle *</label>
-                <select id="role" [(ngModel)]="userForm.role" required class="form-control">
-                  <option value="USER">Utilisateur</option>
-                  <option value="ADMINISTRATEUR">Administrateur</option>
-                  <option value="PRESTATAIRE">Prestataire</option>
-                  <option value="AGENT_DGSI">Agent DGSI</option>
-                </select>
+            <div class="form-group">
+              <label for="nom">Nom</label>
+              <input
+                type="text"
+                id="nom"
+                formControlName="nom"
+                placeholder="Entrez le nom"
+                class="line-input"
+                [class.error]="userForm.get('nom')?.invalid && userForm.get('nom')?.touched"
+              />
+              <div class="input-line" [class.error]="userForm.get('nom')?.invalid && userForm.get('nom')?.touched"></div>
+              <div class="error-message" *ngIf="userForm.get('nom')?.invalid && userForm.get('nom')?.touched">
+                Le nom est requis
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="adresse">Adresse</label>
-                <input type="text" id="adresse" [(ngModel)]="userForm.adresse" class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="qualification">Qualification</label>
-                <input type="text" id="qualification" [(ngModel)]="userForm.qualification" class="form-control">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                placeholder="Entrez l'email"
+                class="line-input"
+                [class.error]="userForm.get('email')?.invalid && userForm.get('email')?.touched"
+              />
+              <div class="input-line" [class.error]="userForm.get('email')?.invalid && userForm.get('email')?.touched"></div>
+              <div class="error-message" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+                L'email est requis et doit être valide
               </div>
             </div>
 
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" (click)="closeUserModal()">Annuler</button>
-              <button type="submit" class="btn btn-primary">{{ isEditing ? 'Modifier' : 'Créer' }}</button>
+            <div class="form-group">
+              <label for="contact">Contact</label>
+              <input
+                type="text"
+                id="contact"
+                formControlName="contact"
+                placeholder="Entrez le contact"
+                class="line-input"
+              />
+              <div class="input-line"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="role">Rôle</label>
+              <select
+                id="role"
+                formControlName="role"
+                class="line-input"
+                [class.error]="userForm.get('role')?.invalid && userForm.get('role')?.touched"
+              >
+                <option value="USER">Utilisateur</option>
+                <option value="ADMINISTRATEUR">Administrateur</option>
+                <option value="PRESTATAIRE">Prestataire</option>
+                <option value="AGENT_DGSI">Agent DGSI</option>
+              </select>
+              <div class="input-line" [class.error]="userForm.get('role')?.invalid && userForm.get('role')?.touched"></div>
+              <div class="error-message" *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched">
+                Le rôle est requis
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="adresse">Adresse</label>
+              <input
+                type="text"
+                id="adresse"
+                formControlName="adresse"
+                placeholder="Entrez l'adresse"
+                class="line-input"
+              />
+              <div class="input-line"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="qualification">Qualification</label>
+              <input
+                type="text"
+                id="qualification"
+                formControlName="qualification"
+                placeholder="Entrez la qualification"
+                class="line-input"
+              />
+              <div class="input-line"></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" (click)="closeUserModal()">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid || loading">
+                {{ loading ? 'Enregistrement...' : (isEditing ? 'Modifier' : 'Créer') }}
+              </button>
             </div>
           </form>
         </div>
@@ -143,75 +201,73 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
     }
 
     .table-container {
       background: white;
-      border-radius: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       overflow-x: auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       width: 100%;
+      padding: 1rem;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: auto;
     }
 
     th, td {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem;
       text-align: left;
       border-bottom: 1px solid #e5e7eb;
-      white-space: nowrap;
     }
 
     th {
-      background: #f9fafb;
-      font-weight: 600;
-    }
-
-    tr:hover {
       background-color: #f9fafb;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      justify-content: flex-start;
-      flex-wrap: nowrap;
-      white-space: normal;
-      min-width: 150px;
-    }
-
-    .btn-sm {
-      padding: 0.5rem 0.75rem;
-      font-size: 0.8rem;
       font-weight: 600;
-      border-radius: 6px;
-      border: none;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+
+    td {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .edit-btn, .delete-btn {
+      background: none;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.2s;
+      padding: 0.5rem;
+      color: #6b7280;
+      margin-right: 0.5rem;
     }
 
-    .btn-secondary {
-      background-color: #6c757d;
-      color: white;
+    .edit-btn:hover {
+      background: #f3f4f6;
     }
 
-    .btn-secondary:hover {
-      background-color: #545b62;
+    .delete-btn:hover:not(:disabled) {
+      background: #fef2f2;
+      color: #dc2626;
     }
 
-    .btn-danger {
-      background-color: #dc3545;
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background-color: #c82333;
+    .delete-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .badge {
@@ -267,28 +323,57 @@ import { ToastService } from '../../../../core/services/toast.service';
       position: relative;
       display: flex;
       align-items: center;
+      background: white;
+      border-radius: 12px;
+      padding: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+      transition: all 0.3s ease;
     }
 
-    .search-input {
-      padding: 0.5rem 2.5rem 0.5rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      width: 250px;
-      transition: all 0.2s;
-    }
-
-    .search-input:focus {
-      outline: none;
+    .search-bar:focus-within {
       border-color: #f97316;
       box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
     }
 
+    .search-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 0.5rem 0.5rem 0.5rem 0;
+      font-size: 0.875rem;
+      width: 280px;
+      color: #374151;
+    }
+
+    .search-input::placeholder {
+      color: #9ca3af;
+    }
+
     .search-icon {
-      position: absolute;
-      right: 0.75rem;
       color: #6b7280;
-      pointer-events: none;
+      margin-right: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+
+    .clear-btn:hover {
+      background: #f3f4f6;
+      color: #6b7280;
     }
 
     .table-actions {
@@ -299,12 +384,14 @@ import { ToastService } from '../../../../core/services/toast.service';
     }
 
     .btn-primary {
-      background-color: #f97316;
+      background: linear-gradient(135deg, #1e293b, #334155);
       color: white;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
     }
 
     .btn-primary:hover {
-      background-color: #ea580c;
+      background: linear-gradient(135deg, #334155, #475569);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
     }
 
     /* Modal Styles */
@@ -321,87 +408,142 @@ import { ToastService } from '../../../../core/services/toast.service';
       z-index: 1000;
     }
 
-    .modal {
+    .modal-content {
       background: white;
-      border-radius: 12px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
       width: 90%;
-      max-width: 600px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
     }
 
-    .modal-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .user-form {
+      padding: 30px;
     }
 
-    .modal-header h3 {
-      margin: 0;
-      color: #1f2937;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #6b7280;
-      padding: 0.25rem;
-      border-radius: 4px;
-      transition: all 0.2s;
-    }
-
-    .modal-close:hover {
-      background: #f3f4f6;
-      color: #1f2937;
-    }
-
-    .modal-body {
-      padding: 1.5rem;
-    }
-
-    .modal-footer {
-      padding: 1.5rem;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1rem;
+    .form-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
     }
 
     .form-group {
-      display: flex;
-      flex-direction: column;
+      margin-bottom: 25px;
+      position: relative;
     }
 
-    .form-group label {
-      margin-bottom: 0.5rem;
+    label {
+      display: block;
+      font-size: 14px;
       font-weight: 500;
-      color: #374151;
+      color: #555;
+      margin-bottom: 8px;
     }
 
-    .form-control {
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      transition: all 0.2s;
-    }
-
-    .form-control:focus {
+    .line-input {
+      width: 100%;
+      padding: 12px 0;
+      border: none;
+      border-radius: 0;
+      font-size: 16px;
+      background: transparent;
       outline: none;
-      border-color: #f97316;
-      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+      color: #333;
+    }
+
+    .line-input::placeholder {
+      color: #999;
+    }
+
+    .input-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #ddd;
+      transition: all 0.3s ease;
+    }
+
+    .line-input:focus + .input-line {
+      background: #1e293b;
+      height: 2px;
+    }
+
+    .line-input.error + .input-line,
+    .input-line.error {
+      background: #ff4444;
+    }
+
+    .error-message {
+      color: #ff4444;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    /* Boutons EXACTEMENT comme l'image */
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: white;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #334155, #475569);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #666;
+      border: 1px solid #ddd;
+    }
+
+    .btn-outline:hover {
+      background: #f5f5f5;
+    }
+
+    /* Style pour le select */
+    select.line-input {
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .form-group:has(select)::after {
+      content: '▼';
+      position: absolute;
+      right: 0;
+      bottom: 12px;
+      font-size: 12px;
+      color: #666;
+      pointer-events: none;
     }
 
     @media (max-width: 768px) {
@@ -429,23 +571,23 @@ export class UserListComponent implements OnInit {
   showUserModal = false;
   isEditing = false;
   currentUser: User | null = null;
-  userForm: User = {
-    id: '',
-    nom: '',
-    email: '',
-    contact: '',
-    adresse: '',
-    role: 'USER',
-    qualification: '',
-    createdAt: '',
-    updatedAt: ''
-  };
+  userForm: FormGroup;
 
   constructor(
     private userService: UserService,
     private confirmationService: ConfirmationService,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private formBuilder: FormBuilder
+  ) {
+    this.userForm = this.formBuilder.group({
+      nom: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      contact: [''],
+      adresse: [''],
+      role: ['USER', Validators.required],
+      qualification: ['']
+    });
+  }
 
   ngOnInit(): void {
     const currentUserStr = localStorage.getItem('currentUser');
@@ -461,7 +603,7 @@ export class UserListComponent implements OnInit {
     this.userService.getAllUsers().subscribe({
       next: (users) => {
         this.users = users;
-        this.filteredUsers = users;
+        this.filterUsers();
         this.loading = false;
       },
       error: (error) => {
@@ -476,13 +618,21 @@ export class UserListComponent implements OnInit {
       this.filteredUsers = [...this.users];
     } else {
       const term = this.searchTerm.toLowerCase();
-      this.filteredUsers = this.users.filter(user => 
+      this.filteredUsers = this.users.filter(user =>
         (user.nom || '').toLowerCase().includes(term) ||
         (user.email || '').toLowerCase().includes(term) ||
-        (user.contact || '').toLowerCase().includes(term) ||
-        (user.role || '').toLowerCase().includes(term)
+        String(user.contact || '').toLowerCase().includes(term) ||
+        (user.adresse || '').toLowerCase().includes(term) ||
+        (user.role || '').toLowerCase().includes(term) ||
+        (user.qualification || '').toLowerCase().includes(term) ||
+        this.getRoleLabel(user.role).toLowerCase().includes(term)
       );
     }
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterUsers();
   }
 
   getBadgeClass(role: string): string {
@@ -511,83 +661,88 @@ export class UserListComponent implements OnInit {
   openCreateUserModal(): void {
     this.isEditing = false;
     this.currentUser = null;
-    this.userForm = {
-      id: '',
+    this.userForm.reset({
       nom: '',
       email: '',
       contact: '',
       adresse: '',
       role: 'USER',
-      qualification: '',
-      createdAt: '',
-      updatedAt: ''
-    };
+      qualification: ''
+    });
     this.showUserModal = true;
   }
 
   editUser(user: User): void {
     this.isEditing = true;
     this.currentUser = user;
-    this.userForm = { ...user };
+    this.userForm.patchValue({
+      nom: user.nom,
+      email: user.email,
+      contact: user.contact,
+      adresse: user.adresse,
+      role: user.role,
+      qualification: user.qualification
+    });
     this.showUserModal = true;
   }
 
   closeUserModal(): void {
     this.showUserModal = false;
     this.currentUser = null;
-    this.userForm = {
-      id: '',
+    this.userForm.reset({
       nom: '',
       email: '',
       contact: '',
       adresse: '',
       role: 'USER',
-      qualification: '',
-      createdAt: '',
-      updatedAt: ''
-    };
+      qualification: ''
+    });
   }
 
   async saveUser(): Promise<void> {
-    if (this.isEditing && this.currentUser) {
-      // Update existing user
+    if (this.userForm.valid) {
+      const action = this.isEditing ? 'modifier' : 'créer';
       const confirmed = await this.confirmationService.show({
-        title: 'Confirmer la modification',
-        message: 'Êtes-vous sûr de vouloir modifier cet utilisateur ?',
-        type: 'warning',
-        confirmText: 'Modifier',
+        title: 'Confirmation',
+        message: `Voulez-vous vraiment ${action} cet utilisateur ?`,
+        confirmText: 'Confirmer',
         cancelText: 'Annuler'
       });
 
       if (confirmed) {
-        this.userService.updateUser(this.currentUser.id, this.userForm).subscribe({
-          next: (updatedUser) => {
-            const index = this.users.findIndex(u => u.id === updatedUser.id);
-            if (index !== -1) {
-              this.users[index] = updatedUser;
-              this.filterUsers();
+        const userData = this.userForm.value;
+
+        if (this.isEditing && this.currentUser) {
+          this.userService.updateUser(this.currentUser.id, userData).subscribe({
+            next: (updatedUser) => {
+              const index = this.users.findIndex(u => u.id === updatedUser.id);
+              if (index !== -1) {
+                this.users[index] = updatedUser;
+                this.filterUsers();
+              }
+              this.closeUserModal();
+              this.toastService.show({ type: 'success', title: 'Utilisateur modifié', message: 'L\'utilisateur a été modifié avec succès' });
+            },
+            error: (error) => {
+              console.error('Error updating user:', error);
+              this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la modification de l\'utilisateur' });
             }
-            this.closeUserModal();
-          },
-          error: (error) => {
-            console.error('Error updating user:', error);
-            this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la modification de l\'utilisateur' });
-          }
-        });
-      }
-    } else {
-      // Create new user
-      this.userService.createUser(this.userForm).subscribe({
-        next: (newUser) => {
-          this.users.push(newUser);
-          this.filterUsers();
-          this.closeUserModal();
-        },
-        error: (error) => {
-          console.error('Error creating user:', error);
-          this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la création de l\'utilisateur' });
+          });
+        } else {
+          this.userService.createUser(userData).subscribe({
+            next: (newUser) => {
+              this.users.push(newUser);
+              this.filterUsers();
+              this.closeUserModal();
+              this.toastService.show({ type: 'success', title: 'Utilisateur créé', message: 'L\'utilisateur a été créé avec succès' });
+            },
+            error: (error) => {
+              console.error('Error creating user:', error);
+              this.toastService.show({ type: 'error', title: 'Erreur', message: 'Erreur lors de la création de l\'utilisateur' });
+            }
+          });
         }
-      });
+      }
     }
   }
 

@@ -10,7 +10,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { PrestationService, Prestation } from '../../../../core/services/prestation.service';
 import { ItemService } from '../../../../core/services/item.service';
-import { Item } from '../../../../core/models/business.models';
+import { Item, Equipement } from '../../../../core/models/business.models';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmationService } from '../../../../core/services/confirmation.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -39,8 +39,11 @@ export class PrestationFormComponent implements OnInit {
   items: Item[] = [];
   prestataires: User[] = [];
   selectedItem: Item | null = null;
+  equipements: Equipement[] = [];
+  selectedEquipements: Equipement[] = [];
   maxQuantityForTrimestre: number = 0;
   existingPrestationsCount: number = 0;
+  showForm = false;
 
   statutOptions = [
     { value: 'en cours', label: 'En cours' },
@@ -70,6 +73,7 @@ export class PrestationFormComponent implements OnInit {
       nomPrestataire: [data?.prestation?.nomPrestataire || '', Validators.required],
       nomPrestation: [data?.prestation?.nomPrestation || '', Validators.required],
       montantPrest: [data?.prestation?.montantPrest || '', [Validators.required, Validators.min(0)]],
+      equipementsUtilises: [data?.prestation?.equipementsUtilises || [], []],
       trimestre: [data?.prestation?.trimestre || '', Validators.required],
       dateDebut: [data?.prestation?.dateDebut || '', Validators.required],
       dateFin: [data?.prestation?.dateFin || '', Validators.required],
@@ -79,8 +83,10 @@ export class PrestationFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.showForm = true;
     this.loadItems();
     this.loadPrestataires();
+    this.loadEquipements();
     this.setupItemSelectionListener();
   }
 
@@ -112,16 +118,33 @@ export class PrestationFormComponent implements OnInit {
     });
   }
 
+  loadEquipements(): void {
+    // TODO: Implement equipement service call
+    // For now, we'll leave this empty as the service might not exist yet
+    this.equipements = [];
+  }
+
+  onEquipementSelectionChange(event: any): void {
+    const selectedIds = Array.from(event.target.selectedOptions, (option: any) => option.value);
+    this.selectedEquipements = this.equipements.filter(eq => selectedIds.includes(eq.id));
+  }
+
   setupItemSelectionListener(): void {
     this.prestationForm.get('nomPrestation')?.valueChanges.subscribe(value => {
       if (value) {
         this.selectedItem = this.items.find(item => item.nomItem === value) || null;
         this.updateMaxQuantity();
         this.updateExistingPrestationsCount(); // Mettre à jour le compteur
+        // Pré-remplir automatiquement le montant avec le prix de l'item sélectionné
+        if (this.selectedItem) {
+          this.prestationForm.patchValue({ montantPrest: this.selectedItem.prix });
+        }
       } else {
         this.selectedItem = null;
         this.maxQuantityForTrimestre = 0;
         this.existingPrestationsCount = 0;
+        // Remettre le montant à vide si aucun item n'est sélectionné
+        this.prestationForm.patchValue({ montantPrest: '' });
       }
     });
 
@@ -197,7 +220,7 @@ export class PrestationFormComponent implements OnInit {
 
   private preparePrestationData(): any {
     const formValue = this.prestationForm.value;
-    
+
     const formatDate = (date: any) => {
       if (!date) return null;
       const d = new Date(date);
@@ -206,14 +229,15 @@ export class PrestationFormComponent implements OnInit {
 
     return {
       ...formValue,
-      quantiteItem: 1,
       nbPrestRealise: 0,
+      equipementsUtilises: this.selectedEquipements.map(eq => ({ id: eq.id })),
       dateDebut: formatDate(formValue.dateDebut),
       dateFin: formatDate(formValue.dateFin)
     };
   }
 
   onCancel(): void {
+    this.showForm = false;
     this.dialogRef.close();
   }
 }

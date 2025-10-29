@@ -23,6 +23,183 @@ import { ToastService } from '../../../../core/services/toast.service';
       margin-bottom: 2rem;
     }
 
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #1e293b;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      max-width: 800px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .evaluation-form {
+      padding: 30px;
+    }
+
+    .form-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .line-input {
+      width: 100%;
+      padding: 12px 0;
+      border: none;
+      border-radius: 0;
+      font-size: 16px;
+      background: transparent;
+      outline: none;
+      color: #333;
+    }
+
+    .line-input::placeholder {
+      color: #999;
+    }
+
+    .line-input:focus {
+      outline: none;
+    }
+
+    .input-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #ddd;
+      transition: all 0.3s ease;
+    }
+
+    .line-input:focus + .input-line {
+      background: #1e293b;
+      height: 2px;
+    }
+
+    .line-input.error + .input-line,
+    .input-line.error {
+      background: #ff4444;
+    }
+
+    .error-message {
+      color: #ff4444;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .checkboxes-section {
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+
+    .checkboxes-section h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #1e293b;
+    }
+
+    .checkbox-group label {
+      font-size: 14px;
+      font-weight: 400;
+      color: #555;
+      margin-bottom: 0;
+      cursor: pointer;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #666;
+      border: 1px solid #ddd;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: #f5f5f5;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: white;
+      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #334155, #475569);
+      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.4);
+    }
+
     .table-container {
       background: white;
       border-radius: 12px;
@@ -170,6 +347,26 @@ import { ToastService } from '../../../../core/services/toast.service';
 
     .declasse {
       background-color: #fef2f2 !important;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #6b7280;
+    }
+
+    @media (max-width: 768px) {
+      .checkbox-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
     }
   `]
 })

@@ -40,4 +40,24 @@ export class OrdreCommandeService {
   rejeterOrdre(id: number): Observable<OrdreCommande> {
     return this.http.put<OrdreCommande>(`${this.API_URL}/${id}/rejeter`, {});
   }
+
+  // NOUVEAU : Récupérer les ordres groupés par prestataire
+  getOrdresCommandeGroupesParPrestataire(): Observable<{ [key: string]: OrdreCommande[] }> {
+    return this.http.get<{ [key: string]: OrdreCommande[] }>(`${this.API_URL}/par-prestataire`);
+  }
+
+  // NOUVEAU : Récupérer les statistiques par prestataire
+  getStatistiquesParPrestataire(prestataire: string): Observable<{ [key: string]: any }> {
+    return this.http.get<{ [key: string]: any }>(`${this.API_URL}/prestataire/${prestataire}/statistiques`);
+  }
+
+  // NOUVEAU : Récupérer tous les prestataires
+  getAllPrestataires(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.API_URL}/prestataires`);
+  }
+
+  // NOUVEAU : Exporter l'ordre de commande en PDF
+  exportOrdreCommandePdf(id: number): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/pdf/ordre-commande/${id}`, { responseType: 'blob' });
+  }
 }

@@ -51,6 +51,7 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
           </div>
         </div>
 
+
         <!-- Statistics Cards -->
         <div class="stats-grid">
           <div class="stat-card">
@@ -110,7 +111,7 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
                   <th>Prestataire</th>
                   <th>Item</th>
                   <th>Montant</th>
-                  <th>Quantité</th>
+                  <th>Équipements utilisés</th>
                   <th>Réalisées</th>
                   <th>Trimestre</th>
                   <th>Période</th>
@@ -127,7 +128,7 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
                   </td>
                   <td>
                     <div class="prestation-info">
-                      <strong class="prestation-name">{{ formatPrestationName(prestation.nomPrestation) }}</strong>
+                      <strong class="prestation-name" [title]="getPrestationNameTooltip(prestation.nomPrestation)">{{ getPrestationNameTruncated(prestation.nomPrestation) }}</strong>
                       <div class="description" *ngIf="prestation.description">
                         {{ formatDescription(prestation.description) }}
                       </div>
@@ -137,7 +138,7 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
                     <span class="montant">{{ prestation.montantPrest | number:'1.0-0' }} FCFA</span>
                   </td>
                   <td class="text-center">
-                    <span class="badge">{{ prestation.quantiteItem }}</span>
+                    <span class="badge">{{ prestation.equipementsUtilises || prestation.quantiteItem }}</span>
                   </td>
                   <td class="text-center">
                     <span class="badge progress">{{ getRealizedCount(prestation).count }}/{{ getRealizedCount(prestation).max }}</span>
@@ -681,6 +682,7 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
   `]
 })
 export class PrestationListComponent implements OnInit {
@@ -732,6 +734,7 @@ export class PrestationListComponent implements OnInit {
       this.loading = false;
     });
   }
+
 
   onSearch(): void {
     this.filterPrestations();
@@ -868,6 +871,18 @@ export class PrestationListComponent implements OnInit {
     }
   }
 
+  // Helper method to get truncated prestation name for display
+  getPrestationNameTruncated(name: string): string {
+    if (!name) return '';
+    if (name.length <= 30) return name;
+    return name.substring(0, 30) + '...';
+  }
+
+  // Helper method to get full prestation name for tooltip
+  getPrestationNameTooltip(name: string): string {
+    return name || '';
+  }
+
   isAdmin(): boolean {
     return this.authService.getCurrentUser()?.role === 'ADMINISTRATEUR';
   }
@@ -903,4 +918,6 @@ export class PrestationListComponent implements OnInit {
       }
     }
   }
+
+
 }

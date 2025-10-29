@@ -1,6 +1,7 @@
 package com.dgsi.maintenance.controller;
 
 import java.util.List;
+import java.util.Map;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.StatutCommande;
 import com.dgsi.maintenance.repository.OrdreCommandeRepository;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/ordres-commande")
 @CrossOrigin(origins = "*", maxAge = 3600)
+@Slf4j
 public class OrdreCommandeController {
 
     @Autowired
@@ -31,8 +34,26 @@ public class OrdreCommandeController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE')")
-    public List<OrdreCommande> getAllOrdresCommande() {
-        return ordreCommandeService.getAllOrdresCommande();
+    public ResponseEntity<List<OrdreCommande>> getAllOrdresCommande() {
+        try {
+            List<OrdreCommande> ordres = ordreCommandeService.getAllOrdresCommande();
+            return ResponseEntity.ok(ordres);
+        } catch (Exception e) {
+            log.error("❌ Erreur lors du chargement des ordres de commande: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/par-prestataire")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE')")
+    public Map<String, List<OrdreCommande>> getOrdresCommandeGroupesParPrestataire() {
+        return ordreCommandeService.getOrdresCommandeGroupesParPrestataire();
+    }
+
+    @GetMapping("/prestataire/{prestataire}/statistiques")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE')")
+    public Map<String, Object> getStatistiquesParPrestataire(@PathVariable String prestataire) {
+        return ordreCommandeService.getStatistiquesParPrestataire(prestataire);
     }
 
     @GetMapping("/{id}")
@@ -114,5 +135,20 @@ public class OrdreCommandeController {
                 return ResponseEntity.ok(ordreCommandeRepository.save(ordre));
             })
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Récupère tous les prestataires distincts
+     */
+    @GetMapping("/prestataires")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('PRESTATAIRE')")
+    public ResponseEntity<List<String>> getAllPrestataires() {
+        try {
+            List<String> prestataires = ordreCommandeRepository.findDistinctPrestataires();
+            return ResponseEntity.ok(prestataires);
+        } catch (Exception e) {
+            log.error("❌ Erreur récupération prestataires: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

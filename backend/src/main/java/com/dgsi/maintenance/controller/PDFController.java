@@ -1,8 +1,12 @@
 package com.dgsi.maintenance.controller;
 
+import java.time.LocalDate;
+import java.util.List;
 import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
+import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.TypeItem;
 import com.dgsi.maintenance.repository.EvaluationTrimestrielleRepository;
+import com.dgsi.maintenance.repository.OrdreCommandeRepository;
 import com.dgsi.maintenance.repository.TypeItemRepository;
 import com.dgsi.maintenance.service.PDFGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +14,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/pdf")
@@ -25,6 +30,9 @@ public class PDFController {
 
     @Autowired
     private EvaluationTrimestrielleRepository evaluationRepository;
+
+    @Autowired
+    private OrdreCommandeRepository ordreCommandeRepository;
 
     @Autowired
     private TypeItemRepository typeItemRepository;
@@ -151,6 +159,40 @@ public class PDFController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("attachment", "rapport-annuel-" + annee + ".pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfContent);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/ordre-commande/{id}")
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('AGENT_DGSI')")
+    public ResponseEntity<byte[]> genererOrdreCommandeDetail(@PathVariable Long id) {
+        try {
+            // Récupérer l'ordre de commande
+            OrdreCommande ordre = ordreCommandeRepository.findByIdWithPrestations(id).orElse(null);
+
+            if (ordre == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Générer le PDF
+            byte[] pdfContent = pdfGenerationService.genererOrdreCommandeDetail(ordre);
+
+            if (pdfContent == null || pdfContent.length == 0) {
+                return ResponseEntity.internalServerError().body("Erreur lors de la génération du PDF".getBytes());
+            }
+
+            // Préparer la réponse
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            String fileName = "ordre-commande-" + (ordre.getNumeroOc() != null ? ordre.getNumeroOc() : ordre.getIdOC()) + ".pdf";
+            headers.setContentDispositionFormData("attachment", fileName);
 
             return ResponseEntity.ok()
                     .headers(headers)
