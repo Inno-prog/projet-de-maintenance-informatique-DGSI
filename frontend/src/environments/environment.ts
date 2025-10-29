@@ -1,9 +1,9 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8082/api',  // URL directe du backend (correspondre au port du serveur backend)
+  production: true,
+  apiUrl: 'https://your-railway-backend-url.com/api',  // Remplacer par l'URL de votre backend Railway
   // En développement, activez ce flag pour permettre un contournement local lorsque Keycloak
   // n'est pas disponible. Ne PAS activer en production.
-  devAuthBypass: true
+  devAuthBypass: false
 };
 
 // Configuration de l'environnement de production

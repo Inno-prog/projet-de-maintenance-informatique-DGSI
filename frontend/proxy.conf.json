@@ -6,7 +6,7 @@
     "logLevel": "debug"
   },
   "/realms": {
-    "target": "http://localhost:8080",
+    "target": "http://localhost:8081",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"

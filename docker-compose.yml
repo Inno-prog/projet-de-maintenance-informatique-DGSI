@@ -11,9 +11,9 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak
-      KC_HOSTNAME_STRICT: false
-      KC_HTTP_ENABLED: true
-      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
     ports:
       - "8081:8080"
     depends_on:
@@ -41,8 +41,23 @@ services:
     networks:
       - maintenance-network
 
+  postgres-app:
+    image: postgres:15
+    container_name: postgres-app
+    environment:
+      POSTGRES_DB: maintenance_db
+      POSTGRES_USER: maintenance_user
+      POSTGRES_PASSWORD: maintenance_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_app_data:/var/lib/postgresql/data
+    networks:
+      - maintenance-network
+
 volumes:
   postgres_data:
+  postgres_app_data:
 
 networks:
   maintenance-network:
